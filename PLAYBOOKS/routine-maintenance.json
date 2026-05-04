@@ -1,0 +1,30 @@
+﻿{
+  "id": "routine-maintenance",
+  "name": "Routine Maintenance",
+  "description": "Periodic health assessment: full hardware and security scan, auto-fix safe issues, generate maintenance report.",
+  "category": "Maintenance",
+  "estimatedMinutes": 25,
+  "steps": [
+    {
+      "id": "S01", "name": "Full System Scan", "engine": "FieldOps",
+      "description": "Run all diagnostic engines via master orchestrator",
+      "args": [],
+      "gate": { "scoreBelow": 60, "action": "warn", "message": "Machine health significantly degraded. Escalate for full remediation." },
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 20
+    },
+    {
+      "id": "S02", "name": "Apply Safe Fixes", "engine": "AutoFix",
+      "description": "Apply all safe, reversible fixes detected by AutoFix",
+      "args": [],
+      "gate": null,
+      "continueOnFail": true, "interactive": true, "timeoutMinutes": 10
+    },
+    {
+      "id": "S03", "name": "Maintenance Report", "engine": "IncidentReport",
+      "description": "Generate maintenance incident report",
+      "args": ["-Category", "Maintenance"],
+      "gate": null,
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 5
+    }
+  ]
+}

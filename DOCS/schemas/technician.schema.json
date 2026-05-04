@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/odorley/fieldops-pro/blob/main/DOCS/schemas/technician.schema.json",
+  "title": "FieldOps Pro Technician Configuration",
+  "description": "Operator identity and UI preferences for a FieldOps Pro install. Secrets (API keys) are NOT stored here — they live in Windows Credential Manager.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "operator", "deployment", "ui", "version"],
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Schema reference for editor validation."
+    },
+    "schemaVersion": {
+      "type": "string",
+      "description": "Version of this schema. Bump when the structure changes.",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "_comment": {
+      "type": "string",
+      "description": "Human-readable note. Ignored by the toolkit at runtime."
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Operator's full name as it should appear on reports."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "Operator's contact email. Appears on incident reports."
+        },
+        "employeeId": {
+          "type": "string",
+          "description": "Internal employee identifier. May be empty."
+        },
+        "team": {
+          "type": "string",
+          "description": "Operator's team or department. May be empty."
+        },
+        "company": {
+          "type": "string",
+          "description": "Employer or contracting organization."
+        }
+      }
+    },
+    "deployment": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "region": {
+          "type": "string",
+          "description": "Deployment region (free text — common values: EU, US, APAC).",
+          "examples": ["EU", "US", "APAC"]
+        },
+        "role": {
+          "type": "string",
+          "description": "Operator's role (free text)."
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locale"],
+      "properties": {
+        "locale": {
+          "type": "string",
+          "description": "Default UI language. Must match a file in CONFIG/lang/<locale>.json.",
+          "enum": ["en", "fr"]
+        },
+        "brandColor": {
+          "type": "string",
+          "description": "Accent colour used by the dashboard (CSS hex).",
+          "pattern": "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$"
+        }
+      }
+    },
+    "version": {
+      "type": "string",
+      "description": "Version string written to reports. Free-form (e.g. '2.0', '2.1-beta').",
+      "minLength": 1
+    }
+  }
+}

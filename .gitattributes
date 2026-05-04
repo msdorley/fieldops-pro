@@ -1,0 +1,54 @@
+# ============================================================================
+# FieldOps Pro ??? .gitattributes
+# ----------------------------------------------------------------------------
+# Enforces consistent line endings and encoding across contributors regardless
+# of OS or Git config. Critical for PS 5.1 + French strings in JSON.
+# ============================================================================
+
+# Default: Git decides. Most files behave normally.
+* text=auto
+
+# ---- PowerShell -------------------------------------------------------------
+# PS 5.1 requires UTF-8 BOM to correctly read non-ASCII characters (French,
+# accented chars). CRLF is the Windows-shell convention.
+*.ps1   text eol=crlf
+*.psm1  text eol=crlf
+*.psd1  text eol=crlf
+
+# ---- JSON / locale data -----------------------------------------------------
+# JSON is parsed by .NET ??? UTF-8 without BOM, LF endings.
+*.json  text eol=lf
+
+# ---- Markdown / docs --------------------------------------------------------
+*.md    text eol=lf
+*.txt   text eol=lf
+
+# ---- Shell / CI -------------------------------------------------------------
+*.sh    text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+
+# ---- Windows-specific config -----------------------------------------------
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.reg   text eol=crlf
+
+# ---- Binaries (do not touch) ------------------------------------------------
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.zip   binary
+*.gz    binary
+*.7z    binary
+*.exe   binary
+*.dll   binary
+*.msi   binary
+*.iso   binary
+
+# ---- GitHub linguist hints --------------------------------------------------
+# Prevent locale JSON files from dominating language stats on GitHub.
+CONFIG/lang/*.json linguist-language=JSON linguist-detectable=false
+DOCS/**            linguist-documentation=true

@@ -1,0 +1,73 @@
+﻿{
+  "id": "new-hire-deployment",
+  "name": "New Hire Deployment",
+  "description": "Complete new hire machine setup: hardware check, network repair, Azure AD enrollment, software deployment, VPN, security hardening, and incident report.",
+  "category": "Deployment",
+  "estimatedMinutes": 50,
+  "targetModels": ["Dell Latitude 3450", "Dell Latitude 3540"],
+  "steps": [
+    {
+      "id": "S01", "name": "Hardware Health Check", "engine": "PCHealth",
+      "description": "Verify hardware is deployment-ready",
+      "args": [],
+      "gate": { "scoreBelow": 65, "action": "halt", "message": "Hardware too degraded for deployment. Replace or repair the machine before proceeding." },
+      "continueOnFail": false, "interactive": false, "timeoutMinutes": 8
+    },
+    {
+      "id": "S02", "name": "Disk Health Verification", "engine": "DiskAnalysis",
+      "description": "Verify disk is healthy and has sufficient space",
+      "args": [],
+      "gate": { "scoreBelow": 65, "action": "halt", "message": "Disk health too low. Risk of data loss during deployment. Replace drive first." },
+      "continueOnFail": false, "interactive": false, "timeoutMinutes": 10
+    },
+    {
+      "id": "S03", "name": "Network Repair and Verification", "engine": "NetRepair",
+      "description": "Repair network stack and verify connectivity",
+      "args": [],
+      "gate": { "scoreBelow": 50, "action": "warn", "message": "Network issues detected. Enrollment may fail. Check VPN/LAN connection." },
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 8
+    },
+    {
+      "id": "S04", "name": "Azure AD Enrollment", "engine": "AzureADJoin",
+      "description": "Enroll machine into Azure AD and Intune MDM",
+      "args": [],
+      "gate": null,
+      "continueOnFail": false, "interactive": true, "timeoutMinutes": 20
+    },
+    {
+      "id": "S05", "name": "Software Deployment", "engine": "SoftwareDeploy",
+      "description": "Install required software packages from USB repository",
+      "args": [],
+      "gate": null,
+      "continueOnFail": true, "interactive": true, "timeoutMinutes": 30
+    },
+    {
+      "id": "S06", "name": "GlobalProtect VPN Setup", "engine": "VPNSetup",
+      "description": "Install and configure GlobalProtect VPN client",
+      "args": [],
+      "gate": null,
+      "continueOnFail": true, "interactive": true, "timeoutMinutes": 10
+    },
+    {
+      "id": "S07", "name": "Security Hardening", "engine": "AutoFix",
+      "description": "Apply SAFE security fixes automatically",
+      "args": [],
+      "gate": null,
+      "continueOnFail": true, "interactive": true, "timeoutMinutes": 10
+    },
+    {
+      "id": "S08", "name": "Security Verification", "engine": "SecurityScan",
+      "description": "Verify security posture after hardening",
+      "args": [],
+      "gate": { "scoreBelow": 75, "action": "warn", "message": "Security score below target. Review SecurityScan report and apply additional hardening." },
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 10
+    },
+    {
+      "id": "S09", "name": "Incident Report and ZIP Export", "engine": "IncidentReport",
+      "description": "Generate professional incident report and export ZIP package",
+      "args": ["-Category", "Deployment", "-ExportZip"],
+      "gate": null,
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 5
+    }
+  ]
+}

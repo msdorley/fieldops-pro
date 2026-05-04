@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FieldOps Pro — Enterprise Field IT Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#050a0e;--bg2:#0a1520;--bg3:#0d1e2e;--green:#00ff88;--cyan:#00d4ff;--amber:#ffb300;--red:#ff3b5c;--purple:#a855f7;--border:#1a3a5c;--text:#c8e6f5;--dim:#4a7a9b}
+body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;min-height:100vh;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.15) 2px,rgba(0,0,0,.15) 4px);pointer-events:none;z-index:1}
+.wrap{position:relative;z-index:2;padding:0 0 24px}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:linear-gradient(90deg,rgba(0,255,136,.08),rgba(0,212,255,.05),rgba(0,0,0,0));border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+.logo-zone{display:flex;align-items:center;gap:14px}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--green),var(--cyan));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',monospace;font-weight:900;font-size:14px;color:#000;letter-spacing:-1px;box-shadow:0 0 20px rgba(0,255,136,.4)}
+.logo-text{font-family:'Orbitron',monospace;font-size:15px;font-weight:700;letter-spacing:3px;color:var(--green);text-shadow:0 0 20px rgba(0,255,136,.5)}
+.logo-sub{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);letter-spacing:2px}
+.status-pills{display:flex;gap:8px;align-items:center}
+.pill{padding:4px 10px;border-radius:3px;font-family:'Share Tech Mono',monospace;font-size:10px;display:flex;align-items:center;gap:5px;border:1px solid}
+.pill.ok{color:var(--green);border-color:rgba(0,255,136,.3);background:rgba(0,255,136,.07)}
+.pill.warn{color:var(--amber);border-color:rgba(255,179,0,.3);background:rgba(255,179,0,.07)}
+.pill.info{color:var(--cyan);border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.07)}
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.clock{font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--cyan);text-align:right}
+.clock-date{font-size:10px;color:var(--dim);letter-spacing:1px}
+.hero{padding:32px 24px 24px;display:flex;align-items:flex-end;justify-content:space-between}
+.hero-left h1{font-family:'Orbitron',monospace;font-size:clamp(22px,4vw,38px);font-weight:900;letter-spacing:2px;line-height:1.1;background:linear-gradient(135deg,var(--green) 0%,var(--cyan) 60%,var(--purple) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 30px rgba(0,255,136,.3))}
+.hero-left .tagline{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:4px;margin-top:6px}
+.hero-stats{display:flex;gap:20px}
+.stat{text-align:center;padding:12px 16px;background:rgba(0,212,255,.04);border:1px solid rgba(0,212,255,.15);border-radius:6px}
+.stat-val{font-family:'Orbitron',monospace;font-size:22px;font-weight:700;color:var(--cyan)}
+.stat-label{font-size:10px;color:var(--dim);letter-spacing:2px;margin-top:2px}
+.device-bar{margin:0 24px 20px;padding:14px 18px;background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.2);border-left:3px solid var(--green);border-radius:6px;display:flex;align-items:center;gap:20px;font-family:'Share Tech Mono',monospace;font-size:11px;flex-wrap:wrap}
+.device-bar .label{color:var(--dim);letter-spacing:1px}
+.device-bar .val{color:var(--green)}
+.sep{color:var(--border);margin:0 4px}
+.section-hdr{padding:0 24px 12px;display:flex;align-items:center;gap:12px}
+.section-hdr .line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+.section-hdr span{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:4px;color:var(--dim);white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;padding:0 24px;margin-bottom:24px}
+.module{position:relative;padding:18px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .25s;overflow:hidden}
+.module:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.mod-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.mod-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.mod-num{font-family:'Orbitron',monospace;font-size:11px;color:var(--dim);background:rgba(255,255,255,.05);padding:3px 8px;border-radius:3px;border:1px solid var(--border)}
+.mod-title{font-family:'Rajdhani',sans-serif;font-size:16px;font-weight:700;color:#e8f4ff;letter-spacing:.5px;margin-bottom:4px}
+.mod-desc{font-size:12px;color:var(--dim);line-height:1.4}
+.mod-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:10px}
+.tag{font-family:'Share Tech Mono',monospace;font-size:9px;padding:2px 7px;border-radius:3px;letter-spacing:.5px;border:1px solid}
+.tag.g{color:var(--green);border-color:rgba(0,255,136,.25);background:rgba(0,255,136,.06)}
+.tag.c{color:var(--cyan);border-color:rgba(0,212,255,.25);background:rgba(0,212,255,.06)}
+.tag.a{color:var(--amber);border-color:rgba(255,179,0,.25);background:rgba(255,179,0,.06)}
+.tag.p{color:var(--purple);border-color:rgba(168,85,247,.25);background:rgba(168,85,247,.06)}
+.tag.r{color:var(--red);border-color:rgba(255,59,92,.25);background:rgba(255,59,92,.06)}
+.mod-status{position:absolute;bottom:10px;right:12px;font-family:'Share Tech Mono',monospace;font-size:9px;display:flex;align-items:center;gap:4px}
+.s-dot{width:5px;height:5px;border-radius:50%}
+.s-ok{background:var(--green);box-shadow:0 0 6px var(--green)}
+.s-warn{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.iso-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;padding:0 24px;margin-bottom:24px}
+.iso-card{padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all .2s}
+.iso-card:hover{border-color:var(--cyan);box-shadow:0 0 15px rgba(0,212,255,.1)}
+.iso-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.iso-ver{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim)}
+.iso-bar{height:3px;border-radius:2px;margin-top:8px}
+.terminal{margin:0 24px 24px;background:#030c12;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.term-hdr{padding:10px 14px;background:rgba(0,212,255,.05);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim)}
+.term-dot{width:10px;height:10px;border-radius:50%}
+.term-body{padding:14px;font-family:'Share Tech Mono',monospace;font-size:11px;line-height:1.8}
+.t-ok{color:var(--green)}.t-info{color:var(--cyan)}.t-warn{color:var(--amber)}.t-dim{color:var(--dim)}.t-prompt{color:var(--purple)}
+.cursor{display:inline-block;width:7px;height:12px;background:var(--green);animation:blink .8s infinite;vertical-align:middle}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.footer{margin:0 24px;padding:14px;border:1px solid var(--border);border-radius:6px;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);flex-wrap:wrap;gap:8px}
+.footer-logo{font-family:'Orbitron',monospace;font-size:11px;color:var(--green);letter-spacing:2px}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.module{animation:fadeInUp .4s ease both}
+.module:nth-child(1){animation-delay:.05s}.module:nth-child(2){animation-delay:.1s}.module:nth-child(3){animation-delay:.15s}.module:nth-child(4){animation-delay:.2s}.module:nth-child(5){animation-delay:.25s}.module:nth-child(6){animation-delay:.3s}.module:nth-child(7){animation-delay:.35s}.module:nth-child(8){animation-delay:.4s}.module:nth-child(9){animation-delay:.45s}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="topbar">
+  <div class="logo-zone">
+    <div class="logo-icon">FO</div>
+    <div><div class="logo-text">FIELDOPS PRO</div><div class="logo-sub">ENTERPRISE FIELD IT TOOLKIT &middot; V1.0</div></div>
+  </div>
+  <div class="status-pills">
+    <div class="pill ok"><span class="dot"></span>WINPE ACTIVE</div>
+    <div class="pill ok"><span class="dot"></span>NETWORK OK</div>
+    <div class="pill info"><span class="dot"></span>POWERSHELL</div>
+  </div>
+  <div class="clock"><div id="clock-time">--:--:--</div><div class="clock-date" id="clock-date">--- -- ----</div></div>
+</div>
+<div class="hero">
+  <div class="hero-left">
+    <h1>FIELD OPERATIONS<br>COMMAND CENTER</h1>
+    <div class="tagline">// ENTERPRISE IT DIAGNOSTICS &middot; DEPLOYMENT &middot; SECURITY &middot; RECOVERY</div>
+  </div>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-val">9</div><div class="stat-label">MODULES</div></div>
+    <div class="stat"><div class="stat-val">10</div><div class="stat-label">BOOT ISOs</div></div>
+    <div class="stat"><div class="stat-val">&infin;</div><div class="stat-label">COVERAGE</div></div>
+  </div>
+</div>
+<div class="device-bar">
+  <span class="label">DEVICE</span><span class="val" id="hn">FIELDOPS-PC</span>
+  <span class="sep">&middot;</span><span class="label">PLATFORM</span><span class="val">DELL LATITUDE 3450/3540</span>
+  <span class="sep">&middot;</span><span class="label">CPU</span><span class="val">INTEL CORE i5-1335U &middot; 13TH GEN</span>
+  <span class="sep">&middot;</span><span class="label">RAM</span><span class="val">16 GB DDR5 5600MHz</span>
+  <span class="sep">&middot;</span><span class="label">ENV</span><span class="val" style="color:var(--amber)">WinPE 10.0.26100</span>
+</div>
+<div class="section-hdr"><div class="line"></div><span>DIAGNOSTIC &amp; REPAIR MODULES</span><div class="line"></div></div>
+<div class="grid">
+  <div class="module" onclick="this.style.borderColor='var(--green)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3)">&#128187;</div><div class="mod-num">[1]</div></div>
+    <div class="mod-title">PC Health Diagnostic</div>
+    <div class="mod-desc">Full hardware audit — CPU, RAM, storage, GPU, network, SFC, BitLocker, event logs</div>
+    <div class="mod-tags"><span class="tag g">8 CHECKS</span><span class="tag g">SMART</span><span class="tag g">SFC</span><span class="tag g">WinPE &#10003;</span></div>
+    <div class="mod-status"><span class="s-dot s-ok"></span><span style="color:var(--green)">READY</span></div>
+  </div>
+  <div class="module" onclick="this.style.borderColor='var(--cyan)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3)">&#127760;</div><div class="mod-num">[2]</div></div>
+    <div class="mod-title">Network Diagnostics</div>
+    <div class="mod-desc">Adapter scan, gateway ping, internet test, .NET DNS, port check, repair menu</div>
+    <div class="mod-tags"><span class="tag c">DNS</span><span class="tag c">PING</span><span class="tag c">REPAIR</span><span class="tag c">WinPE &#10003;</span></div>
+    <div class="mod-status"><span class="s-dot s-ok"></span><span style="color:var(--green)">READY</span></div>
+  </div>
+  <div class="module" onclick="this.style.borderColor='var(--red)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(255,59,92,.1);border:1px solid rgba(255,59,92,.3)">&#128737;</div><div class="mod-num">[3]</div></div>
+    <div class="mod-title">Security Scan</div>
+    <div class="mod-desc">Startup entries, scheduled tasks, hosts file, open ports, Defender, user accounts</div>
+    <div class="mod-tags"><span class="tag r">MALWARE</span><span class="tag r">STARTUP</span><span class="tag r">HOSTS</span><span class="tag g">WinPE &#10003;</span></div>
+    <div class="mod-status"><span class="s-dot s-ok"></span><span style="color:var(--green)">READY</span></div>
+  </div>
+  <div class="module" onclick="this.style.borderColor='var(--amber)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(255,179,0,.1);border:1px solid rgba(255,179,0,.3)">&#128190;</div><div class="mod-num">[4]</div></div>
+    <div class="mod-title">Disk Analysis</div>
+    <div class="mod-desc">Physical drives, volume health, SMART WMI, temp files, diskpart check</div>
+    <div class="mod-tags"><span class="tag a">SMART</span><span class="tag a">VOLUMES</span><span class="tag a">TEMP</span><span class="tag g">WinPE &#10003;</span></div>
+    <div class="mod-status"><span class="s-dot s-ok"></span><span style="color:var(--green)">READY</span></div>
+  </div>
+  <div class="module" onclick="this.style.borderColor='var(--purple)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.3)">&#128230;</div><div class="mod-num">[5]</div></div>
+    <div class="mod-title">Software Deploy</div>
+    <div class="mod-desc">10-app catalogue, install/uninstall, offline Windows patches, detect installed</div>
+    <div class="mod-tags"><span class="tag p">10 APPS</span><span class="tag p">MSU/CAB</span><span class="tag p">SILENT</span><span class="tag a">Win Only</span></div>
+    <div class="mod-status"><span class="s-dot s-warn"></span><span style="color:var(--amber)">WIN REQ</span></div>
+  </div>
+  <div class="module" onclick="this.style.borderColor='var(--cyan)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3)">&#9729;</div><div class="mod-num">[6]</div></div>
+    <div class="mod-title">Azure AD Join</div>
+    <div class="mod-desc">Pre-flight, 4 join methods, Autopilot hash export, Intune enrollment trigger</div>
+    <div class="mod-tags"><span class="tag c">AAD</span><span class="tag c">INTUNE</span><span class="tag c">AUTOPILOT</span><span class="tag a">Win Only</span></div>
+    <div class="mod-status"><span class="s-dot s-warn"></span><span style="color:var(--amber)">WIN REQ</span></div>
+  </div>
+  <div class="module" onclick="this.style.borderColor='var(--green)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(0,255,136,.1);border:1px solid rgba(0,255,136,.3)">&#128274;</div><div class="mod-num">[7]</div></div>
+    <div class="mod-title">VPN Setup</div>
+    <div class="mod-desc">GlobalProtect install+config, Windows IKEv2/L2TP/SSTP, Always-On device tunnel</div>
+    <div class="mod-tags"><span class="tag g">GLOBALPROTECT</span><span class="tag g">IKEv2</span><span class="tag a">Win Only</span></div>
+    <div class="mod-status"><span class="s-dot s-warn"></span><span style="color:var(--amber)">WIN REQ</span></div>
+  </div>
+  <div class="module" onclick="this.style.borderColor='var(--amber)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(255,179,0,.1);border:1px solid rgba(255,179,0,.3)">&#128300;</div><div class="mod-num">[8]</div></div>
+    <div class="mod-title">HWiNFO64</div>
+    <div class="mod-desc">Full hardware information — CPU, GPU, motherboard, memory, sensors, temps</div>
+    <div class="mod-tags"><span class="tag a">SENSORS</span><span class="tag a">TEMPS</span><span class="tag a">SPD</span><span class="tag g">WinPE &#10003;</span></div>
+    <div class="mod-status"><span class="s-dot s-ok"></span><span style="color:var(--green)">READY</span></div>
+  </div>
+  <div class="module" onclick="this.style.borderColor='var(--cyan)'">
+    <div class="mod-header"><div class="mod-icon" style="background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3)">&#128203;</div><div class="mod-num">[9]</div></div>
+    <div class="mod-title">Incident Report</div>
+    <div class="mod-desc">Professional HTML report — hardware profile, GDPR-safe logs, incident details</div>
+    <div class="mod-tags"><span class="tag c">HTML</span><span class="tag c">GDPR SAFE</span><span class="tag c">JSON LOG</span><span class="tag g">WinPE &#10003;</span></div>
+    <div class="mod-status"><span class="s-dot s-ok"></span><span style="color:var(--green)">READY</span></div>
+  </div>
+</div>
+<div class="section-hdr"><div class="line"></div><span>BOOTABLE ISO ARSENAL</span><div class="line"></div></div>
+<div class="iso-grid">
+  <div class="iso-card"><div class="iso-name">WinPE FieldOps v1</div><div class="iso-ver">Custom ADK Build</div><div class="iso-bar" style="background:linear-gradient(90deg,var(--cyan),transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">Windows 11 25H2</div><div class="iso-ver">French x64 v2</div><div class="iso-bar" style="background:linear-gradient(90deg,#0078d4,transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">Windows 10 22H2</div><div class="iso-ver">French x64</div><div class="iso-bar" style="background:linear-gradient(90deg,#0078d4,transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">SystemRescue</div><div class="iso-ver">12.03 &middot; amd64</div><div class="iso-bar" style="background:linear-gradient(90deg,var(--green),transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">Memtest86+</div><div class="iso-ver">v8.00 &middot; RAM Test</div><div class="iso-bar" style="background:linear-gradient(90deg,var(--amber),transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">Kaspersky Rescue</div><div class="iso-ver">18.0.11 &middot; Offline AV</div><div class="iso-bar" style="background:linear-gradient(90deg,var(--red),transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">Clonezilla Live</div><div class="iso-ver">3.3.1 &middot; Disk Clone</div><div class="iso-bar" style="background:linear-gradient(90deg,var(--green),transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">ShredOS</div><div class="iso-ver">2025.11 &middot; DoD Wipe</div><div class="iso-bar" style="background:linear-gradient(90deg,var(--red),transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">Tails</div><div class="iso-ver">7.5 &middot; Secure OS</div><div class="iso-bar" style="background:linear-gradient(90deg,var(--purple),transparent)"></div></div>
+  <div class="iso-card"><div class="iso-name">WinPE Clean</div><div class="iso-ver">ADK Fresh Build</div><div class="iso-bar" style="background:linear-gradient(90deg,var(--cyan),transparent)"></div></div>
+</div>
+<div class="terminal">
+  <div class="term-hdr"><div class="term-dot" style="background:#ff3b5c"></div><div class="term-dot" style="background:var(--amber)"></div><div class="term-dot" style="background:var(--green)"></div><span style="margin-left:8px">FIELDOPS PRO &mdash; PowerShell Session</span></div>
+  <div class="term-body">
+    <div><span class="t-ok">[OK] SESSION_START -- Module loaded: PCHealth</span></div>
+    <div><span class="t-ok">[OK] CPU -- 13th Gen Intel Core i5-1335U | Cores: 10 | Load: 1%</span></div>
+    <div><span class="t-ok">[OK] RAM -- Total: 16GB across 2 module(s)</span></div>
+    <div><span class="t-ok">[OK] MOTHERBOARD -- Dell Inc. 03R8MN | S/N: /BBH0J54/CNWSC0049L007M/</span></div>
+    <div><span class="t-ok">[OK] DISK -- SanDisk 3.2 Gen1 | 117GB | USB | Status: OK</span></div>
+    <div><span class="t-ok">[OK] VOLUME -- Drive C: 68.5GB free of 116.5GB (59%)</span></div>
+    <div><span class="t-ok">[OK] NIC -- Realtek PCI(e) | IP: 192.168.1.175 | MAC: 10:98:19:B8:52:3E</span></div>
+    <div><span class="t-ok">[OK] SFC -- SFC scan completed</span></div>
+    <div><span class="t-info">[INFO] SESSION_END -- HEALTH CHECK COMPLETE</span></div>
+    <div style="margin-top:6px"><span class="t-prompt">PS X:\&gt;</span> <span class="cursor"></span></div>
+  </div>
+</div>
+<div class="footer">
+  <div class="footer-logo">FIELDOPS PRO</div>
+  <div>Enterprise Field IT Toolkit &middot; EU Deployment</div>
+  <div>Built on Windows ADK &middot; Ventoy 1.1.10 &middot; PowerShell 5.1</div>
+  <div id="ft">--:--:-- UTC+1</div>
+</div>
+</div>
+<script>
+function tick(){const n=new Date();const t=n.toLocaleTimeString('fr-FR',{hour12:false});const d=n.toLocaleDateString('fr-FR',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).toUpperCase();document.getElementById('clock-time').textContent=t;document.getElementById('clock-date').textContent=d;document.getElementById('ft').textContent=t+' UTC+1';try{document.getElementById('hn').textContent=window.location.hostname||'FIELDOPS-PC'}catch(e){}}
+tick();setInterval(tick,1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "$schema": "../DOCS/schemas/technician.schema.json",
+  "schemaVersion": "2.0",
+  "_comment": "Copy this file to technician.json and fill in your details. The real technician.json is gitignored and never committed. The Anthropic API key (if you enable AI analysis) lives in Windows Credential Manager under target 'FieldOpsPro:Anthropic', not in this file.",
+  "operator": {
+    "name": "<Your Full Name>",
+    "email": "<your.email@example.com>",
+    "employeeId": "<your-employee-id-or-empty>",
+    "team": "<your-team-or-empty>",
+    "company": "<your-company>"
+  },
+  "deployment": {
+    "region": "<EU | US | APAC | other>",
+    "role": "<your-role>"
+  },
+  "ui": {
+    "locale": "en",
+    "brandColor": "#6C3FC5"
+  },
+  "version": "2.0"
+}

@@ -1,0 +1,30 @@
+﻿{
+  "id": "hardware-audit",
+  "name": "Hardware Audit",
+  "description": "Quick hardware-only assessment: CPU, RAM, disk SMART, thermals. No network or security checks. Fast triage for suspected hardware issues.",
+  "category": "Diagnostic",
+  "estimatedMinutes": 12,
+  "steps": [
+    {
+      "id": "S01", "name": "Hardware Health Check", "engine": "PCHealth",
+      "description": "Full hardware diagnostic: CPU, RAM, disk, thermals, drivers",
+      "args": [],
+      "gate": { "scoreBelow": 60, "action": "warn", "message": "Hardware critically degraded. Recommend immediate replacement or repair." },
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 8
+    },
+    {
+      "id": "S02", "name": "Disk Analysis", "engine": "DiskAnalysis",
+      "description": "In-depth disk SMART analysis, space usage, duplicate detection",
+      "args": [],
+      "gate": { "scoreBelow": 60, "action": "warn", "message": "Disk health critical. Back up data immediately before any further work." },
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 10
+    },
+    {
+      "id": "S03", "name": "Hardware Audit Report", "engine": "IncidentReport",
+      "description": "Generate hardware audit report",
+      "args": ["-Category", "Hardware Audit"],
+      "gate": null,
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 5
+    }
+  ]
+}

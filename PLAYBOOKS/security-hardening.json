@@ -1,0 +1,37 @@
+﻿{
+  "id": "security-hardening",
+  "name": "Security Hardening",
+  "description": "Dedicated security hardening workflow: baseline scan, apply all fixes, verify improvement, generate security report.",
+  "category": "Security",
+  "estimatedMinutes": 20,
+  "steps": [
+    {
+      "id": "S01", "name": "Security Baseline Scan", "engine": "SecurityScan",
+      "description": "Capture current security posture before hardening",
+      "args": [],
+      "gate": null,
+      "continueOnFail": false, "interactive": false, "timeoutMinutes": 10
+    },
+    {
+      "id": "S02", "name": "Apply Security Fixes", "engine": "AutoFix",
+      "description": "Apply security fixes -- select level in interactive menu",
+      "args": [],
+      "gate": null,
+      "continueOnFail": true, "interactive": true, "timeoutMinutes": 10
+    },
+    {
+      "id": "S03", "name": "Post-Hardening Verification", "engine": "SecurityScan",
+      "description": "Re-scan to verify hardening was applied successfully",
+      "args": [],
+      "gate": { "scoreBelow": 80, "action": "warn", "message": "Security score still below target after hardening. Manual review required." },
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 10
+    },
+    {
+      "id": "S04", "name": "Security Report", "engine": "IncidentReport",
+      "description": "Generate security hardening incident report",
+      "args": ["-Category", "Security", "-ExportZip"],
+      "gate": null,
+      "continueOnFail": true, "interactive": false, "timeoutMinutes": 5
+    }
+  ]
+}
