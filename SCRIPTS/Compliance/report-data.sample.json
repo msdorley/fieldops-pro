@@ -1,0 +1,143 @@
+{
+  "Report": {
+    "Id": "FOPS-20260513-SAMPLE-WS01-001",
+    "GeneratedAt": "2026-05-13T23:45:00+02:00",
+    "GeneratedAtHuman": "13 mai 2026, 23:45 (heure de Paris)",
+    "Technician": "Ousman Dorley",
+    "CustomerContact": "A completer"
+  },
+  "Machine": {
+    "Hostname": "SAMPLE-WS01",
+    "MakeModel": "Acer Nitro ANV15-51",
+    "Serial": "SAMPLE0000000000000000",
+    "Os": "Windows 11 Professionnel (build 26200, 25H2)",
+    "Directory": "Workplace Joined"
+  },
+  "Summary": { "CountCV": 8, "CountPV": 18, "CountHP": 16, "Total": 42 },
+  "TopFindings": [
+    {
+      "Title": "Trois mises a jour Windows en echec",
+      "RuleNote": "Regle 34 - Windows Update operationnel mais 3 echecs detectes en mai 2026 (XboxGamingOverlay, VCLibs.140, definitions Defender). Retenter via Windows Update.",
+      "RuleId": "R34",
+      "Status": "cv"
+    },
+    {
+      "Title": "Cinq pilotes obsoletes (> 19 ans)",
+      "RuleNote": "Regle 35 - 5 pilotes Bluetooth LE / Device Information dates de 2006. Anterieurs aux versions supportees ; remplacement recommande.",
+      "RuleId": "R35",
+      "Status": "cv"
+    },
+    {
+      "Title": "Politique d'audit des journaux minimale",
+      "RuleNote": "Regle 36 - Journalisation active mais politique d'audit des connexions au niveau minimal. Renforcement recommande pour la tracabilite.",
+      "RuleId": "R36",
+      "Status": "pv"
+    }
+  ],
+  "Modules": [
+    { "Number": "I",    "Title": "Sensibiliser et former",                "RuleCount": 3, "Counts": { "Cv": 0, "Pv": 0, "Hp": 3 } },
+    { "Number": "II",   "Title": "Connaitre le systeme d'information",     "RuleCount": 4, "Counts": { "Cv": 0, "Pv": 3, "Hp": 1 } },
+    { "Number": "III",  "Title": "Authentifier et controler les acces",    "RuleCount": 6, "Counts": { "Cv": 0, "Pv": 6, "Hp": 0 } },
+    { "Number": "IV",   "Title": "Securiser les postes",                   "RuleCount": 5, "Counts": { "Cv": 3, "Pv": 1, "Hp": 1 } },
+    { "Number": "V",    "Title": "Securiser le reseau",                    "RuleCount": 8, "Counts": { "Cv": 1, "Pv": 3, "Hp": 4 } },
+    { "Number": "VI",   "Title": "Securiser l'administration",             "RuleCount": 3, "Counts": { "Cv": 0, "Pv": 1, "Hp": 2 } },
+    { "Number": "VII",  "Title": "Gerer le nomadisme",                     "RuleCount": 4, "Counts": { "Cv": 1, "Pv": 2, "Hp": 1 } },
+    { "Number": "VIII", "Title": "Maintenir le SI a jour",                 "RuleCount": 2, "Counts": { "Cv": 2, "Pv": 0, "Hp": 0 } },
+    { "Number": "IX",   "Title": "Superviser, auditer, reagir",            "RuleCount": 5, "Counts": { "Cv": 1, "Pv": 1, "Hp": 3 } },
+    { "Number": "X",    "Title": "Pour aller plus loin",                   "RuleCount": 2, "Counts": { "Cv": 0, "Pv": 1, "Hp": 1 } }
+  ],
+  "ModuleDetails": [
+    {
+      "Number": "I", "Title": "Sensibiliser et former",
+      "Rules": [
+        { "Id": "R1", "Name": "Former les equipes operationnelles a la securite des SI", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Formation des equipes operationnelles - releve organisationnel, non observable techniquement.", "Detail": "", "Evidence": "" },
+        { "Id": "R2", "Name": "Sensibiliser les utilisateurs aux bonnes pratiques", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Sensibilisation des utilisateurs - releve organisationnel.", "Detail": "", "Evidence": "" },
+        { "Id": "R3", "Name": "Maitriser les risques de l'infogerance", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Maitrise des risques de l'infogerance - releve contractuel.", "Detail": "", "Evidence": "" }
+      ]
+    },
+    {
+      "Number": "II", "Title": "Connaitre le systeme d'information",
+      "Rules": [
+        { "Id": "R4", "Name": "Identifier informations et serveurs sensibles", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Cartographie reseau locale observee (adaptateurs, IP, passerelle). Inventaire SI global et classification des donnees hors perimetre du poste.", "Detail": "", "Evidence": "NetRepair - Configuration reseau, sections 3-4" },
+        { "Id": "R5", "Name": "Inventaire exhaustif des comptes privilegies", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Enumeration des administrateurs locaux non disponible sur ce poste (acces refuse). Verification manuelle requise.", "Detail": "", "Evidence": "SecurityScan Identity / Local Administrators - Cannot query" },
+        { "Id": "R6", "Name": "Procedures arrivee/depart/changement de fonction", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Procedures arrivee/depart/changement - releve RH et gouvernance.", "Detail": "", "Evidence": "" },
+        { "Id": "R7", "Name": "Connexion reseau aux seuls equipements maitrises", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Poste Workplace Joined - rattachement a un annuaire confirme. Controle d'admission reseau (802.1X) non observable depuis le poste.", "Detail": "", "Evidence": "SecurityScan Identity / Directory Join Status" }
+      ]
+    },
+    {
+      "Number": "III", "Title": "Authentifier et controler les acces",
+      "Rules": [
+        { "Id": "R8", "Name": "Comptes nominatifs, distinguer usage et administration", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Compte invite desactive (observe). Enumeration des comptes administrateurs non disponible (acces refuse).", "Detail": "", "Evidence": "SecurityScan Identity / Guest Account, Local Administrators" },
+        { "Id": "R9", "Name": "Attribuer les bons droits sur les ressources sensibles", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Inventaire des partages SMB capture en instantane. Adequation des droits d'acces non evaluable sans contexte metier.", "Detail": "", "Evidence": "ComplianceDiff - instantane SmbShares" },
+        { "Id": "R10", "Name": "Definir et verifier une politique de mots de passe", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Politique de mots de passe locale non extraite par les sondes actuelles (extension G1 prevue).", "Detail": "", "Evidence": "" },
+        { "Id": "R11", "Name": "Proteger les mots de passe stockes sur les postes", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Credential Manager : aucun identifiant stocke (observe). Protection LSA (PPL) active. Couverture partielle des vecteurs de stockage.", "Detail": "", "Evidence": "SecurityScan Identity / Stored Credentials, LSA Protection" },
+        { "Id": "R12", "Name": "Changer les elements d'authentification par defaut", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Auto-logon non detecte dans le registre. Authentifications par defaut d'autres composants non testees.", "Detail": "", "Evidence": "SecurityScan Identity" },
+        { "Id": "R13", "Name": "Privilegier l'authentification forte", "Status": "pv", "StatusLabel": "Partiel", "Meta": "TPM 2.0 present et operationnel - capacite d'authentification forte disponible. Configuration effective de Windows Hello non observee.", "Detail": "", "Evidence": "SecurityScan Firmware / TPM" }
+      ]
+    },
+    {
+      "Number": "IV", "Title": "Securiser les postes",
+      "Rules": [
+        { "Id": "R14", "Name": "Mettre en place un niveau de securite minimal sur le parc", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Conforme au niveau Standard : pare-feu local actif sur les 3 profils, Microsoft Defender en protection temps reel, BitLocker actif sur le volume systeme. Detection autorun non encore couverte (extension G2).", "Detail": "", "Evidence": "SecurityScan NetSec + Defender + Encryption" },
+        { "Id": "R15", "Name": "Se proteger des menaces des supports amovibles", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Politique de restriction USB / AppLocker non extraite par les sondes actuelles (extension G3 prevue).", "Detail": "", "Evidence": "" },
+        { "Id": "R16", "Name": "Utiliser un outil de gestion centralisee du parc", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Poste rattache a un annuaire (Workplace Joined) - gestion centralisee confirmee, vraisemblablement via Microsoft Intune.", "Detail": "", "Evidence": "SecurityScan Identity / Directory Join Status" },
+        { "Id": "R17", "Name": "Activer et configurer le pare-feu local", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Les 3 profils du pare-feu Windows (Domaine, Prive, Public) sont actifs. Configuration de niveau Renforce (blocage des ports d'administration) non evaluee.", "Detail": "", "Evidence": "SecurityScan NetSec + PCHealth Security + NetRepair Firewall" },
+        { "Id": "R18", "Name": "Chiffrer les donnees sensibles transmises par Internet", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Chiffrement des donnees en transit - depend de l'usage applicatif et messagerie, hors perimetre du poste.", "Detail": "", "Evidence": "" }
+      ]
+    },
+    {
+      "Number": "V", "Title": "Securiser le reseau",
+      "Rules": [
+        { "Id": "R19", "Name": "Segmenter le reseau et cloisonner les acces", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Sous-reseau local et adaptateurs virtuels (VMware, Hyper-V) observes. Architecture de segmentation reseau hors perimetre du poste.", "Detail": "", "Evidence": "NetRepair - Configuration IP" },
+        { "Id": "R20", "Name": "Securiser les reseaux Wi-Fi", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Connexion Wi-Fi active chiffree en WPA2-Personal. Protocole de chiffrement conforme aux recommandations actuelles.", "Detail": "", "Evidence": "SecurityScan NetSec / WiFi Security" },
+        { "Id": "R21", "Name": "Utiliser des protocoles reseau securises", "Status": "pv", "StatusLabel": "Partiel", "Meta": "SMBv1 absent du poste. Audit complet des protocoles obsoletes (TLS, LLMNR, NetBIOS) non encore implemente.", "Detail": "", "Evidence": "SecurityScan Surface" },
+        { "Id": "R22", "Name": "Mettre en place une passerelle d'acces securise a Internet", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Acces Internet en direct (aucun proxy configure). Filtrage d'URL et DNS securise non evalues en detail.", "Detail": "", "Evidence": "NetRepair - Proxy & WPAD" },
+        { "Id": "R23", "Name": "Cloisonner les services exposes sur Internet", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Cloisonnement des services exposes - architecture reseau, hors perimetre du poste.", "Detail": "", "Evidence": "" },
+        { "Id": "R24", "Name": "Proteger la messagerie professionnelle", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Securite de la messagerie - configuration cote serveur, hors perimetre du poste.", "Detail": "", "Evidence": "" },
+        { "Id": "R25", "Name": "Securiser les interconnexions avec les partenaires", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Interconnexions partenaires - architecture inter-entites, hors perimetre du poste.", "Detail": "", "Evidence": "" },
+        { "Id": "R26", "Name": "Controler les acces physiques aux locaux et salles serveurs", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Acces physiques - mesure organisationnelle, hors perimetre logiciel.", "Detail": "", "Evidence": "" }
+      ]
+    },
+    {
+      "Number": "VI", "Title": "Securiser l'administration",
+      "Rules": [
+        { "Id": "R27", "Name": "Interdire l'acces Internet depuis les postes d'administration", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Usage des postes d'administration - architecture et politique d'usage, hors perimetre.", "Detail": "", "Evidence": "" },
+        { "Id": "R28", "Name": "Utiliser un reseau dedie a l'administration", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Reseau dedie a l'administration - architecture reseau, hors perimetre du poste.", "Detail": "", "Evidence": "" },
+        { "Id": "R29", "Name": "Limiter au strict besoin les droits d'administration", "Status": "pv", "StatusLabel": "Partiel", "Meta": "UAC actif au niveau eleve (demande de consentement). Enumeration des comptes administrateurs non disponible (acces refuse).", "Detail": "", "Evidence": "SecurityScan PrivEsc / UAC + Identity" }
+      ]
+    },
+    {
+      "Number": "VII", "Title": "Gerer le nomadisme",
+      "Rules": [
+        { "Id": "R30", "Name": "Prendre des mesures de securisation physique des terminaux nomades", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Materiel identifie (Acer Nitro ANV15-51, portable). Mesures de securisation physique non observables techniquement.", "Detail": "", "Evidence": "PCHealth - Identite systeme" },
+        { "Id": "R31", "Name": "Chiffrer les donnees sensibles sur le materiel perdable", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Volume systeme chiffre par BitLocker (chiffrement AES). Sur un poste portable, le volume systeme est le vecteur principal de perte de donnees.", "Detail": "", "Evidence": "SecurityScan Encryption / BitLocker + PCHealth Storage" },
+        { "Id": "R32", "Name": "Securiser la connexion reseau des postes nomades", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Client VPN GlobalProtect installe mais inactif au moment du diagnostic. Qualite cryptographique du tunnel non evaluable hors connexion.", "Detail": "", "Evidence": "NetRepair - Statut VPN" },
+        { "Id": "R33", "Name": "Adopter des politiques de securite dediees aux terminaux mobiles", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Politique terminaux mobiles - concerne smartphones et tablettes, hors perimetre d'un poste Windows.", "Detail": "", "Evidence": "" }
+      ]
+    },
+    {
+      "Number": "VIII", "Title": "Maintenir le SI a jour",
+      "Rules": [
+        { "Id": "R34", "Name": "Definir une politique de mise a jour des composants", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Windows Update operationnel - derniere mise a jour appliquee le jour du diagnostic. 3 echecs de mise a jour detectes sur les 30 derniers jours, a relancer.", "Detail": "Echecs : Microsoft.XboxGamingOverlay (05/05), Microsoft.VCLibs.140 (05/05), definitions Defender (03/05).", "Evidence": "PCHealth - Drivers & Windows Update + SecurityScan Patching" },
+        { "Id": "R35", "Name": "Anticiper la fin de maintenance des logiciels et systemes", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Systeme Windows 11 25H2 sous support actif. 5 pilotes obsoletes detectes (Bluetooth LE, Device Information Service - dates de 2006), anterieurs aux versions supportees.", "Detail": "", "Evidence": "PCHealth - Drivers & Windows Update + SecurityScan Patching" }
+      ]
+    },
+    {
+      "Number": "IX", "Title": "Superviser, auditer, reagir",
+      "Rules": [
+        { "Id": "R36", "Name": "Activer et configurer les journaux des composants", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Journalisation PowerShell (Script Block Logging) active. Politique d'audit des connexions au niveau minimal - renforcement recommande pour la tracabilite des evenements de securite.", "Detail": "", "Evidence": "SecurityScan WinSec / Logon Audit Policy + PSSecurity" },
+        { "Id": "R37", "Name": "Definir et appliquer une politique de sauvegarde", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Politique de sauvegarde - infrastructure et procedures, hors perimetre du poste.", "Detail": "", "Evidence": "" },
+        { "Id": "R38", "Name": "Proceder a des controles et audits de securite reguliers", "Status": "cv", "StatusLabel": "Verifie", "Meta": "L'execution de FieldOps Pro constitue elle-meme un controle d'audit technique regulier, repondant directement a cette mesure.", "Detail": "", "Evidence": "FieldOps Pro - execution courante" },
+        { "Id": "R39", "Name": "Designer un referent securite des systemes d'information", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Designation d'un referent SSI - mesure organisationnelle.", "Detail": "", "Evidence": "" },
+        { "Id": "R40", "Name": "Definir une procedure de gestion des incidents", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Procedure de gestion des incidents - mesure organisationnelle.", "Detail": "", "Evidence": "" }
+      ]
+    },
+    {
+      "Number": "X", "Title": "Pour aller plus loin",
+      "Rules": [
+        { "Id": "R41", "Name": "Mener une analyse de risque formelle", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Analyse de risque formelle (methode EBIOS RM) - demarche methodologique, hors perimetre technique.", "Detail": "", "Evidence": "" },
+        { "Id": "R42", "Name": "Privilegier les produits et services qualifies par l'ANSSI", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Inventaire logiciel capture en instantane. Croisement automatique avec le catalogue ANSSI des produits qualifies non encore implemente (extension G7).", "Detail": "", "Evidence": "ComplianceDiff - instantane Software" }
+      ]
+    }
+  ]
+}
