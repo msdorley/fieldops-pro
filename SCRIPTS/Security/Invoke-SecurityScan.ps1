@@ -1069,6 +1069,30 @@ function toggleFix(h){var b=h.nextElementSibling,a=h.querySelector('.fix-arrow')
 "@
 
 $HtmlContent | Out-File -FilePath $ReportFile -Encoding UTF8 -Force
+
+# FieldOps-ANSSI-JSON-Sidecar-Marker - DO NOT REMOVE (idempotency check anchor)
+try {
+    $jsonFile = Join-Path $LogsPath ("SecurityScan_${Hostname}_${Timestamp}.json")
+    $reportData = [PSCustomObject]@{
+        Engine     = 'SecurityScan'
+        Version    = '1.0'
+        Hostname   = $Hostname
+        Timestamp  = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+        Summary    = @{
+            Total    = ($script:Results | Measure-Object).Count
+            Pass     = ($script:Results | Where-Object { $_.Status -eq 'Pass' }    | Measure-Object).Count
+            Warning  = ($script:Results | Where-Object { $_.Status -eq 'Warning' } | Measure-Object).Count
+            Fail     = ($script:Results | Where-Object { $_.Status -eq 'Fail' }    | Measure-Object).Count
+            Info     = ($script:Results | Where-Object { $_.Status -eq 'Info' }    | Measure-Object).Count
+        }
+        Checks     = @($script:Results)
+        Findings   = @($script:Findings)
+    }
+    $reportData | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $jsonFile -Encoding UTF8 -Force
+    Write-Host "  JSON  : $jsonFile" -ForegroundColor DarkGray
+} catch {
+    Write-Host "  [WARN] JSON sidecar failed: $($_.Exception.Message)" -ForegroundColor Yellow
+}
 Write-Host "  Report: $ReportFile" -ForegroundColor Green
 Write-Host "  Start-Process `"$ReportFile`"" -ForegroundColor Yellow
 Write-Host ''
