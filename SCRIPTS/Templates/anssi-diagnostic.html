@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Diagnostic d'hygiene informatique ANSSI - {{HOSTNAME}}</title>
+<style>
+/* ============================================================
+   FIELDOPS PRO - ANSSI Diagnostic Report Template v0.4
+   Premium editorial design.
+   Print-targeted: A4 portrait.
+   ============================================================ */
+
+@page {
+  size: A4 portrait;
+  margin: 14mm 14mm 14mm 14mm;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.42;
+  color: #1A1F2C;
+  background: #FAFAF6;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+.serif {
+  font-family: 'Cambria', 'Georgia', 'Times New Roman', serif;
+  letter-spacing: -0.005em;
+}
+
+/* ---------------------- PAGE STRUCTURE ---------------------- */
+.page {
+  page-break-after: always;
+  position: relative;
+  min-height: 268mm;
+  padding-bottom: 16mm;
+}
+.page:last-child { page-break-after: auto; }
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 7.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #5C5C5C;
+  padding-bottom: 6pt;
+  border-bottom: 0.4pt solid #D9D5C8;
+  margin-bottom: 11pt;
+}
+.page-head .brand-mark {
+  font-weight: 600;
+  color: #1E3A5F;
+  letter-spacing: 0.12em;
+}
+.page-head .brand-mark::before {
+  content: "";
+  display: inline-block;
+  width: 6pt;
+  height: 6pt;
+  background: #1E3A5F;
+  border-radius: 50%;
+  margin-right: 5pt;
+  vertical-align: middle;
+  margin-top: -1pt;
+}
+.page-head .page-num {
+  font-variant-numeric: tabular-nums;
+  color: #8A8676;
+}
+
+.page-foot {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-top: 5pt;
+  border-top: 0.4pt solid #D9D5C8;
+  font-size: 7pt;
+  color: #8A8676;
+  display: flex;
+  justify-content: space-between;
+  letter-spacing: 0.04em;
+}
+.page-foot .ref { font-style: italic; }
+.page-foot .rid { font-variant-numeric: tabular-nums; }
+
+/* ---------------------- DISCLAIMER ---------------------- */
+.disclaimer {
+  background: #F5E1E5;
+  border-left: 2pt solid #6B2737;
+  color: #4A1B27;
+  padding: 6pt 10pt;
+  font-size: 8pt;
+  line-height: 1.42;
+  margin-bottom: 8pt;
+}
+.disclaimer strong { font-weight: 600; }
+
+/* ---------------------- TITLES ---------------------- */
+.title-h1 {
+  font-family: 'Cambria', 'Georgia', serif;
+  font-size: 23pt;
+  font-weight: 400;
+  line-height: 1.03;
+  letter-spacing: -0.012em;
+  color: #1A1F2C;
+  margin: 0 0 3pt;
+}
+.title-eyebrow {
+  font-size: 8pt;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #1E3A5F;
+  font-weight: 600;
+  margin-bottom: 7pt;
+}
+.title-sub {
+  font-size: 9.5pt;
+  color: #5C5C5C;
+  margin: 3pt 0 0;
+  font-style: italic;
+  font-family: 'Cambria', 'Georgia', serif;
+}
+
+.title-h2 {
+  font-family: 'Cambria', 'Georgia', serif;
+  font-size: 18pt;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: #1A1F2C;
+  margin: 0 0 2pt;
+}
+.title-h2-meta {
+  font-size: 8.5pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #1E3A5F;
+  font-weight: 600;
+  margin-bottom: 4pt;
+}
+
+.section-label {
+  font-size: 7.5pt;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1E3A5F;
+  font-weight: 600;
+  margin: 8pt 0 4pt;
+}
+.section-label::after {
+  content: "";
+  display: inline-block;
+  width: 14pt;
+  height: 0.5pt;
+  background: #1E3A5F;
+  vertical-align: middle;
+  margin-left: 6pt;
+  opacity: 0.4;
+}
+
+/* ---------------------- COMPLIANCE SPECTRUM (signature element) ---------------------- */
+.spectrum-wrap {
+  margin: 5pt 0 10pt;
+  background: #FFFFFF;
+  border: 0.4pt solid #D9D5C8;
+  border-radius: 2pt;
+  padding: 9pt 12pt 8pt;
+}
+.spectrum-row {
+  display: flex;
+  align-items: center;
+  gap: 7pt;
+  margin-bottom: 2pt;
+}
+.spectrum-row:last-child { margin-bottom: 0; }
+.spectrum-label {
+  flex: 0 0 13pt;
+  font-family: 'Cambria', serif;
+  font-size: 8.5pt;
+  font-style: italic;
+  color: #5C5C5C;
+  text-align: right;
+}
+.spectrum-cells {
+  display: flex;
+  gap: 2.5pt;
+  flex: 1;
+}
+.spectrum-name {
+  font-size: 6.8pt;
+  color: #8A8676;
+  letter-spacing: 0.03em;
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin-left: 3pt;
+}
+.cell {
+  width: 11pt;
+  height: 11pt;
+  border-radius: 1.5pt;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 6pt;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+.cell.cv { background: #DAEDDE; color: #1F4F2F; border: 0.4pt solid #B8DBC0; }
+.cell.pv { background: #F5E4C9; color: #6B3F12; border: 0.4pt solid #E3CB97; }
+.cell.hp { background: #E8E5DD; color: #5C5C5C; border: 0.4pt solid #D2CDC0; }
+
+.spectrum-legend {
+  display: flex;
+  gap: 14pt;
+  margin-top: 7pt;
+  padding-top: 6pt;
+  border-top: 0.3pt solid #E8E5DD;
+  font-size: 7.5pt;
+  color: #5C5C5C;
+  letter-spacing: 0.04em;
+}
+.spectrum-legend .key {
+  display: inline-flex;
+  align-items: center;
+  gap: 4pt;
+}
+.spectrum-legend .swatch {
+  width: 7pt;
+  height: 7pt;
+  border-radius: 1.5pt;
+}
+.spectrum-legend .swatch.cv { background: #DAEDDE; border: 0.4pt solid #B8DBC0; }
+.spectrum-legend .swatch.pv { background: #F5E4C9; border: 0.4pt solid #E3CB97; }
+.spectrum-legend .swatch.hp { background: #E8E5DD; border: 0.4pt solid #D2CDC0; }
+.spectrum-legend .count { font-weight: 600; color: #1A1F2C; font-variant-numeric: tabular-nums; }
+
+/* ---------------------- MACHINE BLOCK ---------------------- */
+.machine-card {
+  background: #FFFFFF;
+  border: 0.4pt solid #D9D5C8;
+  border-radius: 2pt;
+  padding: 7pt 13pt;
+  margin: 5pt 0 0;
+}
+.machine-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.8pt 0;
+  font-size: 9pt;
+  border-bottom: 0.3pt solid #F0EDE2;
+}
+.machine-row:last-child { border-bottom: none; }
+.machine-key {
+  color: #8A8676;
+  font-size: 7.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex: 0 0 38%;
+}
+.machine-val {
+  font-weight: 500;
+  color: #1A1F2C;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------- FINDINGS ---------------------- */
+.findings-list { margin: 3pt 0 0; }
+.finding {
+  display: flex;
+  gap: 10pt;
+  padding: 5pt 0;
+  border-bottom: 0.3pt solid #E8E5DD;
+}
+.finding:last-child { border-bottom: none; }
+.finding-num {
+  flex: 0 0 18pt;
+  font-family: 'Cambria', serif;
+  font-size: 13pt;
+  font-style: italic;
+  color: #1E3A5F;
+  line-height: 0.95;
+  text-align: right;
+  padding-top: 1pt;
+}
+.finding-body { flex: 1; min-width: 0; }
+.finding-title {
+  font-weight: 600;
+  font-size: 10pt;
+  color: #1A1F2C;
+  margin-bottom: 1pt;
+}
+.finding-note {
+  font-size: 8.5pt;
+  color: #5C5C5C;
+  line-height: 1.4;
+}
+.finding-pill { flex: 0 0 auto; align-self: flex-start; padding-top: 1pt; }
+
+/* ---------------------- PILLS ---------------------- */
+.pill {
+  display: inline-block;
+  padding: 1.5pt 7pt 1pt;
+  border-radius: 8pt;
+  font-size: 7pt;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.pill.cv { background: #DAEDDE; color: #1F4F2F; border: 0.4pt solid #B8DBC0; }
+.pill.pv { background: #F5E4C9; color: #6B3F12; border: 0.4pt solid #E3CB97; }
+.pill.hp { background: #E8E5DD; color: #5C5C5C; border: 0.4pt solid #D2CDC0; }
+
+/* ---------------------- MODULE BARS (page 2) ---------------------- */
+.module-list { margin: 6pt 0; }
+.module-row {
+  display: flex;
+  align-items: center;
+  gap: 10pt;
+  padding: 6.5pt 0;
+  border-bottom: 0.3pt solid #E8E5DD;
+}
+.module-row:last-child { border-bottom: none; }
+.module-roman {
+  flex: 0 0 24pt;
+  font-family: 'Cambria', serif;
+  font-style: italic;
+  font-size: 11pt;
+  color: #1E3A5F;
+  text-align: right;
+}
+.module-info { flex: 1; min-width: 0; }
+.module-title {
+  font-size: 9.5pt;
+  font-weight: 500;
+  color: #1A1F2C;
+  margin-bottom: 3pt;
+}
+.module-bar {
+  height: 5pt;
+  background: #E8E5DD;
+  border-radius: 2.5pt;
+  overflow: hidden;
+  display: flex;
+}
+.module-seg.cv { background: #5A9670; }
+.module-seg.pv { background: #C9923E; }
+.module-seg.hp { background: #B8B3A4; }
+.module-counts {
+  flex: 0 0 auto;
+  font-size: 8pt;
+  color: #5C5C5C;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  min-width: 88pt;
+}
+.module-counts .c-cv { color: #1F4F2F; font-weight: 600; }
+.module-counts .c-pv { color: #8C5520; font-weight: 600; }
+.module-counts .c-hp { color: #5C5C5C; font-weight: 600; }
+
+/* ---------------------- RULE DETAILS (module pages) ---------------------- */
+.module-overview {
+  display: flex;
+  align-items: baseline;
+  gap: 14pt;
+  margin-bottom: 14pt;
+  padding-bottom: 10pt;
+  border-bottom: 0.4pt solid #D9D5C8;
+}
+.module-overview-numbers {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 10pt;
+}
+.mon-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 4pt;
+}
+.mon-num {
+  font-family: 'Cambria', serif;
+  font-size: 22pt;
+  font-weight: 500;
+  line-height: 1;
+}
+.mon-num.cv { color: #1F4F2F; }
+.mon-num.pv { color: #8C5520; }
+.mon-num.hp { color: #5C5C5C; }
+.mon-lbl {
+  font-size: 7.5pt;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8A8676;
+}
+.module-overview-bar {
+  flex: 1;
+  height: 6pt;
+  background: #E8E5DD;
+  border-radius: 3pt;
+  overflow: hidden;
+  display: flex;
+  margin-top: 6pt;
+}
+
+.rule {
+  position: relative;
+  padding: 9pt 0 9pt 12pt;
+  border-bottom: 0.3pt solid #E8E5DD;
+}
+.rule:last-child { border-bottom: none; }
+.rule::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 11pt;
+  bottom: 11pt;
+  width: 2.5pt;
+  border-radius: 1.5pt;
+}
+.rule.cv::before { background: #5A9670; }
+.rule.pv::before { background: #C9923E; }
+.rule.hp::before { background: #B8B3A4; }
+
+.rule-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10pt;
+  margin-bottom: 3pt;
+}
+.rule-id {
+  font-family: 'Cambria', serif;
+  font-style: italic;
+  font-size: 10pt;
+  color: #1E3A5F;
+  flex: 0 0 26pt;
+}
+.rule-name {
+  font-size: 10pt;
+  font-weight: 500;
+  color: #1A1F2C;
+  flex: 1;
+  line-height: 1.35;
+}
+.rule-pill { flex: 0 0 auto; }
+
+.rule-meta {
+  font-size: 8.5pt;
+  color: #5C5C5C;
+  line-height: 1.45;
+  margin: 2pt 0;
+  padding-left: 26pt;
+}
+.rule-evidence {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 7pt;
+  color: #5C5C5C;
+  background: #F2EFE3;
+  padding: 4pt 7pt;
+  border-radius: 2pt;
+  margin: 4pt 0 0 26pt;
+  letter-spacing: -0.005em;
+}
+
+/* ---------------------- SIGNOFF PAGE ---------------------- */
+.synth-intro {
+  font-size: 10pt;
+  line-height: 1.55;
+  color: #1A1F2C;
+  margin: 0 0 14pt;
+  text-align: justify;
+}
+.synth-intro strong {
+  font-weight: 600;
+  color: #1E3A5F;
+}
+
+.limits-list {
+  font-size: 9pt;
+  line-height: 1.5;
+  margin: 0 0 14pt;
+  padding-left: 16pt;
+  color: #1A1F2C;
+}
+.limits-list li {
+  margin-bottom: 3.5pt;
+}
+.limits-list li::marker { color: #1E3A5F; }
+
+.hash-block {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 7.5pt;
+  color: #1A1F2C;
+  background: #F2EFE3;
+  padding: 8pt 10pt;
+  border: 0.4pt solid #D9D5C8;
+  border-radius: 2pt;
+  word-break: break-all;
+  letter-spacing: 0.01em;
+  line-height: 1.45;
+}
+
+.signature-row {
+  display: flex;
+  gap: 14pt;
+  margin-top: 16pt;
+}
+.signature-cell {
+  flex: 1;
+  border: 0.4pt solid #D9D5C8;
+  border-radius: 2pt;
+  padding: 10pt 14pt;
+  background: #FFFFFF;
+}
+.sig-lbl {
+  font-size: 7pt;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #1E3A5F;
+  font-weight: 600;
+  margin-bottom: 4pt;
+}
+.sig-name {
+  font-family: 'Cambria', serif;
+  font-size: 11pt;
+  color: #1A1F2C;
+}
+.sig-line {
+  border-bottom: 0.4pt dashed #B8B3A4;
+  height: 22pt;
+  margin: 14pt 0 4pt;
+}
+.sig-sub {
+  font-size: 7pt;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8A8676;
+}
+
+/* ---------------------- COVER DECORATIVE FLOURISH ---------------------- */
+.cover-flourish {
+  display: flex;
+  align-items: center;
+  gap: 8pt;
+  margin: 7pt 0 5pt;
+}
+.cover-flourish::before, .cover-flourish::after {
+  content: "";
+  flex: 1;
+  height: 0.4pt;
+  background: #D9D5C8;
+}
+.cover-flourish .ornament {
+  width: 5pt;
+  height: 5pt;
+  background: #1E3A5F;
+  transform: rotate(45deg);
+  flex: 0 0 auto;
+}
+</style>
+</head>
+<body>
+
+<!-- ============== PAGE 1: COVER ============== -->
+<div class="page">
+  <div class="page-head">
+    <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
+    <span class="page-num">Page 1 / {{PAGE_TOTAL}}</span>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Diagnostic informatif.</strong> Ce document n'est pas une certification ANSSI et ne constitue pas un avis juridique. Cartographie technique de la posture de securite du poste audite vis-a-vis du Guide d'Hygiene Informatique ANSSI (referentiel de 42 mesures).
+  </div>
+
+  <div class="title-eyebrow">Rapport d'audit technique</div>
+  <h1 class="title-h1 serif">Diagnostic d'hygiene<br>informatique</h1>
+  <p class="title-sub">Conformite au Guide d'Hygiene Informatique de l'ANSSI &mdash; referentiel des 42 mesures</p>
+
+  <div class="cover-flourish"><span class="ornament"></span></div>
+
+  <div class="section-label">Spectre de conformite &mdash; 42 mesures</div>
+  {{SPECTRUM}}
+
+  <div class="section-label">Poste audite</div>
+  <div class="machine-card">
+    <div class="machine-row"><span class="machine-key">Nom de poste</span><span class="machine-val">{{HOSTNAME}}</span></div>
+    <div class="machine-row"><span class="machine-key">Fabricant &middot; Modele</span><span class="machine-val">{{MAKE_MODEL}}</span></div>
+    <div class="machine-row"><span class="machine-key">Numero de serie</span><span class="machine-val">{{SERIAL}}</span></div>
+    <div class="machine-row"><span class="machine-key">Systeme d'exploitation</span><span class="machine-val">{{OS}}</span></div>
+    <div class="machine-row"><span class="machine-key">Annuaire</span><span class="machine-val">{{DIRECTORY}}</span></div>
+    <div class="machine-row"><span class="machine-key">Date du diagnostic</span><span class="machine-val">{{REPORT_DATE_HUMAN}}</span></div>
+  </div>
+
+  <div class="section-label">Points d'attention prioritaires</div>
+  <div class="findings-list">
+    {{TOP_FINDINGS}}
+  </div>
+
+  <div class="page-foot">
+    <span class="ref">Technicien &middot; {{TECHNICIAN}}</span>
+    <span class="rid">{{REPORT_ID}}</span>
+  </div>
+</div>
+
+<!-- ============== PAGE 2: COVERAGE BY MODULE ============== -->
+<div class="page">
+  <div class="page-head">
+    <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
+    <span class="page-num">Page 2 / {{PAGE_TOTAL}}</span>
+  </div>
+
+  <div class="title-h2-meta">Vue d'ensemble</div>
+  <h2 class="title-h2 serif">Couverture par module</h2>
+  <p class="title-sub">10 modules &middot; 42 mesures &middot; structure du Guide d'Hygiene Informatique</p>
+
+  <div class="cover-flourish"><span class="ornament"></span></div>
+
+  <div class="module-list">
+    {{MODULE_BARS}}
+  </div>
+
+  <div class="section-label">Lecture du diagnostic</div>
+  <ul class="limits-list">
+    <li><strong>Verifie (CV)</strong> &mdash; regle dont la conformite au niveau Standard est observee par un controle technique direct sur le poste.</li>
+    <li><strong>Partiellement verifie (PV)</strong> &mdash; regle dont certains aspects sont observes ; d'autres requierent une evaluation manuelle, contextuelle ou organisationnelle complementaire.</li>
+    <li><strong>Hors perimetre (HP)</strong> &mdash; regle organisationnelle, contractuelle, ou d'architecture inter-machines, non attestable par un outil technique sur un poste isole.</li>
+  </ul>
+
+  <div class="page-foot">
+    <span class="ref">Referentiel &middot; ANSSI &middot; Guide d'Hygiene Informatique &middot; 42 mesures</span>
+    <span class="rid">{{REPORT_ID}}</span>
+  </div>
+</div>
+
+<!-- ============== PAGES 3-N: MODULE DETAILS ============== -->
+{{MODULE_DETAILS}}
+
+<!-- ============== PAGE N+1: SIGNOFF ============== -->
+<div class="page">
+  <div class="page-head">
+    <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
+    <span class="page-num">Page {{PAGE_TOTAL}} / {{PAGE_TOTAL}}</span>
+  </div>
+
+  <div class="title-h2-meta">Conclusion</div>
+  <h2 class="title-h2 serif">Synthese et attestation</h2>
+
+  <div class="cover-flourish"><span class="ornament"></span></div>
+
+  <div class="section-label">Perimetre du diagnostic</div>
+  <p class="synth-intro">
+    Ce diagnostic technique verifie automatiquement <strong>{{COUNT_CV}} regles d'hygiene ANSSI sur 42</strong> au niveau du poste local, et apporte des elements d'observation pour <strong>{{COUNT_PV}} regles supplementaires</strong>. Les <strong>{{COUNT_HP}} regles restantes</strong> relevent de la gouvernance, de l'architecture inter-machines, ou de procedures organisationnelles qui ne peuvent etre attestees par un outil technique sur un poste isole et necessitent une evaluation contextuelle.
+  </p>
+
+  <div class="section-label">Limites explicites</div>
+  <ul class="limits-list">
+    <li>Diagnostic informatif. <strong>Ne constitue pas une certification ANSSI</strong>, ni une attestation au sens du Guide d'Hygiene Informatique.</li>
+    <li>L'ANSSI est la seule autorite habilitee a delivrer des qualifications ou certifications officielles (cf. regle 42).</li>
+    <li>Couverture limitee au poste audite. L'evaluation organisationnelle (formation, procedures, gouvernance) releve d'un audit separe.</li>
+    <li>Date et etat observes a un instant T. Les modifications posterieures invalident le constat.</li>
+    <li>Aucune affiliation, agreement, partenariat ou approbation ANSSI. Le terme &laquo;&nbsp;ANSSI&nbsp;&raquo; est employe en reference au document public Guide d'Hygiene Informatique.</li>
+  </ul>
+
+  <div class="section-label">Integrite cryptographique</div>
+  <p style="font-size: 8.5pt; color: #5C5C5C; margin: 0 0 6pt;">Empreinte SHA-256 du contenu du rapport &mdash; toute modification de ce document apres generation invaliderait cette signature :</p>
+  <div class="hash-block">{{REPORT_HASH}}</div>
+
+  <div class="signature-row">
+    <div class="signature-cell">
+      <div class="sig-lbl">Technicien auditeur</div>
+      <div class="sig-name">{{TECHNICIAN}}</div>
+      <div class="sig-line"></div>
+      <div class="sig-sub">Date et signature</div>
+    </div>
+    <div class="signature-cell">
+      <div class="sig-lbl">Contact destinataire</div>
+      <div class="sig-name">{{CUSTOMER_CONTACT}}</div>
+      <div class="sig-line"></div>
+      <div class="sig-sub">Date et signature</div>
+    </div>
+  </div>
+
+  <div class="page-foot">
+    <span class="ref">Referentiel &middot; ANSSI &middot; Guide d'Hygiene Informatique &middot; 42 mesures &middot; 2017</span>
+    <span class="rid">{{REPORT_ID}}</span>
+  </div>
+</div>
+
+</body>
+</html>
