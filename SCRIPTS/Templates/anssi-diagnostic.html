@@ -4,609 +4,495 @@
 <meta charset="UTF-8">
 <title>Diagnostic d'hygiene informatique ANSSI - {{HOSTNAME}}</title>
 <style>
-/* ============================================================
-   FIELDOPS PRO - ANSSI Diagnostic Report Template v0.4
-   Premium editorial design.
-   Print-targeted: A4 portrait.
-   ============================================================ */
+/* =============================================================================
+   FIELDOPS PRO - ANSSI Diagnostic Report Template v0.5.3
+   "Living Dossier" - 2-column cover layout, fits on 1 A4 page.
+   System fonts only. CSS matches v0.4 renderer output exactly.
+   ============================================================================= */
 
-@page {
-  size: A4 portrait;
-  margin: 14mm 14mm 14mm 14mm;
+@page { size: A4 portrait; margin: 13mm; }
+
+:root {
+  --paper:   #FAFAF6; --paper-2: #F4F1E8;
+  --ink:     #0F1419; --ink-soft: #1A1F2C;
+  --navy:    #1E3A5F; --navy-deep: #0F2540;
+  --hair:    #DDD8C8; --hair-soft: #EBE7DA;
+  --muted:   #5C5C5C; --whisper: #968F7E;
+  --cv-bg:   #DAEDDE; --cv-fg: #1F4F2F; --cv-arc: #7BA890;
+  --pv-bg:   #F5E4C9; --pv-fg: #6B3F12; --pv-arc: #D9A75A;
+  --hp-bg:   #E8E5DD; --hp-fg: #5C5C5C; --hp-arc: #BFB9A8;
+  --rose-bg: #F3E4E6; --rose-fg: #6B2737;
+  --serif: 'Cambria', 'Georgia', 'Times New Roman', serif;
+  --sans:  'Segoe UI', system-ui, -apple-system, sans-serif;
+  --mono:  'Consolas', 'Courier New', monospace;
 }
 
 * { box-sizing: border-box; }
-
 html, body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 9.5pt;
-  line-height: 1.42;
-  color: #1A1F2C;
-  background: #FAFAF6;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  margin: 0; padding: 0;
+  font-family: var(--sans);
+  font-size: 9pt; line-height: 1.5;
+  color: var(--ink); background: var(--paper);
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
 
-.serif {
-  font-family: 'Cambria', 'Georgia', 'Times New Roman', serif;
-  letter-spacing: -0.005em;
-}
-
-/* ---------------------- PAGE STRUCTURE ---------------------- */
-.page {
-  page-break-after: always;
-  position: relative;
-  min-height: 268mm;
-  padding-bottom: 16mm;
-}
+/* ============ PAGE ============ */
+.page { page-break-after: always; position: relative; min-height: 271mm; padding-bottom: 13mm; }
 .page:last-child { page-break-after: auto; }
 
 .page-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 7.5pt;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #5C5C5C;
-  padding-bottom: 6pt;
-  border-bottom: 0.4pt solid #D9D5C8;
-  margin-bottom: 11pt;
+  display: flex; justify-content: space-between; align-items: baseline;
+  font-size: 7.5pt; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--muted); padding-bottom: 5pt;
+  border-bottom: 0.4pt solid var(--hair); margin-bottom: 9pt;
 }
-.page-head .brand-mark {
-  font-weight: 600;
-  color: #1E3A5F;
-  letter-spacing: 0.12em;
+.brand-mark {
+  font-weight: 600; color: var(--navy-deep); letter-spacing: 0.14em;
+  display: inline-flex; align-items: center; gap: 6pt;
 }
-.page-head .brand-mark::before {
-  content: "";
-  display: inline-block;
-  width: 6pt;
-  height: 6pt;
-  background: #1E3A5F;
-  border-radius: 50%;
-  margin-right: 5pt;
-  vertical-align: middle;
-  margin-top: -1pt;
+.brand-mark::before {
+  content: ""; display: inline-block;
+  width: 5pt; height: 5pt; background: var(--navy); border-radius: 50%;
 }
-.page-head .page-num {
-  font-variant-numeric: tabular-nums;
-  color: #8A8676;
-}
+.page-head .page-num { font-variant-numeric: tabular-nums; color: var(--whisper); }
 
 .page-foot {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding-top: 5pt;
-  border-top: 0.4pt solid #D9D5C8;
-  font-size: 7pt;
-  color: #8A8676;
-  display: flex;
-  justify-content: space-between;
-  letter-spacing: 0.04em;
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding-top: 4pt; border-top: 0.4pt solid var(--hair);
+  font-size: 7pt; color: var(--whisper);
+  display: flex; justify-content: space-between; letter-spacing: 0.04em;
 }
-.page-foot .ref { font-style: italic; }
-.page-foot .rid { font-variant-numeric: tabular-nums; }
+.page-foot .ref { font-family: var(--serif); font-style: italic; }
+.page-foot .rid { font-variant-numeric: tabular-nums; font-family: var(--mono); }
 
-/* ---------------------- DISCLAIMER ---------------------- */
+/* ============ DISCLAIMER ============ */
 .disclaimer {
-  background: #F5E1E5;
-  border-left: 2pt solid #6B2737;
-  color: #4A1B27;
-  padding: 6pt 10pt;
-  font-size: 8pt;
-  line-height: 1.42;
-  margin-bottom: 8pt;
+  background: var(--rose-bg); border-left: 2pt solid var(--rose-fg);
+  color: var(--rose-fg); padding: 4pt 10pt;
+  font-size: 7pt; line-height: 1.4; margin-bottom: 9pt;
 }
 .disclaimer strong { font-weight: 600; }
 
-/* ---------------------- TITLES ---------------------- */
+/* ============ COVER TITLE (compact) ============ */
+.eyebrow {
+  font-size: 7.5pt; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--navy); font-weight: 600; margin-bottom: 4pt;
+}
 .title-h1 {
-  font-family: 'Cambria', 'Georgia', serif;
-  font-size: 23pt;
-  font-weight: 400;
-  line-height: 1.03;
-  letter-spacing: -0.012em;
-  color: #1A1F2C;
-  margin: 0 0 3pt;
+  font-family: var(--serif); font-size: 18pt; font-weight: 400;
+  line-height: 1.04; letter-spacing: -0.015em;
+  color: var(--ink); margin: 0 0 3pt;
 }
-.title-eyebrow {
-  font-size: 8pt;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #1E3A5F;
-  font-weight: 600;
-  margin-bottom: 7pt;
-}
+.title-h1 .accent { font-style: italic; }
 .title-sub {
-  font-size: 9.5pt;
-  color: #5C5C5C;
-  margin: 3pt 0 0;
-  font-style: italic;
-  font-family: 'Cambria', 'Georgia', serif;
+  font-family: var(--serif); font-size: 9pt; font-style: italic;
+  color: var(--muted); margin: 2pt 0 0; max-width: 38em;
+}
+.title-rule { width: 22pt; height: 0.5pt; background: var(--navy); margin: 7pt 0 9pt; }
+
+/* ============ AI SYNTHESIS - hidden by default ============ */
+.synthesis {
+  display: none;
+  margin: 0 0 14pt; padding-left: 11pt;
+  border-left: 0.8pt solid var(--navy);
+}
+.synthesis.is-active { display: block; }
+.synthesis-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5pt; }
+.synthesis-label {
+  font-size: 7.5pt; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--navy); font-weight: 600;
+}
+.synthesis-tag {
+  font-size: 7pt; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--whisper); font-weight: 500;
+  display: inline-flex; align-items: center; gap: 5pt;
+}
+.synthesis-tag::before {
+  content: ""; width: 4pt; height: 4pt; background: var(--whisper); border-radius: 50%;
+}
+.synthesis-body { font-family: var(--serif); font-size: 9.5pt; line-height: 1.5; color: var(--ink-soft); }
+.synthesis-body p { margin: 0 0 5pt; }
+.synthesis-body p:first-child::first-letter {
+  font-family: var(--serif); font-size: 24pt; font-weight: 400;
+  line-height: 0.85; float: left;
+  margin: 2pt 5pt -2pt 0; color: var(--navy);
+}
+.synthesis-body p:last-child { margin: 0; }
+.synthesis-foot {
+  margin-top: 5pt; padding-top: 4pt; border-top: 0.3pt solid var(--hair);
+  font-size: 7pt; color: var(--whisper); font-style: italic; line-height: 1.4;
 }
 
-.title-h2 {
-  font-family: 'Cambria', 'Georgia', serif;
-  font-size: 18pt;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  color: #1A1F2C;
-  margin: 0 0 2pt;
+/* ============ SECTION HEADS ============ */
+.section-head {
+  display: flex; align-items: baseline; justify-content: space-between; margin: 0 0 2pt;
 }
-.title-h2-meta {
-  font-size: 8.5pt;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #1E3A5F;
-  font-weight: 600;
-  margin-bottom: 4pt;
-}
-
 .section-label {
-  font-size: 7.5pt;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #1E3A5F;
-  font-weight: 600;
-  margin: 8pt 0 4pt;
+  font-size: 7.5pt; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--navy); font-weight: 600;
+  display: inline-flex; align-items: center; gap: 7pt;
 }
 .section-label::after {
-  content: "";
-  display: inline-block;
-  width: 14pt;
-  height: 0.5pt;
-  background: #1E3A5F;
-  vertical-align: middle;
-  margin-left: 6pt;
-  opacity: 0.4;
+  content: ""; display: inline-block;
+  width: 12pt; height: 0.5pt; background: var(--navy); opacity: 0.4;
+}
+.section-meta { font-family: var(--serif); font-size: 8pt; font-style: italic; color: var(--whisper); }
+.section-caption {
+  font-family: var(--serif); font-size: 7.5pt; font-style: italic;
+  color: var(--muted); margin: 0 0 6pt; max-width: 44em; line-height: 1.4;
 }
 
-/* ---------------------- COMPLIANCE SPECTRUM (signature element) ---------------------- */
-.spectrum-wrap {
-  margin: 5pt 0 10pt;
-  background: #FFFFFF;
-  border: 0.4pt solid #D9D5C8;
-  border-radius: 2pt;
-  padding: 9pt 12pt 8pt;
-}
-.spectrum-row {
-  display: flex;
-  align-items: center;
-  gap: 7pt;
-  margin-bottom: 2pt;
-}
-.spectrum-row:last-child { margin-bottom: 0; }
-.spectrum-label {
-  flex: 0 0 13pt;
-  font-family: 'Cambria', serif;
-  font-size: 8.5pt;
-  font-style: italic;
-  color: #5C5C5C;
-  text-align: right;
-}
-.spectrum-cells {
-  display: flex;
-  gap: 2.5pt;
-  flex: 1;
-}
-.spectrum-name {
-  font-size: 6.8pt;
-  color: #8A8676;
-  letter-spacing: 0.03em;
-  flex: 0 0 auto;
-  white-space: nowrap;
-  margin-left: 3pt;
-}
-.cell {
-  width: 11pt;
-  height: 11pt;
-  border-radius: 1.5pt;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 6pt;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-}
-.cell.cv { background: #DAEDDE; color: #1F4F2F; border: 0.4pt solid #B8DBC0; }
-.cell.pv { background: #F5E4C9; color: #6B3F12; border: 0.4pt solid #E3CB97; }
-.cell.hp { background: #E8E5DD; color: #5C5C5C; border: 0.4pt solid #D2CDC0; }
+/* ============ FINGERPRINT (compact) ============ */
+.spectrum-source { display: none; }   /* JS data source */
 
-.spectrum-legend {
-  display: flex;
-  gap: 14pt;
-  margin-top: 7pt;
-  padding-top: 6pt;
-  border-top: 0.3pt solid #E8E5DD;
-  font-size: 7.5pt;
-  color: #5C5C5C;
-  letter-spacing: 0.04em;
+.fingerprint {
+  display: grid; grid-template-columns: 1fr 132pt;
+  gap: 12pt; align-items: center;
+  padding: 2pt 0; margin-bottom: 2pt;
 }
-.spectrum-legend .key {
-  display: inline-flex;
-  align-items: center;
-  gap: 4pt;
-}
-.spectrum-legend .swatch {
-  width: 7pt;
-  height: 7pt;
-  border-radius: 1.5pt;
-}
-.spectrum-legend .swatch.cv { background: #DAEDDE; border: 0.4pt solid #B8DBC0; }
-.spectrum-legend .swatch.pv { background: #F5E4C9; border: 0.4pt solid #E3CB97; }
-.spectrum-legend .swatch.hp { background: #E8E5DD; border: 0.4pt solid #D2CDC0; }
-.spectrum-legend .count { font-weight: 600; color: #1A1F2C; font-variant-numeric: tabular-nums; }
+.fp-svg-wrap { display: flex; justify-content: center; }
+.fp-svg { width: 100%; max-width: 200pt; height: auto; display: block; }
+.fp-module-label { font-family: var(--serif); font-size: 7.5pt; font-style: italic; fill: var(--muted); }
+.fp-center-id { font-family: var(--sans); font-size: 6pt; letter-spacing: 0.18em; fill: var(--whisper); font-weight: 600; }
+.fp-center-num { font-family: var(--serif); font-size: 19pt; font-weight: 400; fill: var(--ink); }
+.fp-center-cap { font-family: var(--sans); font-size: 5.5pt; letter-spacing: 0.22em; fill: var(--whisper); font-weight: 600; }
 
-/* ---------------------- MACHINE BLOCK ---------------------- */
-.machine-card {
-  background: #FFFFFF;
-  border: 0.4pt solid #D9D5C8;
-  border-radius: 2pt;
-  padding: 7pt 13pt;
-  margin: 5pt 0 0;
+.fp-stats { display: flex; flex-direction: column; }
+.fp-stat {
+  display: grid; grid-template-columns: 24pt 1fr auto;
+  gap: 7pt; align-items: baseline;
+  padding: 4pt 0; border-bottom: 0.3pt dashed var(--hair);
 }
+.fp-stat:last-of-type { border-bottom: 0.4pt solid var(--hair); }
+.fp-stat-num {
+  font-family: var(--serif); font-size: 16pt; font-weight: 400;
+  line-height: 1; letter-spacing: -0.02em;
+}
+.fp-stat-num.cv { color: var(--cv-fg); }
+.fp-stat-num.pv { color: var(--pv-fg); }
+.fp-stat-num.hp { color: var(--hp-fg); }
+.fp-stat-label { font-family: var(--serif); font-size: 8pt; font-style: italic; color: var(--ink-soft); }
+.fp-stat-pct { font-size: 6.5pt; color: var(--whisper); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+
+.fp-hash {
+  font-family: var(--mono); font-size: 5.5pt; color: var(--whisper);
+  margin-top: 5pt; line-height: 1.5; word-break: break-all;
+}
+.fp-hash-label {
+  display: block; font-family: var(--sans); font-size: 5.5pt;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--whisper); margin-bottom: 2pt; font-weight: 600;
+}
+.fp-caption {
+  font-family: var(--serif); font-size: 7pt; font-style: italic;
+  color: var(--muted); text-align: center; margin: 1pt 0 9pt;
+}
+
+/* ============ COVER 2-COLUMN LOWER HALF (NEW IN v0.5.3) ============ */
+.cover-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 22pt;
+  margin-top: 4pt;
+}
+.cover-bottom-col { min-width: 0; }
+.cover-bottom .section-head { margin-bottom: 4pt; }
+
+/* ============ MACHINE - stacked in cover-bottom-left ============ */
+.machine { display: flex; flex-direction: column; margin-bottom: 0; }
 .machine-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 1.8pt 0;
-  font-size: 9pt;
-  border-bottom: 0.3pt solid #F0EDE2;
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 4pt 0; border-bottom: 0.4pt solid var(--hair); font-size: 8.5pt;
+  page-break-inside: avoid; gap: 8pt;
 }
 .machine-row:last-child { border-bottom: none; }
-.machine-key {
-  color: #8A8676;
-  font-size: 7.5pt;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  flex: 0 0 38%;
+.machine-row .k {
+  font-size: 6.5pt; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--whisper); font-weight: 600;
+  flex-shrink: 0;
 }
-.machine-val {
-  font-weight: 500;
-  color: #1A1F2C;
+.machine-row .v {
+  color: var(--ink); font-weight: 500;
   text-align: right;
-  font-variant-numeric: tabular-nums;
+  min-width: 0;
 }
+.machine-row .v.mono { font-family: var(--mono); font-size: 7.5pt; }
+.machine-row.span2 { grid-column: 1 / -1; }   /* keeps backward compat */
 
-/* ---------------------- FINDINGS ---------------------- */
-.findings-list { margin: 3pt 0 0; }
+/* ============ TOP FINDINGS (v0.4 class names) ============ */
+.findings { display: flex; flex-direction: column; }
 .finding {
-  display: flex;
-  gap: 10pt;
-  padding: 5pt 0;
-  border-bottom: 0.3pt solid #E8E5DD;
+  display: grid; grid-template-columns: 18pt 1fr auto;
+  gap: 8pt; padding: 5pt 4pt 5pt 0;
+  border-bottom: 0.4pt solid var(--hair); align-items: start;
+  page-break-inside: avoid;
 }
 .finding:last-child { border-bottom: none; }
 .finding-num {
-  flex: 0 0 18pt;
-  font-family: 'Cambria', serif;
-  font-size: 13pt;
-  font-style: italic;
-  color: #1E3A5F;
-  line-height: 0.95;
-  text-align: right;
-  padding-top: 1pt;
+  font-family: var(--serif); font-size: 14pt; font-weight: 400;
+  line-height: 1; color: var(--whisper); letter-spacing: -0.02em; padding-top: 1pt;
 }
-.finding-body { flex: 1; min-width: 0; }
+.finding-body { min-width: 0; }
 .finding-title {
-  font-weight: 600;
-  font-size: 10pt;
-  color: #1A1F2C;
-  margin-bottom: 1pt;
+  font-size: 8.5pt; font-weight: 600; color: var(--ink);
+  margin: 0 0 2pt; line-height: 1.25;
 }
 .finding-note {
-  font-size: 8.5pt;
-  color: #5C5C5C;
-  line-height: 1.4;
+  font-family: var(--serif); font-size: 7.5pt; color: var(--muted);
+  line-height: 1.4; font-style: italic;
 }
-.finding-pill { flex: 0 0 auto; align-self: flex-start; padding-top: 1pt; }
+.finding-pill { align-self: flex-start; display: inline-flex; align-items: center; margin-top: 1pt; }
 
-/* ---------------------- PILLS ---------------------- */
+/* PILL */
 .pill {
-  display: inline-block;
-  padding: 1.5pt 7pt 1pt;
-  border-radius: 8pt;
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  font-size: 7pt; font-weight: 600; letter-spacing: 0.06em;
+  padding: 2pt 6pt; border-radius: 1pt;
   white-space: nowrap;
 }
-.pill.cv { background: #DAEDDE; color: #1F4F2F; border: 0.4pt solid #B8DBC0; }
-.pill.pv { background: #F5E4C9; color: #6B3F12; border: 0.4pt solid #E3CB97; }
-.pill.hp { background: #E8E5DD; color: #5C5C5C; border: 0.4pt solid #D2CDC0; }
+.pill.cv { background: var(--cv-bg); color: var(--cv-fg); }
+.pill.pv { background: var(--pv-bg); color: var(--pv-fg); }
+.pill.hp { background: var(--hp-bg); color: var(--hp-fg); }
 
-/* ---------------------- MODULE BARS (page 2) ---------------------- */
-.module-list { margin: 6pt 0; }
+/* ============ MODULE BARS (page 2) - v0.4 structure ============ */
+.module-overview { margin: 4pt 0 0; }
+
 .module-row {
-  display: flex;
-  align-items: center;
-  gap: 10pt;
-  padding: 6.5pt 0;
-  border-bottom: 0.3pt solid #E8E5DD;
+  display: grid;
+  grid-template-columns: 20pt 1fr 132pt;
+  gap: 12pt; align-items: center;
+  padding: 8pt 0;
+  border-bottom: 0.3pt dashed var(--hair);
+  page-break-inside: avoid;
 }
 .module-row:last-child { border-bottom: none; }
 .module-roman {
-  flex: 0 0 24pt;
-  font-family: 'Cambria', serif;
-  font-style: italic;
-  font-size: 11pt;
-  color: #1E3A5F;
-  text-align: right;
+  font-family: var(--serif); font-size: 10pt; font-style: italic;
+  color: var(--muted); text-align: right;
 }
-.module-info { flex: 1; min-width: 0; }
+.module-info { min-width: 0; }
 .module-title {
-  font-size: 9.5pt;
-  font-weight: 500;
-  color: #1A1F2C;
-  margin-bottom: 3pt;
+  font-size: 9pt; font-weight: 600; color: var(--ink);
+  margin: 0 0 4pt; line-height: 1.25;
 }
-.module-bar {
-  height: 5pt;
-  background: #E8E5DD;
-  border-radius: 2.5pt;
-  overflow: hidden;
-  display: flex;
-}
-.module-seg.cv { background: #5A9670; }
-.module-seg.pv { background: #C9923E; }
-.module-seg.hp { background: #B8B3A4; }
-.module-counts {
-  flex: 0 0 auto;
-  font-size: 8pt;
-  color: #5C5C5C;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  min-width: 88pt;
-}
-.module-counts .c-cv { color: #1F4F2F; font-weight: 600; }
-.module-counts .c-pv { color: #8C5520; font-weight: 600; }
-.module-counts .c-hp { color: #5C5C5C; font-weight: 600; }
+.module-bar { display: flex; height: 5pt; border-radius: 0.5pt; overflow: hidden; background: var(--hp-bg); }
+.module-seg.cv { background: var(--cv-arc); }
+.module-seg.pv { background: var(--pv-arc); }
+.module-seg.hp { background: var(--hp-arc); }
+.module-counts { font-size: 8pt; text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+.module-counts .c-cv { color: var(--cv-fg); font-weight: 600; }
+.module-counts .c-pv { color: var(--pv-fg); font-weight: 600; }
+.module-counts .c-hp { color: var(--hp-fg); font-weight: 600; }
 
-/* ---------------------- RULE DETAILS (module pages) ---------------------- */
-.module-overview {
-  display: flex;
-  align-items: baseline;
-  gap: 14pt;
-  margin-bottom: 14pt;
-  padding-bottom: 10pt;
-  border-bottom: 0.4pt solid #D9D5C8;
+/* ============ LEGEND ============ */
+.legend-block { margin-top: 14pt; padding-top: 10pt; border-top: 0.4pt solid var(--hair); page-break-inside: avoid; }
+.legend-block ul { margin: 6pt 0 0; padding-left: 0; list-style: none; }
+.legend-block li {
+  padding: 3pt 0; font-family: var(--serif);
+  font-size: 8.5pt; line-height: 1.5; color: var(--ink-soft);
 }
-.module-overview-numbers {
-  flex: 0 0 auto;
-  display: flex;
-  gap: 10pt;
+.legend-block li strong { font-family: var(--sans); font-weight: 600; font-style: normal; }
+
+/* ============ MODULE DETAIL PAGES - v0.4 structure ============ */
+.title-h2 {
+  font-family: var(--serif); font-size: 22pt; font-weight: 400;
+  letter-spacing: -0.01em; color: var(--ink);
+  margin: 0 0 6pt; line-height: 1.05;
 }
+.title-h2.serif { font-family: var(--serif); }
+
+.module-overview-numbers { display: inline-flex; gap: 0; margin: 0 0 10pt; }
 .mon-cell {
-  display: flex;
-  align-items: baseline;
-  gap: 4pt;
+  display: inline-flex; align-items: baseline;
+  padding: 3pt 11pt;
+  border-right: 0.4pt solid var(--hair);
 }
+.mon-cell:last-child { border-right: none; }
+.mon-cell:first-child { padding-left: 0; }
 .mon-num {
-  font-family: 'Cambria', serif;
-  font-size: 22pt;
-  font-weight: 500;
-  line-height: 1;
+  font-family: var(--serif); font-size: 14pt; font-weight: 400;
+  line-height: 1; margin-right: 6pt;
 }
-.mon-num.cv { color: #1F4F2F; }
-.mon-num.pv { color: #8C5520; }
-.mon-num.hp { color: #5C5C5C; }
+.mon-num.cv { color: var(--cv-fg); }
+.mon-num.pv { color: var(--pv-fg); }
+.mon-num.hp { color: var(--hp-fg); }
 .mon-lbl {
-  font-size: 7.5pt;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #8A8676;
-}
-.module-overview-bar {
-  flex: 1;
-  height: 6pt;
-  background: #E8E5DD;
-  border-radius: 3pt;
-  overflow: hidden;
-  display: flex;
-  margin-top: 6pt;
+  font-size: 7pt; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--whisper); font-weight: 600;
 }
 
 .rule {
-  position: relative;
-  padding: 9pt 0 9pt 12pt;
-  border-bottom: 0.3pt solid #E8E5DD;
+  padding: 9pt 0;
+  border-bottom: 0.3pt solid var(--hair);
+  page-break-inside: avoid;
 }
 .rule:last-child { border-bottom: none; }
-.rule::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 11pt;
-  bottom: 11pt;
-  width: 2.5pt;
-  border-radius: 1.5pt;
-}
-.rule.cv::before { background: #5A9670; }
-.rule.pv::before { background: #C9923E; }
-.rule.hp::before { background: #B8B3A4; }
-
 .rule-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10pt;
+  display: grid; grid-template-columns: 32pt 1fr auto;
+  gap: 10pt; align-items: baseline;
   margin-bottom: 3pt;
 }
 .rule-id {
-  font-family: 'Cambria', serif;
-  font-style: italic;
-  font-size: 10pt;
-  color: #1E3A5F;
-  flex: 0 0 26pt;
+  font-family: var(--serif); font-size: 10.5pt; font-style: italic;
+  color: var(--muted); letter-spacing: 0.02em;
 }
-.rule-name {
-  font-size: 10pt;
-  font-weight: 500;
-  color: #1A1F2C;
-  flex: 1;
-  line-height: 1.35;
-}
-.rule-pill { flex: 0 0 auto; }
-
+.rule-name { font-size: 9.5pt; font-weight: 600; color: var(--ink); line-height: 1.3; }
+.rule-pill { align-self: flex-start; }
 .rule-meta {
-  font-size: 8.5pt;
-  color: #5C5C5C;
-  line-height: 1.45;
-  margin: 2pt 0;
-  padding-left: 26pt;
+  font-family: var(--serif); font-size: 8.5pt; color: var(--ink-soft);
+  line-height: 1.5; margin: 0 0 3pt; padding-left: 42pt;
 }
 .rule-evidence {
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 7pt;
-  color: #5C5C5C;
-  background: #F2EFE3;
-  padding: 4pt 7pt;
-  border-radius: 2pt;
-  margin: 4pt 0 0 26pt;
-  letter-spacing: -0.005em;
+  font-family: var(--mono); font-size: 7pt; color: var(--whisper);
+  padding-left: 42pt; letter-spacing: 0.01em;
+}
+.rule-evidence::before { content: "[ "; color: var(--whisper); }
+.rule-evidence::after  { content: " ]"; color: var(--whisper); }
+
+/* ============ PAGE 13 - CONCLUSION ============ */
+.synth-title { font-family: var(--serif); font-size: 22pt; font-weight: 400; letter-spacing: -0.01em; margin: 0 0 14pt; }
+.synth-block { margin-bottom: 14pt; page-break-inside: avoid; }
+.synth-body { font-family: var(--serif); font-size: 9.5pt; line-height: 1.55; color: var(--ink-soft); }
+.synth-body strong { color: var(--navy-deep); font-weight: 600; font-family: var(--sans); }
+.synth-limits { margin: 0; padding-left: 12pt; list-style-type: square; }
+.synth-limits li {
+  font-family: var(--serif); font-size: 8.5pt; color: var(--ink-soft);
+  padding: 2pt 0; line-height: 1.45;
+}
+.synth-limits li strong { font-family: var(--sans); font-weight: 600; }
+.hash-box {
+  background: var(--paper-2); border: 0.4pt solid var(--hair);
+  padding: 8pt 11pt; margin-top: 4pt;
+  font-family: var(--mono); font-size: 8pt; color: var(--ink-soft);
+  word-break: break-all; line-height: 1.5; letter-spacing: 0.01em;
+}
+.signoff { display: grid; grid-template-columns: 1fr 1fr; gap: 22pt; margin-top: 16pt; }
+.signoff-box { border: 0.4pt solid var(--hair); padding: 10pt 13pt 14pt; }
+.signoff-label {
+  font-size: 7pt; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--navy); font-weight: 600; margin-bottom: 4pt;
+}
+.signoff-name { font-family: var(--serif); font-size: 12pt; margin: 0 0 16pt; }
+.signoff-line { height: 0.5pt; background: var(--hair); margin-bottom: 4pt; }
+.signoff-line-label {
+  font-size: 6.5pt; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--whisper); font-weight: 600;
 }
 
-/* ---------------------- SIGNOFF PAGE ---------------------- */
-.synth-intro {
-  font-size: 10pt;
-  line-height: 1.55;
-  color: #1A1F2C;
-  margin: 0 0 14pt;
-  text-align: justify;
-}
-.synth-intro strong {
-  font-weight: 600;
-  color: #1E3A5F;
-}
+@media print { body { background: white; } }
+</style>
 
-.limits-list {
-  font-size: 9pt;
-  line-height: 1.5;
-  margin: 0 0 14pt;
-  padding-left: 16pt;
-  color: #1A1F2C;
-}
-.limits-list li {
-  margin-bottom: 3.5pt;
-}
-.limits-list li::marker { color: #1E3A5F; }
-
-.hash-block {
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 7.5pt;
-  color: #1A1F2C;
-  background: #F2EFE3;
-  padding: 8pt 10pt;
-  border: 0.4pt solid #D9D5C8;
-  border-radius: 2pt;
-  word-break: break-all;
-  letter-spacing: 0.01em;
-  line-height: 1.45;
-}
-
-.signature-row {
-  display: flex;
-  gap: 14pt;
-  margin-top: 16pt;
-}
-.signature-cell {
-  flex: 1;
-  border: 0.4pt solid #D9D5C8;
-  border-radius: 2pt;
-  padding: 10pt 14pt;
-  background: #FFFFFF;
-}
-.sig-lbl {
-  font-size: 7pt;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #1E3A5F;
-  font-weight: 600;
-  margin-bottom: 4pt;
-}
-.sig-name {
-  font-family: 'Cambria', serif;
-  font-size: 11pt;
-  color: #1A1F2C;
-}
-.sig-line {
-  border-bottom: 0.4pt dashed #B8B3A4;
-  height: 22pt;
-  margin: 14pt 0 4pt;
-}
-.sig-sub {
-  font-size: 7pt;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #8A8676;
-}
-
-/* ---------------------- COVER DECORATIVE FLOURISH ---------------------- */
-.cover-flourish {
-  display: flex;
-  align-items: center;
-  gap: 8pt;
-  margin: 7pt 0 5pt;
-}
-.cover-flourish::before, .cover-flourish::after {
-  content: "";
-  flex: 1;
-  height: 0.4pt;
-  background: #D9D5C8;
-}
-.cover-flourish .ornament {
-  width: 5pt;
-  height: 5pt;
-  background: #1E3A5F;
-  transform: rotate(45deg);
-  flex: 0 0 auto;
-}
+<!-- v0.5.2.1 cover-fit overrides -->
+<style>
+.fp-svg { max-width: 200pt !important; }
+.fingerprint { padding: 4pt 0 2pt !important; }
+.finding { padding: 5pt 4pt 5pt 0 !important; }
+.finding-note { font-size: 8pt !important; line-height: 1.4 !important; }
+.section-caption { font-size: 7.5pt !important; margin-bottom: 5pt !important; }
+.title-h1 { font-size: 20pt !important; }
+.title-sub { font-size: 9pt !important; }
+.title-rule { margin: 7pt 0 9pt !important; }
+.fp-caption { margin: 2pt 0 8pt !important; }
+.machine { margin-bottom: 7pt !important; }
+.machine-row { padding: 4pt 0 !important; }
+.disclaimer { padding: 4pt 10pt !important; font-size: 7pt !important; margin-bottom: 8pt !important; }
 </style>
 </head>
 <body>
 
-<!-- ============== PAGE 1: COVER ============== -->
+<!-- ============================== PAGE 1 - COVER ============================== -->
 <div class="page">
   <div class="page-head">
     <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
-    <span class="page-num">Page 1 / {{PAGE_TOTAL}}</span>
+    <span class="page-num">Page 1 / 13</span>
   </div>
 
   <div class="disclaimer">
-    <strong>Diagnostic informatif.</strong> Ce document n'est pas une certification ANSSI et ne constitue pas un avis juridique. Cartographie technique de la posture de securite du poste audite vis-a-vis du Guide d'Hygiene Informatique ANSSI (referentiel de 42 mesures).
+    <strong>Diagnostic informatif.</strong> Ce document n'est pas une certification ANSSI et ne constitue pas un avis juridique. Cartographie technique de la posture de securite du poste audite vis-a-vis du Guide d'Hygiene Informatique ANSSI &mdash; referentiel des 42 mesures.
   </div>
 
-  <div class="title-eyebrow">Rapport d'audit technique</div>
-  <h1 class="title-h1 serif">Diagnostic d'hygiene<br>informatique</h1>
-  <p class="title-sub">Conformite au Guide d'Hygiene Informatique de l'ANSSI &mdash; referentiel des 42 mesures</p>
+  <div class="eyebrow">Rapport d'audit technique</div>
+  <h1 class="title-h1">Diagnostic d'hygiene <span class="accent">informatique</span></h1>
+  <p class="title-sub">Conformite au Guide d'Hygiene Informatique de l'ANSSI, evaluee au niveau Standard sur le poste audite.</p>
+  <div class="title-rule"></div>
 
-  <div class="cover-flourish"><span class="ornament"></span></div>
-
-  <div class="section-label">Spectre de conformite &mdash; 42 mesures</div>
-  {{SPECTRUM}}
-
-  <div class="section-label">Poste audite</div>
-  <div class="machine-card">
-    <div class="machine-row"><span class="machine-key">Nom de poste</span><span class="machine-val">{{HOSTNAME}}</span></div>
-    <div class="machine-row"><span class="machine-key">Fabricant &middot; Modele</span><span class="machine-val">{{MAKE_MODEL}}</span></div>
-    <div class="machine-row"><span class="machine-key">Numero de serie</span><span class="machine-val">{{SERIAL}}</span></div>
-    <div class="machine-row"><span class="machine-key">Systeme d'exploitation</span><span class="machine-val">{{OS}}</span></div>
-    <div class="machine-row"><span class="machine-key">Annuaire</span><span class="machine-val">{{DIRECTORY}}</span></div>
-    <div class="machine-row"><span class="machine-key">Date du diagnostic</span><span class="machine-val">{{REPORT_DATE_HUMAN}}</span></div>
+  <div class="synthesis">
+    <div class="synthesis-head">
+      <span class="synthesis-label">Lecture executive</span>
+      <span class="synthesis-tag">Synthese IA</span>
+    </div>
+    <div class="synthesis-body"></div>
+    <div class="synthesis-foot"></div>
   </div>
 
-  <div class="section-label">Points d'attention prioritaires</div>
-  <div class="findings-list">
-    {{TOP_FINDINGS}}
+  <div class="section-head">
+    <span class="section-label">Empreinte de conformite</span>
+    <span class="section-meta">42 mesures &middot; 10 modules</span>
+  </div>
+
+  <div class="spectrum-source">{{SPECTRUM}}</div>
+
+  <div class="fingerprint">
+    <div class="fp-svg-wrap">
+      <svg class="fp-svg" viewBox="0 0 320 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Empreinte radiale de conformite ANSSI">
+        <g id="fp-arcs"></g>
+        <g id="fp-labels"></g>
+        <circle cx="160" cy="160" r="62" fill="#FBF8F0" stroke="#DDD8C8" stroke-width="0.4"/>
+        <text class="fp-center-id"  x="160" y="148" text-anchor="middle">{{HOSTNAME}}</text>
+        <text class="fp-center-num" x="160" y="170" text-anchor="middle">42</text>
+        <text class="fp-center-cap" x="160" y="184" text-anchor="middle">REGLES</text>
+      </svg>
+    </div>
+    <div class="fp-stats">
+      <div class="fp-stat">
+        <span class="fp-stat-num cv">{{COUNT_CV}}</span>
+        <span class="fp-stat-label">verifiees</span>
+        <span class="fp-stat-pct" id="pct-cv">-</span>
+      </div>
+      <div class="fp-stat">
+        <span class="fp-stat-num pv">{{COUNT_PV}}</span>
+        <span class="fp-stat-label">partielles</span>
+        <span class="fp-stat-pct" id="pct-pv">-</span>
+      </div>
+      <div class="fp-stat">
+        <span class="fp-stat-num hp">{{COUNT_HP}}</span>
+        <span class="fp-stat-label">hors perimetre</span>
+        <span class="fp-stat-pct" id="pct-hp">-</span>
+      </div>
+      <div class="fp-hash">
+        <span class="fp-hash-label">SHA-256 du contenu</span>
+        {{REPORT_HASH}}
+      </div>
+    </div>
+  </div>
+  <p class="fp-caption">Empreinte {{REPORT_ID}} &middot; {{REPORT_DATE_HUMAN}}</p>
+
+  <!-- ===== 2-column lower half ===== -->
+  <div class="cover-bottom">
+
+    <div class="cover-bottom-col">
+      <div class="section-head">
+        <span class="section-label">Poste audite</span>
+      </div>
+      <div class="machine">
+        <div class="machine-row"><span class="k">Nom de poste</span><span class="v">{{HOSTNAME}}</span></div>
+        <div class="machine-row"><span class="k">Fabricant / Modele</span><span class="v">{{MAKE_MODEL}}</span></div>
+        <div class="machine-row"><span class="k">Numero de serie</span><span class="v mono">{{SERIAL}}</span></div>
+        <div class="machine-row"><span class="k">Systeme</span><span class="v">{{OS}}</span></div>
+        <div class="machine-row"><span class="k">Annuaire</span><span class="v">{{DIRECTORY}}</span></div>
+        <div class="machine-row"><span class="k">Date du diagnostic</span><span class="v">{{REPORT_DATE_HUMAN}}</span></div>
+        <div class="machine-row"><span class="k">Technicien</span><span class="v">{{TECHNICIAN}}</span></div>
+      </div>
+    </div>
+
+    <div class="cover-bottom-col">
+      <div class="section-head">
+        <span class="section-label">Points d'attention prioritaires</span>
+      </div>
+      <div class="findings">
+        {{TOP_FINDINGS}}
+      </div>
+    </div>
+
   </div>
 
   <div class="page-foot">
@@ -615,29 +501,30 @@ html, body {
   </div>
 </div>
 
-<!-- ============== PAGE 2: COVERAGE BY MODULE ============== -->
+<!-- ============================== PAGE 2 - MODULE COVERAGE ============================== -->
 <div class="page">
   <div class="page-head">
     <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
-    <span class="page-num">Page 2 / {{PAGE_TOTAL}}</span>
+    <span class="page-num">Page 2 / 13</span>
   </div>
 
-  <div class="title-h2-meta">Vue d'ensemble</div>
-  <h2 class="title-h2 serif">Couverture par module</h2>
-  <p class="title-sub">10 modules &middot; 42 mesures &middot; structure du Guide d'Hygiene Informatique</p>
+  <div class="eyebrow">Vue d'ensemble</div>
+  <h1 class="title-h1">Couverture par module</h1>
+  <p class="title-sub">Repartition des verifications sur les 10 modules du Guide d'Hygiene Informatique.</p>
+  <div class="title-rule"></div>
 
-  <div class="cover-flourish"><span class="ornament"></span></div>
-
-  <div class="module-list">
+  <div class="module-overview">
     {{MODULE_BARS}}
   </div>
 
-  <div class="section-label">Lecture du diagnostic</div>
-  <ul class="limits-list">
-    <li><strong>Verifie (CV)</strong> &mdash; regle dont la conformite au niveau Standard est observee par un controle technique direct sur le poste.</li>
-    <li><strong>Partiellement verifie (PV)</strong> &mdash; regle dont certains aspects sont observes ; d'autres requierent une evaluation manuelle, contextuelle ou organisationnelle complementaire.</li>
-    <li><strong>Hors perimetre (HP)</strong> &mdash; regle organisationnelle, contractuelle, ou d'architecture inter-machines, non attestable par un outil technique sur un poste isole.</li>
-  </ul>
+  <div class="legend-block">
+    <div class="section-label">Lecture du diagnostic</div>
+    <ul>
+      <li><strong>Verifie (CV)</strong> &mdash; regle dont la conformite au niveau Standard est observee par un controle technique direct sur le poste.</li>
+      <li><strong>Partiellement verifie (PV)</strong> &mdash; regle dont certains aspects sont observes ; d'autres requierent une evaluation manuelle, contextuelle ou organisationnelle complementaire.</li>
+      <li><strong>Hors perimetre (HP)</strong> &mdash; regle organisationnelle, contractuelle, ou d'architecture inter-machines, non attestable par un outil technique sur un poste isole.</li>
+    </ul>
+  </div>
 
   <div class="page-foot">
     <span class="ref">Referentiel &middot; ANSSI &middot; Guide d'Hygiene Informatique &middot; 42 mesures</span>
@@ -645,51 +532,54 @@ html, body {
   </div>
 </div>
 
-<!-- ============== PAGES 3-N: MODULE DETAILS ============== -->
+<!-- ============================== PAGES 3-12 - MODULE DETAILS ============================== -->
 {{MODULE_DETAILS}}
 
-<!-- ============== PAGE N+1: SIGNOFF ============== -->
+<!-- ============================== PAGE 13 - CONCLUSION ============================== -->
 <div class="page">
   <div class="page-head">
     <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
-    <span class="page-num">Page {{PAGE_TOTAL}} / {{PAGE_TOTAL}}</span>
+    <span class="page-num">Page 13 / 13</span>
   </div>
 
-  <div class="title-h2-meta">Conclusion</div>
-  <h2 class="title-h2 serif">Synthese et attestation</h2>
+  <div class="eyebrow">Conclusion</div>
+  <h1 class="synth-title">Synthese et attestation</h1>
+  <div class="title-rule"></div>
 
-  <div class="cover-flourish"><span class="ornament"></span></div>
+  <div class="synth-block">
+    <div class="section-label">Perimetre du diagnostic</div>
+    <p class="synth-body">Ce diagnostic technique verifie automatiquement <strong>{{COUNT_CV}} regles d'hygiene ANSSI sur 42</strong> au niveau du poste local, et apporte des elements d'observation pour <strong>{{COUNT_PV}} regles supplementaires</strong>. Les <strong>{{COUNT_HP}} regles restantes</strong> relevent de la gouvernance, de l'architecture inter-machines, ou de procedures organisationnelles qui ne peuvent etre attestees par un outil technique sur un poste isole et necessitent une evaluation contextuelle.</p>
+  </div>
 
-  <div class="section-label">Perimetre du diagnostic</div>
-  <p class="synth-intro">
-    Ce diagnostic technique verifie automatiquement <strong>{{COUNT_CV}} regles d'hygiene ANSSI sur 42</strong> au niveau du poste local, et apporte des elements d'observation pour <strong>{{COUNT_PV}} regles supplementaires</strong>. Les <strong>{{COUNT_HP}} regles restantes</strong> relevent de la gouvernance, de l'architecture inter-machines, ou de procedures organisationnelles qui ne peuvent etre attestees par un outil technique sur un poste isole et necessitent une evaluation contextuelle.
-  </p>
+  <div class="synth-block">
+    <div class="section-label">Limites explicites</div>
+    <ul class="synth-limits">
+      <li><strong>Diagnostic informatif.</strong> Ne constitue pas une certification ANSSI, ni une attestation au sens du Guide d'Hygiene Informatique.</li>
+      <li>L'ANSSI est la seule autorite habilitee a delivrer des qualifications ou certifications officielles (cf. regle 42).</li>
+      <li>Couverture limitee au poste audite. L'evaluation organisationnelle (formation, procedures, gouvernance) releve d'un audit separe.</li>
+      <li>Date et etat observes a un instant T. Les modifications posterieures invalident le constat.</li>
+      <li>Aucune affiliation, agreement, partenariat ou approbation ANSSI. Le terme &laquo; ANSSI &raquo; est employe en reference au document public Guide d'Hygiene Informatique.</li>
+    </ul>
+  </div>
 
-  <div class="section-label">Limites explicites</div>
-  <ul class="limits-list">
-    <li>Diagnostic informatif. <strong>Ne constitue pas une certification ANSSI</strong>, ni une attestation au sens du Guide d'Hygiene Informatique.</li>
-    <li>L'ANSSI est la seule autorite habilitee a delivrer des qualifications ou certifications officielles (cf. regle 42).</li>
-    <li>Couverture limitee au poste audite. L'evaluation organisationnelle (formation, procedures, gouvernance) releve d'un audit separe.</li>
-    <li>Date et etat observes a un instant T. Les modifications posterieures invalident le constat.</li>
-    <li>Aucune affiliation, agreement, partenariat ou approbation ANSSI. Le terme &laquo;&nbsp;ANSSI&nbsp;&raquo; est employe en reference au document public Guide d'Hygiene Informatique.</li>
-  </ul>
+  <div class="synth-block">
+    <div class="section-label">Integrite cryptographique</div>
+    <p class="synth-body" style="font-size:8pt; color:var(--muted);">Empreinte SHA-256 du contenu du rapport &mdash; toute modification de ce document apres generation invaliderait cette signature :</p>
+    <div class="hash-box">{{REPORT_HASH}}</div>
+  </div>
 
-  <div class="section-label">Integrite cryptographique</div>
-  <p style="font-size: 8.5pt; color: #5C5C5C; margin: 0 0 6pt;">Empreinte SHA-256 du contenu du rapport &mdash; toute modification de ce document apres generation invaliderait cette signature :</p>
-  <div class="hash-block">{{REPORT_HASH}}</div>
-
-  <div class="signature-row">
-    <div class="signature-cell">
-      <div class="sig-lbl">Technicien auditeur</div>
-      <div class="sig-name">{{TECHNICIAN}}</div>
-      <div class="sig-line"></div>
-      <div class="sig-sub">Date et signature</div>
+  <div class="signoff">
+    <div class="signoff-box">
+      <div class="signoff-label">Technicien auditeur</div>
+      <div class="signoff-name">{{TECHNICIAN}}</div>
+      <div class="signoff-line"></div>
+      <span class="signoff-line-label">Date et signature</span>
     </div>
-    <div class="signature-cell">
-      <div class="sig-lbl">Contact destinataire</div>
-      <div class="sig-name">{{CUSTOMER_CONTACT}}</div>
-      <div class="sig-line"></div>
-      <div class="sig-sub">Date et signature</div>
+    <div class="signoff-box">
+      <div class="signoff-label">Contact destinataire</div>
+      <div class="signoff-name">A completer</div>
+      <div class="signoff-line"></div>
+      <span class="signoff-line-label">Date et signature</span>
     </div>
   </div>
 
@@ -699,5 +589,109 @@ html, body {
   </div>
 </div>
 
+<script>
+(function() {
+  var statusByRule = {};
+  var src = document.querySelector('.spectrum-source');
+  if (src) {
+    var cells = src.querySelectorAll('.cell');
+    for (var i = 0; i < cells.length; i++) {
+      var cls = cells[i].className || '';
+      var text = (cells[i].textContent || '').trim();
+      var ruleNum = parseInt(text, 10);
+      var statusMatch = cls.match(/\b(cv|pv|hp)\b/i);
+      if (ruleNum && statusMatch) {
+        statusByRule['R' + ruleNum] = statusMatch[1].toLowerCase();
+      }
+    }
+  }
+
+  var cx = 160, cy = 160;
+  var rInner = 67, rOuter = 142;
+  var moduleGap = 1.2;
+  var ruleGap = 0.25;
+
+  var moduleSpans = [
+    { num: 'I',    count: 3  }, { num: 'II',   count: 4 },
+    { num: 'III',  count: 6  }, { num: 'IV',   count: 5 },
+    { num: 'V',    count: 8  }, { num: 'VI',   count: 3 },
+    { num: 'VII',  count: 4  }, { num: 'VIII', count: 2 },
+    { num: 'IX',   count: 5  }, { num: 'X',    count: 2 }
+  ];
+
+  var rootStyles = getComputedStyle(document.documentElement);
+  var colors = {
+    cv: rootStyles.getPropertyValue('--cv-arc').trim() || '#7BA890',
+    pv: rootStyles.getPropertyValue('--pv-arc').trim() || '#D9A75A',
+    hp: rootStyles.getPropertyValue('--hp-arc').trim() || '#BFB9A8'
+  };
+
+  function polarXY(r, deg) {
+    var a = (deg - 90) * Math.PI / 180;
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  }
+  function arcPath(r1, r2, startA, endA) {
+    var p1 = polarXY(r2, startA), p2 = polarXY(r2, endA);
+    var p3 = polarXY(r1, endA),  p4 = polarXY(r1, startA);
+    var large = (endA - startA) > 180 ? 1 : 0;
+    return 'M ' + p1[0].toFixed(2) + ' ' + p1[1].toFixed(2)
+         + ' A ' + r2 + ' ' + r2 + ' 0 ' + large + ' 1 ' + p2[0].toFixed(2) + ' ' + p2[1].toFixed(2)
+         + ' L ' + p3[0].toFixed(2) + ' ' + p3[1].toFixed(2)
+         + ' A ' + r1 + ' ' + r1 + ' 0 ' + large + ' 0 ' + p4[0].toFixed(2) + ' ' + p4[1].toFixed(2)
+         + ' Z';
+  }
+
+  var perRule = (360 - moduleGap * moduleSpans.length) / 42;
+  var arcsG = document.getElementById('fp-arcs');
+  var labelsG = document.getElementById('fp-labels');
+  var SVG_NS = 'http://www.w3.org/2000/svg';
+  var cursor = 0;
+  var ruleCounter = 1;
+
+  for (var m = 0; m < moduleSpans.length; m++) {
+    var mod = moduleSpans[m];
+    var wedgeStart = cursor;
+    var wedgeSweep = mod.count * perRule;
+
+    for (var i = 0; i < mod.count; i++) {
+      var a1 = wedgeStart + i * perRule + ruleGap;
+      var a2 = wedgeStart + (i + 1) * perRule - ruleGap;
+      var ruleId = 'R' + ruleCounter;
+      var status = statusByRule[ruleId] || 'hp';
+      var path = document.createElementNS(SVG_NS, 'path');
+      path.setAttribute('d', arcPath(rInner, rOuter, a1, a2));
+      path.setAttribute('fill', colors[status] || colors.hp);
+      path.setAttribute('class', 'fp-arc');
+      path.setAttribute('data-rule', ruleId);
+      var title = document.createElementNS(SVG_NS, 'title');
+      title.textContent = ruleId + ' - ' + status.toUpperCase();
+      path.appendChild(title);
+      arcsG.appendChild(path);
+      ruleCounter++;
+    }
+
+    var midAngle = wedgeStart + wedgeSweep / 2;
+    var labelXY = polarXY(rOuter + 11, midAngle);
+    var label = document.createElementNS(SVG_NS, 'text');
+    label.setAttribute('x', labelXY[0].toFixed(2));
+    label.setAttribute('y', (labelXY[1] + 3).toFixed(2));
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('class', 'fp-module-label');
+    label.textContent = mod.num;
+    labelsG.appendChild(label);
+
+    cursor += wedgeSweep + moduleGap;
+  }
+
+  function pct(n, total) { return total ? Math.round((n / total) * 100) + '%' : '-'; }
+  var cv = parseInt(document.querySelector('.fp-stat-num.cv').textContent, 10) || 0;
+  var pv = parseInt(document.querySelector('.fp-stat-num.pv').textContent, 10) || 0;
+  var hp = parseInt(document.querySelector('.fp-stat-num.hp').textContent, 10) || 0;
+  var total = cv + pv + hp;
+  var e1 = document.getElementById('pct-cv'); if (e1) e1.textContent = pct(cv, total);
+  var e2 = document.getElementById('pct-pv'); if (e2) e2.textContent = pct(pv, total);
+  var e3 = document.getElementById('pct-hp'); if (e3) e3.textContent = pct(hp, total);
+})();
+</script>
 </body>
 </html>
