@@ -91,3 +91,13 @@ debug3.log
 scratch/
 tmp/
 TEMP/
+# === Phase drops never enter the repo (use C:\Dev\fieldops-staging) ===
+phase-*-drop/
+phase-*-drop
+*-drop/
+_archive/
+*.phase[0-9]*-*.bak
+# === Local config snapshots and customer drafts ===
+reports-draft/
+*.config.local.json
+FieldOps.config.json
