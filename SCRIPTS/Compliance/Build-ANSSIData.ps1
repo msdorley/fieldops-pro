@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     FieldOps Pro - ANSSI Hygiene Data Collector v0.4
 .DESCRIPTION
@@ -44,6 +44,37 @@ param(
 
 Set-StrictMode -Version 1.0
 $ErrorActionPreference = 'Stop'
+# ===========================================================================
+# LOCALE INTEGRATION (Phase 5.2)
+# ===========================================================================
+$LocaleModulePath = Join-Path $PSScriptRoot '..\Core\FieldOps-Locale.psm1'
+if (Test-Path $LocaleModulePath) {
+    Import-Module $LocaleModulePath -Force -DisableNameChecking -ErrorAction SilentlyContinue
+}
+
+function T {
+    param(
+        [Parameter(Mandatory=$true)][string]$Key,
+        [hashtable]$Vars    = @{},
+        [string]$Default    = ''
+    )
+    if (Get-Command Get-LocaleString -ErrorAction SilentlyContinue) {
+        try {
+            $resolved = Get-LocaleString -Key $Key -Vars $Vars -Default $Default
+            if ($resolved) { return $resolved }
+        } catch { }
+    }
+    return $Default
+}
+
+if (Get-Command Initialize-Locale -ErrorAction SilentlyContinue) {
+    try {
+        $configLangDir = Join-Path (Split-Path $PSScriptRoot -Parent) 'CONFIG\lang'
+        if (Test-Path $configLangDir) {
+            Initialize-Locale -Lang 'fr' -LangDir $configLangDir -ErrorAction SilentlyContinue
+        }
+    } catch { }
+}
 
 # ===========================================================================
 # PATHS
