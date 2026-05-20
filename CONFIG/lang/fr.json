@@ -1,4 +1,4 @@
-{
+﻿{
     "_meta":  {
                   "language":  "Francais",
                   "code":  "fr",
@@ -463,5 +463,456 @@
                                         "logwritten":  "Journal de session",
                                         "lognofail":  "Impossible d\u0027ecrire le journal de session"
                                     }
-                    }
+                    },
+    "report":  {
+                   "anssi":  {
+                                 "_meta":  {
+                                               "framework":  "ANSSI - Guide d\u0027hygiène informatique",
+                                               "frameworkEdition":  "2017",
+                                               "frameworkRules":  "42",
+                                               "frameworkLevel":  "Standard",
+                                               "frameworkSource":  "https://www.ssi.gouv.fr/uploads/2017/01/guide_hygiene_informatique_anssi.pdf",
+                                               "nis2CrossRefAvailable":  "false",
+                                               "rgsCrossRefAvailable":  "false"
+                                           },
+                                 "brand":  {
+                                               "mark":  "FieldOps Pro · Service Diagnostic"
+                                           },
+                                 "cover":  {
+                                               "documentType":  "Rapport d\u0027audit technique",
+                                               "title":  "Diagnostic d\u0027hygiène informatique",
+                                               "subtitle":  "Conformité au Guide d\u0027hygiène informatique de l\u0027ANSSI — référentiel des 42 mesures",
+                                               "disclaimerLead":  "Diagnostic informatif.",
+                                               "disclaimerBody":  "Le présent document ne constitue ni une certification ANSSI, ni un avis juridique. Il propose une cartographie technique de la posture de sécurité du poste audité au regard du Guide d\u0027hygiène informatique de l\u0027ANSSI (référentiel de 42 mesures).",
+                                               "spectrumLabel":  "Spectre de conformité — 42 mesures",
+                                               "spectrumCaption":  "Empreinte {reportId} · {dateHuman}",
+                                               "machineLabel":  "Poste audité",
+                                               "findingsLabel":  "Points d\u0027attention prioritaires",
+                                               "imprintLabel":  "Empreinte de conformité",
+                                               "imprintCaption":  "42 mesures · 10 modules",
+                                               "sha256Label":  "SHA-256 du contenu",
+                                               "centerHostLabel":  "SAMPLE-WS01",
+                                               "centerRulesLabel":  "42 règles"
+                                           },
+                                 "machineFields":  {
+                                                       "hostname":  "Nom de poste",
+                                                       "makeModel":  "Fabricant / modèle",
+                                                       "serial":  "Numéro de série",
+                                                       "os":  "Système",
+                                                       "directory":  "Annuaire",
+                                                       "date":  "Date du diagnostic",
+                                                       "technician":  "Technicien",
+                                                       "dateSuffix":  "(heure locale)"
+                                                   },
+                                 "directoryStates":  {
+                                                         "azureAD":  "Azure AD Joined",
+                                                         "workplace":  "Workplace Joined",
+                                                         "domain":  "Domain Joined",
+                                                         "none":  "Non rattaché à un annuaire",
+                                                         "unknown":  "Annuaire non déterminé"
+                                                     },
+                                 "accountState":  {
+                                                      "active":  "activé",
+                                                      "disabled":  "désactivé"
+                                                  },
+                                 "overview":  {
+                                                  "sectionTitle":  "Vue d\u0027ensemble",
+                                                  "moduleCoverageTitle":  "Couverture par module",
+                                                  "moduleCoverageLead":  "Répartition des vérifications sur les 10 modules du Guide d\u0027hygiène informatique.",
+                                                  "legendTitle":  "Lecture du diagnostic",
+                                                  "legendCv":  "Vérifié (CV) — règle dont la conformité au niveau Standard est observée par un contrôle technique direct sur le poste.",
+                                                  "legendPv":  "Partiellement vérifié (PV) — règle dont certains aspects sont observés ; d\u0027autres requièrent une évaluation manuelle, contextuelle ou organisationnelle complémentaire.",
+                                                  "legendHp":  "Hors périmètre (HP) — règle organisationnelle, contractuelle ou d\u0027architecture inter-machines, non attestable par un outil technique sur un poste isolé."
+                                              },
+                                 "status":  {
+                                                "cv":  "Vérifié",
+                                                "pv":  "Partiel",
+                                                "hp":  "Hors périmètre",
+                                                "cvLong":  "Vérifiée",
+                                                "pvLong":  "Partiellement vérifiée",
+                                                "hpLong":  "Hors périmètre technique",
+                                                "cvAbbrev":  "Vérif.",
+                                                "pvAbbrev":  "Partiel",
+                                                "hpAbbrev":  "H. périm."
+                                            },
+                                 "summary":  {
+                                                 "cvCount":  "vérifiées",
+                                                 "pvCount":  "partiellement vérifiées",
+                                                 "hpCount":  "hors périmètre technique",
+                                                 "rulesUnit":  "règles",
+                                                 "modulesUnit":  "modules"
+                                             },
+                                 "modules":  {
+                                                 "I":  {
+                                                           "title":  "Sensibiliser et former"
+                                                       },
+                                                 "II":  {
+                                                            "title":  "Connaître le système d\u0027information"
+                                                        },
+                                                 "III":  {
+                                                             "title":  "Authentifier et contrôler les accès"
+                                                         },
+                                                 "IV":  {
+                                                            "title":  "Sécuriser les postes"
+                                                        },
+                                                 "V":  {
+                                                           "title":  "Sécuriser le réseau"
+                                                       },
+                                                 "VI":  {
+                                                            "title":  "Sécuriser l\u0027administration"
+                                                        },
+                                                 "VII":  {
+                                                             "title":  "Gérer le nomadisme"
+                                                         },
+                                                 "VIII":  {
+                                                              "title":  "Maintenir le système d\u0027information à jour"
+                                                          },
+                                                 "IX":  {
+                                                            "title":  "Superviser, auditer, réagir"
+                                                        },
+                                                 "X":  {
+                                                           "title":  "Pour aller plus loin"
+                                                       }
+                                             },
+                                 "modulePage":  {
+                                                    "label":  "Module",
+                                                    "footerRef":  "Référentiel · ANSSI · Guide d\u0027hygiène informatique · module {num}",
+                                                    "counts":  {
+                                                                   "cv":  "Vérif.",
+                                                                   "pv":  "Partiel",
+                                                                   "hp":  "H. périm."
+                                                               }
+                                                },
+                                 "rules":  {
+                                               "R1":  {
+                                                          "name":  "Former les équipes opérationnelles à la sécurité des systèmes d\u0027information",
+                                                          "detail":  {
+                                                                         "hp_default":  "Formation des équipes opérationnelles — démarche organisationnelle, non observable techniquement sur le poste."
+                                                                     }
+                                                      },
+                                               "R2":  {
+                                                          "name":  "Sensibiliser les utilisateurs aux bonnes pratiques élémentaires de sécurité informatique",
+                                                          "detail":  {
+                                                                         "hp_default":  "Sensibilisation des utilisateurs — démarche organisationnelle."
+                                                                     }
+                                                      },
+                                               "R3":  {
+                                                          "name":  "Maîtriser les risques de l\u0027infogérance",
+                                                          "detail":  {
+                                                                         "hp_default":  "Maîtrise des risques de l\u0027infogérance — disposition contractuelle."
+                                                                     }
+                                                      },
+                                               "R4":  {
+                                                          "name":  "Identifier les informations et serveurs les plus sensibles et maintenir un schéma du réseau",
+                                                          "detail":  {
+                                                                         "pv_local_only":  "Cartographie réseau locale observée (adaptateurs, adresses IP, passerelle). L\u0027inventaire global du système d\u0027information et la classification des données restent hors du périmètre du poste."
+                                                                     }
+                                                      },
+                                               "R5":  {
+                                                          "name":  "Disposer d\u0027un inventaire exhaustif des comptes privilégiés et le maintenir à jour",
+                                                          "detail":  {
+                                                                         "cv_observed":  "Inventaire des administrateurs locaux établi : {adminList}.",
+                                                                         "pv_access_denied":  "Énumération des administrateurs locaux non disponible sur ce poste (accès refusé). Vérification manuelle requise."
+                                                                     }
+                                                      },
+                                               "R6":  {
+                                                          "name":  "Organiser les procédures d\u0027arrivée, de départ et de changement de fonction des utilisateurs",
+                                                          "detail":  {
+                                                                         "hp_default":  "Procédures d\u0027arrivée, de départ et de changement de fonction — relèvent des ressources humaines et de la gouvernance."
+                                                                     }
+                                                      },
+                                               "R7":  {
+                                                          "name":  "Autoriser la connexion au réseau de l\u0027entité aux seuls équipements maîtrisés",
+                                                          "detail":  {
+                                                                         "pv_joined":  "Poste rattaché à un annuaire — rattachement confirmé. Le contrôle d\u0027admission réseau (802.1X) n\u0027est pas observable depuis le poste.",
+                                                                         "pv_unknown":  "Statut d\u0027adhésion à l\u0027annuaire non déterminé."
+                                                                     }
+                                                      },
+                                               "R8":  {
+                                                          "name":  "Identifier nommément chaque personne accédant au système et distinguer les rôles utilisateur et administrateur",
+                                                          "detail":  {
+                                                                         "cv_both_observed":  "Administrateurs locaux : {adminList}. Compte invité : {guestState}.",
+                                                                         "pv_guest_only":  "Compte invité {guestState} (observé). Énumération des comptes administrateurs non disponible (accès refusé).",
+                                                                         "pv_default":  "Énumération des comptes locaux indisponible."
+                                                                     }
+                                                      },
+                                               "R9":  {
+                                                          "name":  "Attribuer les bons droits sur les ressources sensibles du système d\u0027information",
+                                                          "detail":  {
+                                                                         "pv_default":  "Inventaire des partages SMB capturé en instantané. L\u0027adéquation des droits d\u0027accès n\u0027est pas évaluable sans contexte métier."
+                                                                     }
+                                                      },
+                                               "R10":  {
+                                                           "name":  "Définir et vérifier des règles de choix et de dimensionnement des mots de passe",
+                                                           "detail":  {
+                                                                          "pv_default":  "La politique locale de mots de passe n\u0027est pas extraite par les sondes actuelles (extension G1 prévue)."
+                                                                      }
+                                                       },
+                                               "R11":  {
+                                                           "name":  "Protéger les mots de passe stockés sur les systèmes",
+                                                           "detail":  {
+                                                                          "pv_with_lsa":  "Credential Manager : {credInfo}. Protection LSA (PPL) active. La couverture des vecteurs de stockage demeure partielle.",
+                                                                          "pv_without_lsa":  "Credential Manager : {credInfo}. La couverture des vecteurs de stockage demeure partielle.",
+                                                                          "pv_no_inspect":  "Credential Manager non inspecté."
+                                                                      }
+                                                       },
+                                               "R12":  {
+                                                           "name":  "Changer les éléments d\u0027authentification par défaut sur les équipements et services",
+                                                           "detail":  {
+                                                                          "pv_observed":  "Auto-logon : {autoLogonValue}. Les authentifications par défaut d\u0027autres composants n\u0027ont pas été testées.",
+                                                                          "pv_default":  "Aucun auto-logon détecté dans le registre. Les authentifications par défaut d\u0027autres composants n\u0027ont pas été testées."
+                                                                      }
+                                                       },
+                                               "R13":  {
+                                                           "name":  "Privilégier lorsque c\u0027est possible une authentification forte",
+                                                           "detail":  {
+                                                                          "cv_full":  "Authentification forte configurée : Windows Hello ({helloValue}), TPM opérationnel.",
+                                                                          "pv_tpm_ok":  "TPM 2.0 présent et opérationnel — capacité d\u0027authentification forte disponible. La configuration effective de Windows Hello n\u0027est pas observée.",
+                                                                          "pv_default":  "Authentification forte non déterminée."
+                                                                      }
+                                                       },
+                                               "R14":  {
+                                                           "name":  "Mettre en place un niveau de sécurité minimal sur l\u0027ensemble du parc informatique",
+                                                           "detail":  {
+                                                                          "cv_default":  "Conforme au niveau Standard : pare-feu local actif sur les profils, Microsoft Defender en protection temps réel, BitLocker actif sur le volume système. La détection des éléments d\u0027auto-démarrage (autorun) n\u0027est pas encore couverte (extension G2).",
+                                                                          "pv_partial":  "Socle de sécurité partiel : {bits}. Niveau Standard non intégralement atteint."
+                                                                      },
+                                                           "phrases":  {
+                                                                           "fwOk":  "pare-feu actif",
+                                                                           "fwNotConfirmed":  "pare-feu non confirmé",
+                                                                           "defOk":  "Defender actif",
+                                                                           "defNotConfirmed":  "Defender non confirmé",
+                                                                           "blOk":  "BitLocker actif",
+                                                                           "blNotConfirmed":  "BitLocker non confirmé"
+                                                                       }
+                                                       },
+                                               "R15":  {
+                                                           "name":  "Se protéger des menaces relatives à l\u0027utilisation de supports amovibles",
+                                                           "detail":  {
+                                                                          "pv_default":  "La politique de restriction des supports USB / AppLocker n\u0027est pas extraite par les sondes actuelles (extension G3 prévue)."
+                                                                      }
+                                                       },
+                                               "R16":  {
+                                                           "name":  "Utiliser un outil de gestion centralisée afin d\u0027homogénéiser les politiques de sécurité",
+                                                           "detail":  {
+                                                                          "cv_default":  "Poste rattaché à un annuaire — gestion centralisée du parc confirmée, vraisemblablement via Microsoft Intune.",
+                                                                          "pv_unknown":  "État d\u0027adhésion à l\u0027annuaire non déterminé."
+                                                                      }
+                                                       },
+                                               "R17":  {
+                                                           "name":  "Activer et configurer le pare-feu local des postes de travail",
+                                                           "detail":  {
+                                                                          "cv_all_active":  "Les {count} profils du pare-feu Windows (Domaine, Privé, Public) sont actifs. La configuration de niveau Renforcé (blocage des ports d\u0027administration) n\u0027est pas évaluée.",
+                                                                          "pv_partial":  "{passing}/{total} profil(s) de pare-feu actif(s). Le pare-feu doit être actif sur tous les profils.",
+                                                                          "pv_no_data":  "État du pare-feu local non extrait."
+                                                                      }
+                                                       },
+                                               "R18":  {
+                                                           "name":  "Chiffrer les données sensibles transmises par voie Internet",
+                                                           "detail":  {
+                                                                          "hp_default":  "Chiffrement des données en transit — dépend des usages applicatifs et de la messagerie, hors du périmètre du poste."
+                                                                      }
+                                                       },
+                                               "R19":  {
+                                                           "name":  "Segmenter le réseau et mettre en place un cloisonnement entre les zones d\u0027exposition variée",
+                                                           "detail":  {
+                                                                          "pv_default":  "Sous-réseau local et adaptateurs virtuels observés. L\u0027architecture de segmentation réseau est hors du périmètre du poste."
+                                                                      }
+                                                       },
+                                               "R20":  {
+                                                           "name":  "S\u0027assurer de la sécurité des réseaux d\u0027accès Wi-Fi et de la séparation des usages",
+                                                           "detail":  {
+                                                                          "cv_wpa3":  "Connexion Wi-Fi chiffrée en WPA3 — protocole conforme aux recommandations actuelles.",
+                                                                          "cv_wpa2":  "Connexion Wi-Fi active chiffrée en WPA2-Personal. Protocole de chiffrement conforme aux recommandations actuelles.",
+                                                                          "pv_weak":  "Réseau Wi-Fi en chiffrement faible ou absent ({algorithm}). Migration vers WPA2 ou WPA3 recommandée.",
+                                                                          "pv_other":  "Wi-Fi observé : {value}. Niveau de chiffrement à confirmer.",
+                                                                          "pv_no_wifi":  "Aucune connexion Wi-Fi observée au moment du diagnostic."
+                                                                      }
+                                                       },
+                                               "R21":  {
+                                                           "name":  "Utiliser des protocoles réseaux sécurisés dès qu\u0027ils existent",
+                                                           "detail":  {
+                                                                          "pv_smbv1_observed":  "SMBv1 : {smbStatus}. L\u0027audit complet des protocoles obsolètes (TLS, LLMNR, NetBIOS) n\u0027est pas encore implémenté.",
+                                                                          "pv_default":  "SMBv1 absent du poste. L\u0027audit complet des protocoles obsolètes n\u0027est pas encore implémenté."
+                                                                      }
+                                                       },
+                                               "R22":  {
+                                                           "name":  "Mettre en place une passerelle d\u0027accès sécurisé à Internet",
+                                                           "detail":  {
+                                                                          "pv_default":  "Configuration d\u0027accès Internet : {proxyConfig}. Le filtrage d\u0027URL et le DNS sécurisé ne sont pas évalués en détail.",
+                                                                          "pv_no_analysis":  "Passerelle d\u0027accès Internet non analysée."
+                                                                      }
+                                                       },
+                                               "R23":  {
+                                                           "name":  "Cloisonner les services visibles depuis Internet du reste du système d\u0027information",
+                                                           "detail":  {
+                                                                          "hp_default":  "Cloisonnement des services exposés — relève de l\u0027architecture réseau, hors du périmètre du poste."
+                                                                      }
+                                                       },
+                                               "R24":  {
+                                                           "name":  "Protéger sa messagerie professionnelle",
+                                                           "detail":  {
+                                                                          "hp_default":  "Sécurité de la messagerie — configuration côté serveur, hors du périmètre du poste."
+                                                                      }
+                                                       },
+                                               "R25":  {
+                                                           "name":  "Sécuriser les interconnexions réseau dédiées avec les partenaires",
+                                                           "detail":  {
+                                                                          "hp_default":  "Interconnexions avec les partenaires — relèvent de l\u0027architecture inter-entités, hors du périmètre du poste."
+                                                                      }
+                                                       },
+                                               "R26":  {
+                                                           "name":  "Contrôler et protéger l\u0027accès aux salles serveurs et aux locaux techniques",
+                                                           "detail":  {
+                                                                          "hp_default":  "Accès physiques — mesure organisationnelle, hors du périmètre logiciel."
+                                                                      }
+                                                       },
+                                               "R27":  {
+                                                           "name":  "Interdire l\u0027accès à Internet depuis les postes ou serveurs utilisés pour l\u0027administration du système d\u0027information",
+                                                           "detail":  {
+                                                                          "hp_default":  "Usage des postes d\u0027administration — relève de l\u0027architecture et de la politique d\u0027usage, hors périmètre."
+                                                                      }
+                                                       },
+                                               "R28":  {
+                                                           "name":  "Utiliser un réseau dédié et cloisonné pour l\u0027administration du système d\u0027information",
+                                                           "detail":  {
+                                                                          "hp_default":  "Réseau dédié à l\u0027administration — relève de l\u0027architecture réseau, hors du périmètre du poste."
+                                                                      }
+                                                       },
+                                               "R29":  {
+                                                           "name":  "Limiter au strict besoin opérationnel les droits d\u0027administration sur les postes de travail",
+                                                           "detail":  {
+                                                                          "cv_full":  "Contrôle d\u0027élévation : UAC {uacPolicy}. Administrateurs locaux : {adminList}.",
+                                                                          "pv_uac_only":  "UAC actif (politique : {uacPolicy}). Énumération des comptes administrateurs non disponible (accès refusé).",
+                                                                          "pv_no_data":  "État UAC et nombre d\u0027administrateurs non extraits."
+                                                                      }
+                                                       },
+                                               "R30":  {
+                                                           "name":  "Prendre des mesures de sécurisation physique des terminaux nomades",
+                                                           "detail":  {
+                                                                          "pv_default":  "Matériel identifié (poste portable). Les mesures de sécurisation physique ne sont pas observables techniquement.",
+                                                                          "pv_no_hardware_id":  "Identification matérielle indisponible."
+                                                                      }
+                                                       },
+                                               "R31":  {
+                                                           "name":  "Chiffrer les données sensibles, en particulier sur le matériel potentiellement perdable",
+                                                           "detail":  {
+                                                                          "cv_single_volume":  "Volume système chiffré par BitLocker (chiffrement AES). Sur un poste portable, le volume système constitue le vecteur principal de perte de données.",
+                                                                          "cv_all_volumes":  "Les {total} volumes détectés sont chiffrés par BitLocker (chiffrement AES).",
+                                                                          "pv_partial":  "{on}/{total} volume(s) chiffré(s). Les volumes non chiffrés devraient l\u0027être pour limiter le risque en cas de perte.",
+                                                                          "pv_no_data":  "Statut BitLocker indisponible."
+                                                                      }
+                                                       },
+                                               "R32":  {
+                                                           "name":  "Sécuriser la connexion réseau des postes utilisés en situation de nomadisme",
+                                                           "detail":  {
+                                                                          "cv_connected":  "Tunnel VPN actif ({vpnInfo}). Connexion nomade chiffrée.",
+                                                                          "pv_inactive":  "Client VPN installé mais inactif au moment du diagnostic ({vpnInfo}). La qualité cryptographique du tunnel n\u0027est pas évaluable hors connexion.",
+                                                                          "pv_no_vpn":  "Aucune solution VPN détectée."
+                                                                      }
+                                                       },
+                                               "R33":  {
+                                                           "name":  "Adopter des politiques de sécurité dédiées aux terminaux mobiles",
+                                                           "detail":  {
+                                                                          "hp_default":  "Politique des terminaux mobiles — concerne smartphones et tablettes, hors du périmètre d\u0027un poste Windows."
+                                                                      }
+                                                       },
+                                               "R34":  {
+                                                           "name":  "Définir une politique de mise à jour des composants du système d\u0027information",
+                                                           "detail":  {
+                                                                          "cv_with_failures":  "Windows Update opérationnel. {count} échec(s) de mise à jour détecté(s) sur les 30 derniers jours, à relancer.",
+                                                                          "cv_clean":  "Windows Update opérationnel — aucun échec récent détecté.",
+                                                                          "pv_no_data":  "Politique de mise à jour non observée dans les sondes."
+                                                                      }
+                                                       },
+                                               "R35":  {
+                                                           "name":  "Anticiper la fin de la maintenance des logiciels et systèmes et limiter les adhérences logicielles",
+                                                           "detail":  {
+                                                                          "cv_obsolete_drivers":  "Système sous support actif. {count} pilote(s) obsolète(s) détecté(s), antérieur(s) aux versions supportées — remplacement recommandé.",
+                                                                          "cv_clean":  "Système et composants sous support actif — aucun composant obsolète détecté."
+                                                                      }
+                                                       },
+                                               "R36":  {
+                                                           "name":  "Activer et configurer les journaux des composants les plus importants",
+                                                           "detail":  {
+                                                                          "cv_full":  "Journalisation active : audit des connexions ({auditMode}), Script Block Logging PowerShell actif.",
+                                                                          "pv_partial":  "{bits}.",
+                                                                          "pv_no_data":  "Configuration des journaux non extraite."
+                                                                      },
+                                                           "phrases":  {
+                                                                           "pwshActive":  "journalisation PowerShell (Script Block Logging) active",
+                                                                           "auditWeak":  "politique d\u0027audit des connexions au niveau minimal — renforcement recommandé pour la traçabilité des évènements de sécurité",
+                                                                           "auditObservedTemplate":  "audit des connexions : {value}"
+                                                                       }
+                                                       },
+                                               "R37":  {
+                                                           "name":  "Définir et appliquer une politique de sauvegarde des composants critiques",
+                                                           "detail":  {
+                                                                          "hp_default":  "Politique de sauvegarde — relève de l\u0027infrastructure et des procédures, hors du périmètre du poste."
+                                                                      }
+                                                       },
+                                               "R38":  {
+                                                           "name":  "Procéder à des contrôles et audits de sécurité réguliers puis appliquer les actions correctives associées",
+                                                           "detail":  {
+                                                                          "cv_default":  "L\u0027exécution de FieldOps Pro constitue elle-même un contrôle d\u0027audit technique régulier, répondant directement à cette mesure."
+                                                                      }
+                                                       },
+                                               "R39":  {
+                                                           "name":  "Désigner un point de contact en sécurité des systèmes d\u0027information",
+                                                           "detail":  {
+                                                                          "hp_default":  "Désignation d\u0027un référent SSI — mesure organisationnelle."
+                                                                      }
+                                                       },
+                                               "R40":  {
+                                                           "name":  "Définir une procédure de gestion des incidents de sécurité",
+                                                           "detail":  {
+                                                                          "hp_default":  "Procédure de gestion des incidents — mesure organisationnelle."
+                                                                      }
+                                                       },
+                                               "R41":  {
+                                                           "name":  "Mener une analyse de risques formelle",
+                                                           "detail":  {
+                                                                          "hp_default":  "Analyse de risques formelle (méthode EBIOS RM) — démarche méthodologique, hors du périmètre technique."
+                                                                      }
+                                                       },
+                                               "R42":  {
+                                                           "name":  "Privilégier l\u0027usage de produits et de services qualifiés par l\u0027ANSSI",
+                                                           "detail":  {
+                                                                          "pv_default":  "Inventaire logiciel capturé en instantané. Le croisement automatique avec le catalogue ANSSI des produits qualifiés n\u0027est pas encore implémenté (extension G7)."
+                                                                      }
+                                                       }
+                                           },
+                                 "ruleNote":  {
+                                                  "prefix":  "Règle {num} —"
+                                              },
+                                 "evaluator":  {
+                                                   "evaluatedRules":  "Évaluation des 42 règles ANSSI…",
+                                                   "evaluationFailed":  "Évaluation de la règle {rid} : échec interne.",
+                                                   "evaluationFailedFallback":  "Évaluation interrompue.",
+                                                   "noTopFinding":  "Aucun point d\u0027attention prioritaire n\u0027a été identifié sur ce poste."
+                                               },
+                                 "conclusion":  {
+                                                    "sectionTitle":  "Conclusion",
+                                                    "synthesisTitle":  "Synthèse et attestation",
+                                                    "perimeterLabel":  "Périmètre du diagnostic",
+                                                    "perimeterBody":  "Le présent diagnostic technique vérifie automatiquement {cvCount} règles d\u0027hygiène ANSSI sur 42 au niveau du poste local, et apporte des éléments d\u0027observation pour {pvCount} règles supplémentaires. Les {hpCount} règles restantes relèvent de la gouvernance, de l\u0027architecture inter-machines ou de procédures organisationnelles qui ne peuvent être attestées par un outil technique sur un poste isolé et nécessitent une évaluation contextuelle.",
+                                                    "limitsLabel":  "Limites explicites",
+                                                    "limit1":  "Diagnostic informatif. Le présent document ne constitue ni une certification ANSSI, ni une attestation au sens du Guide d\u0027hygiène informatique.",
+                                                    "limit2":  "L\u0027ANSSI est la seule autorité habilitée à délivrer des qualifications ou certifications officielles (cf. règle 42).",
+                                                    "limit3":  "Couverture limitée au poste audité. L\u0027évaluation organisationnelle (formation, procédures, gouvernance) relève d\u0027un audit séparé.",
+                                                    "limit4":  "État observé à un instant T. Toute modification ultérieure de la configuration invalide le constat.",
+                                                    "limit5":  "Aucune affiliation, agrément, partenariat ou approbation ANSSI. Le terme « ANSSI » est employé en référence au document public Guide d\u0027hygiène informatique.",
+                                                    "integrityLabel":  "Intégrité cryptographique",
+                                                    "integrityBody":  "Empreinte SHA-256 du contenu du rapport — toute modification ultérieure de ce document invaliderait cette signature :",
+                                                    "technicianLabel":  "Technicien auditeur",
+                                                    "contactLabel":  "Contact destinataire",
+                                                    "contactPlaceholder":  "À compléter",
+                                                    "signatureLabel":  "Date et signature",
+                                                    "footerRef":  "Référentiel · ANSSI · Guide d\u0027hygiène informatique · 42 mesures · 2017"
+                                                },
+                                 "pageHeader":  {
+                                                    "pageOf":  "Page {current} / {total}"
+                                                }
+                             }
+               }
 }
