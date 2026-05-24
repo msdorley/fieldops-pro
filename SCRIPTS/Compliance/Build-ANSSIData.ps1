@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     FieldOps Pro - ANSSI Hygiene Data Collector v0.4
 .DESCRIPTION
@@ -44,6 +44,37 @@ param(
 
 Set-StrictMode -Version 1.0
 $ErrorActionPreference = 'Stop'
+# ===========================================================================
+# LOCALE INTEGRATION (Phase 5.2)
+# ===========================================================================
+$LocaleModulePath = Join-Path $PSScriptRoot '..\Core\FieldOps-Locale.psm1'
+if (Test-Path $LocaleModulePath) {
+    Import-Module $LocaleModulePath -Force -DisableNameChecking -ErrorAction SilentlyContinue
+}
+
+function T {
+    param(
+        [Parameter(Mandatory=$true)][string]$Key,
+        [hashtable]$Vars    = @{},
+        [string]$Default    = ''
+    )
+    if (Get-Command Get-LocaleString -ErrorAction SilentlyContinue) {
+        try {
+            $resolved = Get-LocaleString -Key $Key -Vars $Vars -Default $Default
+            if ($resolved) { return $resolved }
+        } catch { }
+    }
+    return $Default
+}
+
+if (Get-Command Initialize-Locale -ErrorAction SilentlyContinue) {
+    try {
+        $configLangDir = Join-Path (Split-Path $PSScriptRoot -Parent) 'CONFIG\lang'
+        if (Test-Path $configLangDir) {
+            Initialize-Locale -Lang 'fr' -LangDir $configLangDir -ErrorAction SilentlyContinue
+        }
+    } catch { }
+}
 
 # ===========================================================================
 # PATHS
@@ -590,7 +621,7 @@ if (-not $Technician) {
 
 $now = Get-Date
 $reportId = "FOPS-{0}-{1}-001" -f $now.ToString('yyyyMMdd'), $hostname
-$reportDateHuman = $now.ToString('dd/MM/yyyy HH:mm') + ' (heure locale)'
+$reportDateHuman = $now.ToString('dd/MM/yyyy HH:mm') + ' ' + (T 'report.anssi.machineFields.dateSuffix' @{} '(heure locale)')
 
 Write-Step 'Evaluating 42 ANSSI rules...'
 
@@ -615,11 +646,16 @@ foreach ($m in $RuleMeta) {
     try { $r = & $evaluators[$rid] }
     catch {
         Write-Warn "Rule $rid evaluation failed: $($_.Exception.Message)"
-        $r = @{ Status='pv'; Detail='Evaluation echouee.'; Evidence='' }
+        $r = @{ Status='pv'; Detail=(T 'report.anssi.evaluator.evaluationFailedFallback' @{} 'Evaluation echouee.'); Evidence='' }
     }
     $st = Get-DictValue $r 'Status' 'pv'
     if ($st -notmatch '^(cv|pv|hp)$') { $st = 'pv' }
-    $label = switch ($st) { 'cv' {'Verifie'} 'pv' {'Partiel'} 'hp' {'Hors perimetre'} default {'Partiel'} }
+    $label = switch ($st) {
+        'cv'    { T 'report.anssi.status.cv' @{} 'Verifie' }
+        'pv'    { T 'report.anssi.status.pv' @{} 'Partiel' }
+        'hp'    { T 'report.anssi.status.hp' @{} 'Hors perimetre' }
+        default { T 'report.anssi.status.pv' @{} 'Partiel' }
+    }
     $ruleResults[$rid] = [PSCustomObject]@{
         Id=$rid; Module=$m.Mod; Name=$m.Name; Status=$st; StatusLabel=$label
         Meta=(Get-DictValue $r 'Detail' ''); Detail=''; Evidence=(Get-DictValue $r 'Evidence' '')
@@ -681,6 +717,16 @@ if ($topFindings.Count -lt 3) {
         $topFindings += [PSCustomObject]@{
             Title=$r.Name; RuleNote="Regle $($r.Id.Substring(1)) - $($r.Meta)"; RuleId=$r.Id; Status=$r.Status
         }
+    }
+}
+
+# Safety net: ensure $topFindings always has 3 entries with localized placeholder
+while ($topFindings.Count -lt 3) {
+    $topFindings += [PSCustomObject]@{
+        Title    = T 'report.anssi.evaluator.noTopFinding' @{} 'Aucun constat majeur'
+        RuleNote = ''
+        RuleId   = ''
+        Status   = 'cv'
     }
 }
 

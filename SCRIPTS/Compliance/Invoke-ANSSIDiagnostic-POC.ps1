@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     FieldOps Pro - ANSSI Hygiene Diagnostic Report Builder v0.4
 .DESCRIPTION
@@ -377,6 +377,28 @@ $pdfOutPath  = Join-Path $OutputDir "$reportId.pdf"
 Write-Step "Writing HTML: $htmlOutPath"
 Set-Content -LiteralPath $htmlOutPath -Value $html -Encoding UTF8
 Write-OK "HTML written ($((Get-Item $htmlOutPath).Length) bytes)"
+
+    # === Phase 5.2 -- Resolve {{t:locale.key}} tokens against the bundle ===
+    # Added by Apply-Commit5.ps1. The resolver post-processes the HTML the
+    # renderer just wrote, swapping {{t:locale.key}} for the bundle value
+    # (HTML-escaped). Safe no-op if no such tokens are present.
+    # Variable-independent: scans REPORTS for the most recent FOPS-*.html,
+    # which is the file the renderer wrote moments ago.
+    try {
+        . (Join-Path $PSScriptRoot 'Resolve-LocaleTokens.ps1')
+        $projectRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+        $rptDir      = Join-Path $projectRoot 'REPORTS'
+        $bundleDir   = Join-Path $projectRoot 'CONFIG\lang'
+        if (Test-Path -LiteralPath $rptDir) {
+            $latestReport = Get-ChildItem -LiteralPath $rptDir -Filter 'FOPS-*.html' -ErrorAction SilentlyContinue |
+                            Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            if ($latestReport) {
+                Resolve-LocaleTokensInFile -Path $latestReport.FullName -BundleDir $bundleDir -Lang 'fr'
+            }
+        }
+    } catch {
+        Write-Warning "Locale token resolution failed: $($_.Exception.Message)"
+    }
 
 if ($NoPdf) {
     Write-Host ''

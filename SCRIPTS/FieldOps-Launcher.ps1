@@ -106,6 +106,14 @@ function L {
 # ==============================================================================
 # CONSOLE SETUP
 # ==============================================================================
+# UTF-8 console encoding (Phase 5.2) -- enables accented French rendering
+# without going through the OEM codepage (typically 850/1252 on Windows FR).
+# Without this, "Systeme" with accents renders as mojibake on a fresh console.
+try {
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    [Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+} catch {}
+
 $HOST.UI.RawUI.BackgroundColor = 'Black'
 $HOST.UI.RawUI.ForegroundColor = 'White'
 try { $HOST.UI.RawUI.WindowTitle = 'FIELDOPS PRO v2.1 - Enterprise Field IT Toolkit' } catch {}
