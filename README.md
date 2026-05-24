@@ -1,4 +1,4 @@
-# FieldOps Pro - ANSSI Pipeline v0.2 (Phase 1+2+3)
+﻿# FieldOps Pro - ANSSI Pipeline v0.2 (Phase 1+2+3)
 
 **Date** : 13 mai 2026
 **Status** : End-to-end pipeline drafted, Python-tested, awaiting Windows deployment.
@@ -72,7 +72,7 @@ verdict on the cover page reflects the truth, not a target.
 ## Validated in sandbox before shipping
 
 Python equivalent of the entire pipeline was run against synthetic engine
-JSONs simulating your SAMPLE-WS01 machine:
+JSONs simulating a sample workstation:
 
 - Engine JSON read: OK
 - All 42 rules evaluated: OK
