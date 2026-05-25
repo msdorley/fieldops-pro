@@ -1,301 +1,918 @@
-{
-  "_meta": {
-    "language": "English",
-    "code": "en",
-    "version": "1.0",
-    "author": "FieldOps Pro",
-    "direction": "ltr"
-  },
-  "common": {
-    "appName": "FieldOps Pro",
-    "version": "Version",
-    "technician": "Technician",
-    "hostname": "Hostname",
-    "date": "Date",
-    "time": "Time",
-    "yes": "Yes",
-    "no": "No",
-    "ok": "OK",
-    "error": "ERROR",
-    "warning": "WARNING",
-    "info": "INFO",
-    "pass": "PASS",
-    "fail": "FAIL",
-    "running": "Running",
-    "complete": "Complete",
-    "cancelled": "Cancelled",
-    "loading": "Loading",
-    "saving": "Saving",
-    "generating": "Generating",
-    "scanning": "Scanning",
-    "analyzing": "Analyzing",
-    "admin": "Administrator",
-    "adminRequired": "Admin required",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "notConfigured": "Not configured",
-    "notAvailable": "N/A",
-    "unknown": "Unknown",
-    "ready": "Ready",
-    "absent": "Absent",
-    "never": "Never",
-    "none": "None",
-    "report": "Report",
-    "reports": "Reports",
-    "grade": "Grade",
-    "score": "Score",
-    "risk": "Risk",
-    "tools": "Tools",
-    "files": "files",
-    "folders": "folders",
-    "size": "Size",
-    "type": "Type",
-    "file": "File",
-    "runs": "runs",
-    "checks": "checks",
-    "pressAnyKey": "Press any key to close...",
-    "copyClipboard": "COPIED TO CLIPBOARD",
-    "openReport": "Open Report",
-    "in": "in",
-    "hosts": "hosts",
-    "format": "Fmt"
-  },
-  "dashboard": {
-    "title": "OPERATIONS DASHBOARD",
-    "generating": "GENERATING UNIFIED DASHBOARD",
-    "generated": "DASHBOARD GENERATED",
-    "gatheringSysInfo": "Gathering system info...",
-    "scanningReports": "Scanning reports...",
-    "scanningTools": "Scanning all SCRIPTS subfolders...",
-    "inventorying": "Inventorying USB resources...",
-    "protocolActive": "fieldops:// protocol active — clicks run scripts directly",
-    "protocolInactive": "fieldops:// NOT registered — clicks copy commands only. Run Register-FieldOpsProtocol.ps1 as Admin to enable direct execution.",
-    "elevationWarn": "Running without Administrator — some collectors (BitLocker, Secure Boot, TPM details) require elevation. Re-run as Admin for complete data.",
-    "collectorsFailedPre": "data collector(s) failed (dashboard still rendered):",
-    "masterAssessment": "Master Assessment",
-    "runFullScan": "Run Full Scan to generate Master grade",
-    "engineScores": "Engine Scores",
-    "allTools": "All Tools",
-    "quickLaunch": "Quick Launch",
-    "reportLibrary": "Reports",
-    "snapshots": "Snapshots",
-    "playbooks": "Playbooks",
-    "bootableIsos": "Bootable ISOs",
-    "drivers": "Drivers",
-    "fleet": "Fleet",
-    "warnings": "WARNINGS",
-    "protocolRegistered": "REGISTERED (fieldops://)",
-    "protocolNotRegistered": "NOT REGISTERED (click-to-copy)"
-  },
-  "quickCmds": {
-    "fullScan": "Full Scan",
-    "fullScanDesc": "Run all 5 engines",
-    "compliance": "Compliance",
-    "complianceDesc": "Interactive menu",
-    "quickDiff": "Quick Diff",
-    "quickDiffDesc": "Before+Fix+After",
-    "autoFix": "Auto Fix",
-    "autoFixDesc": "Self-heal issues",
-    "security": "Security",
-    "securityDesc": "Posture audit",
-    "refresh": "Refresh",
-    "refreshDesc": "Update dashboard"
-  },
-  "sysInfo": {
-    "hostname": "Hostname",
-    "model": "Model",
-    "serial": "Serial",
-    "bios": "BIOS",
-    "os": "OS",
-    "build": "Build",
-    "cpu": "CPU",
-    "cores": "Cores",
-    "ram": "RAM",
-    "ip": "IP",
-    "mac": "MAC",
-    "domain": "Domain",
-    "directory": "Directory",
-    "uptime": "Uptime",
-    "lastBoot": "Last Boot",
-    "bitlocker": "BitLocker",
-    "tpm": "TPM",
-    "secureBoot": "Secure Boot"
-  },
-  "engines": {
-    "pcHealth": "PC Health",
-    "pcHealthDesc": "Hardware, CPU, RAM, battery",
-    "disk": "Disk",
-    "diskDesc": "Storage, SMART, BitLocker",
-    "network": "Network",
-    "networkDesc": "Connectivity, DNS, VPN",
-    "security": "Security",
-    "securityDesc": "Defender, ASR, posture",
-    "identity": "Identity",
-    "identityDesc": "Entra ID, Autopilot",
-    "compliance": "Compliance",
-    "complianceDesc": "Diff, MITRE, risk score"
-  },
-  "complianceDiff": {
-    "title": "AI COMPLIANCE DIFF ENGINE",
-    "menuTitle": "Select an operation:",
-    "statusReady": "Before snapshot ready — run your action, then choose [2] or [3]",
-    "statusNone": "No Before snapshot — start with [1] to take a baseline",
-    "modeBefore": "Before",
-    "modeBeforeDesc": "Take a pre-action baseline snapshot",
-    "modeAfter": "After",
-    "modeAfterDesc": "Capture + diff + generate report",
-    "modeQuickDiff": "QuickDiff",
-    "modeQuickDiffDesc": "Before + run script + After (all-in-one)",
-    "modeAuto": "Auto",
-    "modeAutoDesc": "Smart mode (detects what to do)",
-    "modeCompare": "Compare",
-    "modeCompareDesc": "Diff two snapshot files manually",
-    "modeCleanup": "Cleanup",
-    "modeCleanupDesc": "Manage snapshots ({count} on disk)",
-    "modeDiagnose": "Diagnose",
-    "modeDiagnoseDesc": "Check config, API key, filesystem",
-    "modeLastReport": "Last Report",
-    "modeLastReportDesc": "Open most recent report ({count} available)",
-    "quit": "Quit",
-    "choice": "Choice",
-    "fieldWorkflow": "FIELD WORKFLOW",
-    "toolsSection": "TOOLS",
-    "infoSection": "INFO",
-    "capturing": "CAPTURING {type} SNAPSHOT",
-    "services": "Services",
-    "registry": "Registry (security keys)",
-    "scheduledTasks": "Scheduled Tasks",
-    "firewallRules": "Firewall Rules",
-    "localUsers": "Local Users and Groups",
-    "software": "Installed Software",
-    "listeningPorts": "Listening Ports",
-    "certificates": "Certificates",
-    "startupItems": "Startup Items",
-    "smbShares": "SMB Shares",
-    "bitlocker": "BitLocker",
-    "defender": "Defender",
-    "wmiPersistence": "WMI Persistence (T1546.003)",
-    "hostsFile": "Hosts File (T1565.001)",
-    "envVars": "Environment Variables (T1574.007)",
-    "kernelDrivers": "Kernel Drivers (T1014)",
-    "itemsCaptured": "{count} item(s) captured",
-    "snapshotComplete": "{type} snapshot complete.",
-    "snapshotSaving": "Saving {type} snapshot (chunked + gzip)...",
-    "snapshotSaved": "Snapshot saved: {compSize} (was {rawSize}, {ratio}% compressed) in {time}s",
-    "snapshotSavedSummary": "{type} SNAPSHOT SAVED",
-    "diffRunning": "RUNNING COMPLIANCE DIFF ENGINE",
-    "diffComplete": "COMPLIANCE DIFF COMPLETE",
-    "changesDetected": "Changes detected",
-    "improvements": "Improvements",
-    "regressions": "Regressions",
-    "suspicious": "Suspicious",
-    "riskScore": "Total Risk Score",
-    "rollbackCmds": "Rollback commands",
-    "aiAnalysis": "AI Analysis",
-    "localRules": "LOCAL RULES",
-    "htmlReport": "HTML Report",
-    "csvExport": "CSV Export",
-    "rollbackScript": "Rollback Script",
-    "quickDiffComplete": "QUICKDIFF COMPLETE",
-    "actionExecuted": "Action executed",
-    "actionDuration": "Action duration",
-    "cleanupTitle": "SNAPSHOT CLEANUP",
-    "cleanupConfirm": "Proceed? (Y/N)",
-    "cleanupComplete": "CLEANUP COMPLETE",
-    "cleanupNone": "Nothing to clean up. All hosts have {keep} or fewer snapshots.",
-    "cleanupDelete": "Will delete {count} snapshot(s) + {sidecars} sidecar(s) = {size}",
-    "diagTitle": "CONFIGURATION DIAGNOSTICS",
-    "diagConfigFound": "Config file: FOUND -> {path}",
-    "diagConfigMissing": "Config file: NOT FOUND",
-    "diagValues": "Loaded values:",
-    "diagKeyCheck": "API key format check:",
-    "diagKeyValid": "Format: VALID (matches sk-ant-api03-... pattern)",
-    "diagApiPing": "Live API ping...",
-    "diagTestModel": "Testing model: {model} ...",
-    "diagSuccess": "{model} : SUCCESS (id: {id})",
-    "diagNoCredits": "NO CREDITS",
-    "diagAddCredits": "Add credits: https://console.anthropic.com -> Plans & Billing",
-    "diagFsLayout": "USB filesystem layout:",
-    "diagSnapshots": "Existing snapshots for {host} on this USB:",
-    "diagComplete": "DIAGNOSTICS COMPLETE",
-    "noReports": "No compliance diff reports found.",
-    "aiSkipped": "AI analysis skipped (no API key or -NoAI specified).",
-    "aiPreparing": "Preparing diff payload for AI analysis ({count} changes)...",
-    "aiCalling": "Calling {model} ({size} KB payload)...",
-    "aiComplete": "AI analysis complete ({model}). Assessment: {assessment}",
-    "aiNoCreditsMsg": "AI: insufficient credits — {detail}",
-    "aiFallback": "Falling back to local rule-based classification.",
-    "aiAllUnavailable": "All AI models unavailable. Falling back to local rules."
-  },
-  "tools": {
-    "autoFix": "Self-healing engine: auto-remediates 40+ issues",
-    "azureADJoin": "Entra ID enrollment and readiness check",
-    "complianceDiff": "Compliance diff with MITRE mapping",
-    "dashboard": "This dashboard",
-    "diskAnalysis": "Storage, SMART, BitLocker, duplicates",
-    "fieldOps": "Master command center (all 5 engines)",
-    "fleetReport": "Fleet intelligence report",
-    "netRepair": "Network diagnostics and repair",
-    "pcHealth": "Hardware health check",
-    "playbook": "Automated deployment playbook runner",
-    "securityScan": "Security posture audit",
-    "softwareDeploy": "Software deployment + download center",
-    "vpnSetup": "GlobalProtect VPN setup",
-    "registerProtocol": "Register fieldops:// (run once as admin)"
-  },
-  "protocol": {
-    "title": "PROTOCOL HANDLER SETUP",
-    "registering": "Registering fieldops:// protocol...",
-    "registered": "Protocol registered successfully",
-    "unregistering": "Unregistering fieldops:// protocol...",
-    "unregistered": "Protocol unregistered",
-    "handlerTitle": "PROTOCOL HANDLER",
-    "received": "Received URL: {url}",
-    "launching": "Launching: {path}",
-    "launched": "Process started successfully",
-    "setupComplete": "SETUP COMPLETE",
-    "setupSteps": "Next steps:",
-    "step1": "Open the Dashboard: .\\Invoke-Dashboard.ps1 -OpenDashboard",
-    "step2": "Click any command button — the browser will ask permission",
-    "step3": "The script runs in a new PowerShell window."
-  },
-  "reportTypes": {
-    "health": "Health",
-    "disk": "Disk",
-    "network": "Network",
-    "security": "Security",
-    "identity": "Identity",
-    "compliance": "Compliance",
-    "master": "Master",
-    "rollback": "Rollback",
-    "fleet": "Fleet",
-    "incident": "Incident",
-    "deploy": "Deploy",
-    "dashboard": "Dashboard",
-    "other": "Other"
-  },
-  "snapTypes": {
-    "before": "Before",
-    "after": "After",
-    "snapshot": "Snapshot"
-  },
-  "summary": {
-    "file": "File",
-    "engines": "Engines",
-    "tools": "Tools",
-    "reports": "Reports",
-    "snapshots": "Snapshots",
-    "playbooks": "Playbooks",
-    "isos": "ISOs",
-    "drivers": "Drivers",
-    "machine": "Machine",
-    "protocol": "Protocol",
-    "warnings": "WARNINGS",
-    "across": "across",
-    "folders": "folders",
-    "withData": "with data",
-    "protoActive": "ACTIVE (fieldops://)",
-    "protoInactive": "INACTIVE (copy mode)",
-    "collectorsFailed": "collector(s) failed (shown as banner in dashboard)"
-  }
+﻿{
+    "_meta":  {
+                  "language":  "English",
+                  "code":  "en",
+                  "version":  "1.0",
+                  "author":  "FieldOps Pro",
+                  "direction":  "ltr"
+              },
+    "common":  {
+                   "appName":  "FieldOps Pro",
+                   "version":  "Version",
+                   "technician":  "Technician",
+                   "hostname":  "Hostname",
+                   "date":  "Date",
+                   "time":  "Time",
+                   "yes":  "Yes",
+                   "no":  "No",
+                   "ok":  "OK",
+                   "error":  "ERROR",
+                   "warning":  "WARNING",
+                   "info":  "INFO",
+                   "pass":  "PASS",
+                   "fail":  "FAIL",
+                   "running":  "Running",
+                   "complete":  "Complete",
+                   "cancelled":  "Cancelled",
+                   "loading":  "Loading",
+                   "saving":  "Saving",
+                   "generating":  "Generating",
+                   "scanning":  "Scanning",
+                   "analyzing":  "Analyzing",
+                   "admin":  "Administrator",
+                   "adminRequired":  "Admin required",
+                   "enabled":  "Enabled",
+                   "disabled":  "Disabled",
+                   "notConfigured":  "Not configured",
+                   "notAvailable":  "N/A",
+                   "unknown":  "Unknown",
+                   "ready":  "Ready",
+                   "absent":  "Absent",
+                   "never":  "Never",
+                   "none":  "None",
+                   "report":  "Report",
+                   "reports":  "Reports",
+                   "grade":  "Grade",
+                   "score":  "Score",
+                   "risk":  "Risk",
+                   "tools":  "Tools",
+                   "files":  "files",
+                   "folders":  "folders",
+                   "size":  "Size",
+                   "type":  "Type",
+                   "file":  "File",
+                   "runs":  "runs",
+                   "checks":  "checks",
+                   "pressAnyKey":  "Press any key to close...",
+                   "copyClipboard":  "COPIED TO CLIPBOARD",
+                   "openReport":  "Open Report",
+                   "in":  "in",
+                   "hosts":  "hosts",
+                   "format":  "Fmt"
+               },
+    "dashboard":  {
+                      "title":  "OPERATIONS DASHBOARD",
+                      "generating":  "GENERATING UNIFIED DASHBOARD",
+                      "generated":  "DASHBOARD GENERATED",
+                      "gatheringSysInfo":  "Gathering system info...",
+                      "scanningReports":  "Scanning reports...",
+                      "scanningTools":  "Scanning all SCRIPTS subfolders...",
+                      "inventorying":  "Inventorying USB resources...",
+                      "protocolActive":  "fieldops:// protocol active — clicks run scripts directly",
+                      "protocolInactive":  "fieldops:// NOT registered — clicks copy commands only. Run Register-FieldOpsProtocol.ps1 as Admin to enable direct execution.",
+                      "elevationWarn":  "Running without Administrator — some collectors (BitLocker, Secure Boot, TPM details) require elevation. Re-run as Admin for complete data.",
+                      "collectorsFailedPre":  "data collector(s) failed (dashboard still rendered):",
+                      "masterAssessment":  "Master Assessment",
+                      "runFullScan":  "Run Full Scan to generate Master grade",
+                      "engineScores":  "Engine Scores",
+                      "allTools":  "All Tools",
+                      "quickLaunch":  "Quick Launch",
+                      "reportLibrary":  "Reports",
+                      "snapshots":  "Snapshots",
+                      "playbooks":  "Playbooks",
+                      "bootableIsos":  "Bootable ISOs",
+                      "drivers":  "Drivers",
+                      "fleet":  "Fleet",
+                      "warnings":  "WARNINGS",
+                      "protocolRegistered":  "REGISTERED (fieldops://)",
+                      "protocolNotRegistered":  "NOT REGISTERED (click-to-copy)"
+                  },
+    "quickCmds":  {
+                      "fullScan":  "Full Scan",
+                      "fullScanDesc":  "Run all 5 engines",
+                      "compliance":  "Compliance",
+                      "complianceDesc":  "Interactive menu",
+                      "quickDiff":  "Quick Diff",
+                      "quickDiffDesc":  "Before+Fix+After",
+                      "autoFix":  "Auto Fix",
+                      "autoFixDesc":  "Self-heal issues",
+                      "security":  "Security",
+                      "securityDesc":  "Posture audit",
+                      "refresh":  "Refresh",
+                      "refreshDesc":  "Update dashboard"
+                  },
+    "sysInfo":  {
+                    "hostname":  "Hostname",
+                    "model":  "Model",
+                    "serial":  "Serial",
+                    "bios":  "BIOS",
+                    "os":  "OS",
+                    "build":  "Build",
+                    "cpu":  "CPU",
+                    "cores":  "Cores",
+                    "ram":  "RAM",
+                    "ip":  "IP",
+                    "mac":  "MAC",
+                    "domain":  "Domain",
+                    "directory":  "Directory",
+                    "uptime":  "Uptime",
+                    "lastBoot":  "Last Boot",
+                    "bitlocker":  "BitLocker",
+                    "tpm":  "TPM",
+                    "secureBoot":  "Secure Boot"
+                },
+    "engines":  {
+                    "pcHealth":  "PC Health",
+                    "pcHealthDesc":  "Hardware, CPU, RAM, battery",
+                    "disk":  "Disk",
+                    "diskDesc":  "Storage, SMART, BitLocker",
+                    "network":  "Network",
+                    "networkDesc":  "Connectivity, DNS, VPN",
+                    "security":  "Security",
+                    "securityDesc":  "Defender, ASR, posture",
+                    "identity":  "Identity",
+                    "identityDesc":  "Entra ID, Autopilot",
+                    "compliance":  "Compliance",
+                    "complianceDesc":  "Diff, MITRE, risk score"
+                },
+    "complianceDiff":  {
+                           "title":  "AI COMPLIANCE DIFF ENGINE",
+                           "menuTitle":  "Select an operation:",
+                           "statusReady":  "Before snapshot ready — run your action, then choose [2] or [3]",
+                           "statusNone":  "No Before snapshot — start with [1] to take a baseline",
+                           "modeBefore":  "Before",
+                           "modeBeforeDesc":  "Take a pre-action baseline snapshot",
+                           "modeAfter":  "After",
+                           "modeAfterDesc":  "Capture + diff + generate report",
+                           "modeQuickDiff":  "QuickDiff",
+                           "modeQuickDiffDesc":  "Before + run script + After (all-in-one)",
+                           "modeAuto":  "Auto",
+                           "modeAutoDesc":  "Smart mode (detects what to do)",
+                           "modeCompare":  "Compare",
+                           "modeCompareDesc":  "Diff two snapshot files manually",
+                           "modeCleanup":  "Cleanup",
+                           "modeCleanupDesc":  "Manage snapshots ({count} on disk)",
+                           "modeDiagnose":  "Diagnose",
+                           "modeDiagnoseDesc":  "Check config, API key, filesystem",
+                           "modeLastReport":  "Last Report",
+                           "modeLastReportDesc":  "Open most recent report ({count} available)",
+                           "quit":  "Quit",
+                           "choice":  "Choice",
+                           "fieldWorkflow":  "FIELD WORKFLOW",
+                           "toolsSection":  "TOOLS",
+                           "infoSection":  "INFO",
+                           "capturing":  "CAPTURING {type} SNAPSHOT",
+                           "services":  "Services",
+                           "registry":  "Registry (security keys)",
+                           "scheduledTasks":  "Scheduled Tasks",
+                           "firewallRules":  "Firewall Rules",
+                           "localUsers":  "Local Users and Groups",
+                           "software":  "Installed Software",
+                           "listeningPorts":  "Listening Ports",
+                           "certificates":  "Certificates",
+                           "startupItems":  "Startup Items",
+                           "smbShares":  "SMB Shares",
+                           "bitlocker":  "BitLocker",
+                           "defender":  "Defender",
+                           "wmiPersistence":  "WMI Persistence (T1546.003)",
+                           "hostsFile":  "Hosts File (T1565.001)",
+                           "envVars":  "Environment Variables (T1574.007)",
+                           "kernelDrivers":  "Kernel Drivers (T1014)",
+                           "itemsCaptured":  "{count} item(s) captured",
+                           "snapshotComplete":  "{type} snapshot complete.",
+                           "snapshotSaving":  "Saving {type} snapshot (chunked + gzip)...",
+                           "snapshotSaved":  "Snapshot saved: {compSize} (was {rawSize}, {ratio}% compressed) in {time}s",
+                           "snapshotSavedSummary":  "{type} SNAPSHOT SAVED",
+                           "diffRunning":  "RUNNING COMPLIANCE DIFF ENGINE",
+                           "diffComplete":  "COMPLIANCE DIFF COMPLETE",
+                           "changesDetected":  "Changes detected",
+                           "improvements":  "Improvements",
+                           "regressions":  "Regressions",
+                           "suspicious":  "Suspicious",
+                           "riskScore":  "Total Risk Score",
+                           "rollbackCmds":  "Rollback commands",
+                           "aiAnalysis":  "AI Analysis",
+                           "localRules":  "LOCAL RULES",
+                           "htmlReport":  "HTML Report",
+                           "csvExport":  "CSV Export",
+                           "rollbackScript":  "Rollback Script",
+                           "quickDiffComplete":  "QUICKDIFF COMPLETE",
+                           "actionExecuted":  "Action executed",
+                           "actionDuration":  "Action duration",
+                           "cleanupTitle":  "SNAPSHOT CLEANUP",
+                           "cleanupConfirm":  "Proceed? (Y/N)",
+                           "cleanupComplete":  "CLEANUP COMPLETE",
+                           "cleanupNone":  "Nothing to clean up. All hosts have {keep} or fewer snapshots.",
+                           "cleanupDelete":  "Will delete {count} snapshot(s) + {sidecars} sidecar(s) = {size}",
+                           "diagTitle":  "CONFIGURATION DIAGNOSTICS",
+                           "diagConfigFound":  "Config file: FOUND -\u003e {path}",
+                           "diagConfigMissing":  "Config file: NOT FOUND",
+                           "diagValues":  "Loaded values:",
+                           "diagKeyCheck":  "API key format check:",
+                           "diagKeyValid":  "Format: VALID (matches sk-ant-api03-... pattern)",
+                           "diagApiPing":  "Live API ping...",
+                           "diagTestModel":  "Testing model: {model} ...",
+                           "diagSuccess":  "{model} : SUCCESS (id: {id})",
+                           "diagNoCredits":  "NO CREDITS",
+                           "diagAddCredits":  "Add credits: https://console.anthropic.com -\u003e Plans \u0026 Billing",
+                           "diagFsLayout":  "USB filesystem layout:",
+                           "diagSnapshots":  "Existing snapshots for {host} on this USB:",
+                           "diagComplete":  "DIAGNOSTICS COMPLETE",
+                           "noReports":  "No compliance diff reports found.",
+                           "aiSkipped":  "AI analysis skipped (no API key or -NoAI specified).",
+                           "aiPreparing":  "Preparing diff payload for AI analysis ({count} changes)...",
+                           "aiCalling":  "Calling {model} ({size} KB payload)...",
+                           "aiComplete":  "AI analysis complete ({model}). Assessment: {assessment}",
+                           "aiNoCreditsMsg":  "AI: insufficient credits — {detail}",
+                           "aiFallback":  "Falling back to local rule-based classification.",
+                           "aiAllUnavailable":  "All AI models unavailable. Falling back to local rules."
+                       },
+    "tools":  {
+                  "autoFix":  "Self-healing engine: auto-remediates 40+ issues",
+                  "azureADJoin":  "Entra ID enrollment and readiness check",
+                  "complianceDiff":  "Compliance diff with MITRE mapping",
+                  "dashboard":  "This dashboard",
+                  "diskAnalysis":  "Storage, SMART, BitLocker, duplicates",
+                  "fieldOps":  "Master command center (all 5 engines)",
+                  "fleetReport":  "Fleet intelligence report",
+                  "netRepair":  "Network diagnostics and repair",
+                  "pcHealth":  "Hardware health check",
+                  "playbook":  "Automated deployment playbook runner",
+                  "securityScan":  "Security posture audit",
+                  "softwareDeploy":  "Software deployment + download center",
+                  "vpnSetup":  "GlobalProtect VPN setup",
+                  "registerProtocol":  "Register fieldops:// (run once as admin)"
+              },
+    "protocol":  {
+                     "title":  "PROTOCOL HANDLER SETUP",
+                     "registering":  "Registering fieldops:// protocol...",
+                     "registered":  "Protocol registered successfully",
+                     "unregistering":  "Unregistering fieldops:// protocol...",
+                     "unregistered":  "Protocol unregistered",
+                     "handlerTitle":  "PROTOCOL HANDLER",
+                     "received":  "Received URL: {url}",
+                     "launching":  "Launching: {path}",
+                     "launched":  "Process started successfully",
+                     "setupComplete":  "SETUP COMPLETE",
+                     "setupSteps":  "Next steps:",
+                     "step1":  "Open the Dashboard: .\\Invoke-Dashboard.ps1 -OpenDashboard",
+                     "step2":  "Click any command button — the browser will ask permission",
+                     "step3":  "The script runs in a new PowerShell window."
+                 },
+    "reportTypes":  {
+                        "health":  "Health",
+                        "disk":  "Disk",
+                        "network":  "Network",
+                        "security":  "Security",
+                        "identity":  "Identity",
+                        "compliance":  "Compliance",
+                        "master":  "Master",
+                        "rollback":  "Rollback",
+                        "fleet":  "Fleet",
+                        "incident":  "Incident",
+                        "deploy":  "Deploy",
+                        "dashboard":  "Dashboard",
+                        "other":  "Other"
+                    },
+    "snapTypes":  {
+                      "before":  "Before",
+                      "after":  "After",
+                      "snapshot":  "Snapshot"
+                  },
+    "summary":  {
+                    "file":  "File",
+                    "engines":  "Engines",
+                    "tools":  "Tools",
+                    "reports":  "Reports",
+                    "snapshots":  "Snapshots",
+                    "playbooks":  "Playbooks",
+                    "isos":  "ISOs",
+                    "drivers":  "Drivers",
+                    "machine":  "Machine",
+                    "protocol":  "Protocol",
+                    "warnings":  "WARNINGS",
+                    "across":  "across",
+                    "folders":  "folders",
+                    "withData":  "with data",
+                    "protoActive":  "ACTIVE (fieldops://)",
+                    "protoInactive":  "INACTIVE (copy mode)",
+                    "collectorsFailed":  "collector(s) failed (shown as banner in dashboard)"
+                },
+    "launcher":  {
+                     "banner":  {
+                                    "title":  "FIELDOPS PRO  v2.1    ENTERPRISE FIELD IT TOOLKIT    EU DEPLOYMENT"
+                                },
+                     "bar":  {
+                                 "host":  "HOST",
+                                 "ip":  "IP",
+                                 "time":  "TIME",
+                                 "status":  "STATUS",
+                                 "os":  "OS",
+                                 "ram":  "RAM",
+                                 "cpu":  "CPU",
+                                 "noip":  "No IP",
+                                 "aad":  "Azure AD Joined",
+                                 "wpj":  "Workplace Joined",
+                                 "workgroup":  "Workgroup",
+                                 "unknown":  "Unknown",
+                                 "bios":  "BIOS",
+                                 "serial":  "SERIAL",
+                                 "model":  "MODEL"
+                             },
+                     "col":  {
+                                 "diag":  "DIAGNOSTIC \u0026 ANALYSIS",
+                                 "deploy":  "DEPLOYMENT \u0026 REPORTING"
+                             },
+                     "menu":  {
+                                  "pchealth":  "PC Health Diagnostic",
+                                  "network":  "Network Repair \u0026 Testing",
+                                  "security":  "Security Scan",
+                                  "disk":  "Disk Analysis \u0026 SMART Health",
+                                  "softdeploy":  "Software Deployment",
+                                  "aadjoin":  "Azure AD Join Workflow",
+                                  "vpn":  "GlobalProtect VPN Setup",
+                                  "incident":  "Incident Report (HTML)",
+                                  "compliance":  "Compliance Snapshot \u0026 Diff (16 categories, MITRE ATT\u0026CK mappings, GZip)",
+                                  "dashboard":  "Build HTML Dashboard (single-file report from latest snapshots)",
+                                  "fleet":  "Fleet Report (multi-host rollup of last 90 days)",
+                                  "playbook":  "Run Playbook (hardware-audit, security-hardening, etc.)",
+                                  "autofix":  "AutoFix (guided remediation)",
+                                  "tools":  "Portable Tools Menu  [ HWiNFO64 | CrystalDiskInfo | Nmap | Wireshark | Sysinternals | NirSoft ]",
+                                  "logs":  "View Session Logs",
+                                  "logsuffix":  "log files on USB",
+                                  "quit":  "Quit / Reboot / Shutdown",
+                                  "invalid":  "Invalid option.",
+                                  "autofixplan":  "AutoFix Plan-Before-Execute (AI risk analysis per fix, full audit trail)"
+                              },
+                     "prompt":  {
+                                    "option":  "Enter option"
+                                },
+                     "run":  {
+                                 "running":  "Running",
+                                 "path":  "Path",
+                                 "notfound":  "Script not found",
+                                 "notfound.hint":  "Verify this file exists on the USB.",
+                                 "error":  "Runtime error",
+                                 "completed":  "Completed. Press any key to return to the menu..."
+                             },
+                     "logs":  {
+                                  "title":  "SESSION LOGS (most recent 20)",
+                                  "notfound":  "LOGS folder not found.",
+                                  "empty":  "No log files yet."
+                              },
+                     "quit":  {
+                                  "reboot":  "Reboot system",
+                                  "shutdown":  "Shutdown system",
+                                  "exit":  "Exit to PowerShell",
+                                  "cancel":  "Cancel",
+                                  "choice":  "Choice",
+                                  "rebooting":  "Rebooting...",
+                                  "shuttingdown":  "Shutting down...",
+                                  "title":  "QUIT FIELDOPS PRO"
+                              },
+                     "tools":  {
+                                   "unavailable":  "Portable Tools Menu is unavailable -- FieldOps-Tools.ps1 was not loaded."
+                               },
+                     "common":  {
+                                    "anykey":  "Press any key to return..."
+                                },
+                     "postop":  {
+                                    "opt":  {
+                                                "open":  "Open the report in your browser",
+                                                "copy":  "Copy the file path to clipboard",
+                                                "autofixplan":  "Run AutoFix Plan-Before-Execute on this snapshot",
+                                                "menu":  "Return to main menu",
+                                                "folder":  "Open the REPORTS folder in Explorer"
+                                            },
+                                    "launchplan":  "Launching AutoFix Plan-Before-Execute...",
+                                    "what":  "What next?",
+                                    "title":  "Operation complete",
+                                    "nohtml":  "No HTML report to open from this run.",
+                                    "foldopen":  "Opened folder",
+                                    "copied":  "Copied to clipboard",
+                                    "copyerr":  "Could not copy to clipboard",
+                                    "openerr":  "Could not open file",
+                                    "folderr":  "Could not open folder",
+                                    "opened":  "Opened",
+                                    "choice":  "Choice"
+                                }
+                 },
+    "autofixplan":  {
+                        "banner":  {
+                                       "title":  "FIELDOPS PRO  --  AUTOFIX  PLAN-BEFORE-EXECUTE  v1.0"
+                                   },
+                        "bar":  {
+                                    "host":  "Host",
+                                    "time":  "Time",
+                                    "admin":  "Administrator",
+                                    "locale":  "Locale"
+                                },
+                        "dryrun":  "DRY RUN",
+                        "dryrun.desc":  "Plans only -- no fix will be applied",
+                        "dryrun.skip":  "Skipping execution",
+                        "dryrun.next":  "Press any key for next fix...",
+                        "common":  {
+                                       "anykey":  "Press any key to continue..."
+                                   },
+                        "loading":  {
+                                        "rules":  "Loading fix-rule database from Invoke-AutoFix.ps1",
+                                        "rulesok":  "Loaded",
+                                        "rulesword":  "rules",
+                                        "rulesfail":  "Could not load fix rules"
+                                    },
+                        "scanning":  "Scanning the machine against all rules",
+                        "detect":  {
+                                       "none":  "No issues detected. Machine is in compliance with all rules.",
+                                       "none.targeted":  "No issue detected for the specified fix ID",
+                                       "found":  "Detected",
+                                       "foundsuffix":  "fix(es) to review"
+                                   },
+                        "flow":  {
+                                     "intro":  "You will see an AI-generated risk plan for each fix before any change is made.",
+                                     "intro2":  "You approve or skip each fix individually.",
+                                     "aborted":  "Aborted by operator. No further fixes will be applied.",
+                                     "skipped":  "Skipped.",
+                                     "next":  "Press any key for next fix..."
+                                 },
+                        "fix":  {
+                                    "label":  "Fix"
+                                },
+                        "plan":  {
+                                     "generating":  "Generating risk plan"
+                                 },
+                        "prompt":  {
+                                       "apply":  "Apply this fix",
+                                       "skip":  "Skip (do not apply)",
+                                       "quit":  "Quit AutoFixPlan (no further fixes)",
+                                       "choice":  "Choice"
+                                   },
+                        "apply":  {
+                                      "applying":  "Applying",
+                                      "verified":  "Verified -- fix took effect",
+                                      "unverified":  "Applied but verification did not confirm",
+                                      "verifyerror":  "Verify check threw",
+                                      "failed":  "Fix command failed"
+                                  },
+                        "summary":  {
+                                        "title":  "SESSION SUMMARY",
+                                        "detected":  "Detected",
+                                        "applied":  "Applied",
+                                        "failed":  "Failed",
+                                        "skipped":  "Skipped",
+                                        "reboot":  "A reboot is required to complete one or more applied fixes.",
+                                        "logwritten":  "Session log",
+                                        "lognofail":  "Could not write session log"
+                                    }
+                    },
+    "report":  {
+                   "anssi":  {
+                                 "_meta":  {
+                                               "framework":  "ANSSI - IT Hygiene Guide",
+                                               "frameworkEdition":  "2017",
+                                               "frameworkRules":  "42",
+                                               "frameworkLevel":  "Standard",
+                                               "frameworkSource":  "https://www.ssi.gouv.fr/uploads/2017/01/guide_hygiene_informatique_anssi.pdf",
+                                               "nis2CrossRefAvailable":  "false",
+                                               "rgsCrossRefAvailable":  "false"
+                                           },
+                                 "brand":  {
+                                               "mark":  "FieldOps Pro - Service Diagnostic"
+                                           },
+                                 "cover":  {
+                                               "documentType":  "Technical Audit Report",
+                                               "title":  "IT Hygiene Diagnostic",
+                                               "subtitle":  "Compliance with the ANSSI IT Hygiene Guide - 42-measure reference framework",
+                                               "disclaimerLead":  "Informative diagnostic.",
+                                               "disclaimerBody":  "This document constitutes neither an ANSSI certification nor a legal opinion. It provides a technical mapping of the audited workstation\u0027s security posture against the ANSSI IT Hygiene Guide (42-measure reference framework).",
+                                               "spectrumLabel":  "Compliance spectrum - 42 measures",
+                                               "spectrumCaption":  "Imprint {reportId} - {dateHuman}",
+                                               "machineLabel":  "Audited workstation",
+                                               "findingsLabel":  "Priority points of attention",
+                                               "imprintLabel":  "Compliance imprint",
+                                               "imprintCaption":  "42 measures - 10 modules",
+                                               "sha256Label":  "SHA-256 of content",
+                                               "centerHostLabel":  "SAMPLE-WS01",
+                                               "centerRulesLabel":  "42 rules"
+                                           },
+                                 "machineFields":  {
+                                                       "hostname":  "Hostname",
+                                                       "makeModel":  "Make / model",
+                                                       "serial":  "Serial number",
+                                                       "os":  "Operating system",
+                                                       "directory":  "Directory",
+                                                       "date":  "Audit date",
+                                                       "technician":  "Technician",
+                                                       "dateSuffix":  "(local time)"
+                                                   },
+                                 "directoryStates":  {
+                                                         "azureAD":  "Azure AD Joined",
+                                                         "workplace":  "Workplace Joined",
+                                                         "domain":  "Domain Joined",
+                                                         "none":  "Not joined to a directory",
+                                                         "unknown":  "Directory state undetermined"
+                                                     },
+                                 "accountState":  {
+                                                      "active":  "enabled",
+                                                      "disabled":  "disabled"
+                                                  },
+                                 "overview":  {
+                                                  "sectionTitle":  "Overview",
+                                                  "moduleCoverageTitle":  "Coverage by module",
+                                                  "moduleCoverageLead":  "Distribution of verifications across the 10 modules of the IT Hygiene Guide.",
+                                                  "legendTitle":  "Reading the diagnostic",
+                                                  "legendCv":  "Verified (CV) - rule whose compliance at the Standard level is observed by direct technical control on the workstation.",
+                                                  "legendPv":  "Partially verified (PV) - rule for which some aspects are observed; others require additional manual, contextual, or organisational evaluation.",
+                                                  "legendHp":  "Out of scope (HP) - organisational, contractual, or inter-machine architecture rule, not technically attestable on an isolated workstation."
+                                              },
+                                 "status":  {
+                                                "cv":  "Verified",
+                                                "pv":  "Partial",
+                                                "hp":  "Out of scope",
+                                                "cvLong":  "Verified",
+                                                "pvLong":  "Partially verified",
+                                                "hpLong":  "Out of technical scope",
+                                                "cvAbbrev":  "Verif.",
+                                                "pvAbbrev":  "Partial",
+                                                "hpAbbrev":  "OoS"
+                                            },
+                                 "summary":  {
+                                                 "cvCount":  "verified",
+                                                 "pvCount":  "partially verified",
+                                                 "hpCount":  "out of technical scope",
+                                                 "rulesUnit":  "rules",
+                                                 "modulesUnit":  "modules"
+                                             },
+                                 "modules":  {
+                                                 "I":  {
+                                                           "title":  "Raise awareness and train"
+                                                       },
+                                                 "II":  {
+                                                            "title":  "Know the information system"
+                                                        },
+                                                 "III":  {
+                                                             "title":  "Authenticate and control access"
+                                                         },
+                                                 "IV":  {
+                                                            "title":  "Secure workstations"
+                                                        },
+                                                 "V":  {
+                                                           "title":  "Secure the network"
+                                                       },
+                                                 "VI":  {
+                                                            "title":  "Secure administration"
+                                                        },
+                                                 "VII":  {
+                                                             "title":  "Manage mobility"
+                                                         },
+                                                 "VIII":  {
+                                                              "title":  "Keep the IS up to date"
+                                                          },
+                                                 "IX":  {
+                                                            "title":  "Supervise, audit, react"
+                                                        },
+                                                 "X":  {
+                                                           "title":  "Going further"
+                                                       }
+                                             },
+                                 "modulePage":  {
+                                                    "label":  "Module",
+                                                    "footerRef":  "Reference framework - ANSSI - IT Hygiene Guide - module {num}",
+                                                    "counts":  {
+                                                                   "cv":  "Verif.",
+                                                                   "pv":  "Partial",
+                                                                   "hp":  "OoS"
+                                                               }
+                                                },
+                                 "rules":  {
+                                               "R1":  {
+                                                          "name":  "Train operational teams in information system security",
+                                                          "detail":  {
+                                                                         "hp_default":  "Operational team training - organisational measure, not technically observable on the workstation."
+                                                                     }
+                                                      },
+                                               "R2":  {
+                                                          "name":  "Raise user awareness of basic IT security practices",
+                                                          "detail":  {
+                                                                         "hp_default":  "User awareness - organisational measure."
+                                                                     }
+                                                      },
+                                               "R3":  {
+                                                          "name":  "Master outsourcing risks",
+                                                          "detail":  {
+                                                                         "hp_default":  "Outsourcing risk management - contractual measure."
+                                                                     }
+                                                      },
+                                               "R4":  {
+                                                          "name":  "Identify the most sensitive information and servers and maintain a network diagram",
+                                                          "detail":  {
+                                                                         "pv_local_only":  "Local network mapping observed (adapters, IP addresses, gateway). Global IS inventory and data classification remain outside the workstation scope."
+                                                                     }
+                                                      },
+                                               "R5":  {
+                                                          "name":  "Maintain an exhaustive inventory of privileged accounts and keep it up to date",
+                                                          "detail":  {
+                                                                         "cv_observed":  "Local administrator inventory established: {adminList}.",
+                                                                         "pv_access_denied":  "Local administrator enumeration not available on this workstation (access denied). Manual verification required."
+                                                                     }
+                                                      },
+                                               "R6":  {
+                                                          "name":  "Organise procedures for arrival, departure, and change of role of users",
+                                                          "detail":  {
+                                                                         "hp_default":  "Arrival, departure, and role change procedures - HR and governance domain."
+                                                                     }
+                                                      },
+                                               "R7":  {
+                                                          "name":  "Authorise network connection only to mastered equipment",
+                                                          "detail":  {
+                                                                         "pv_joined":  "Workstation joined to a directory - join confirmed. Network admission control (802.1X) is not observable from the workstation.",
+                                                                         "pv_unknown":  "Directory join status undetermined."
+                                                                     }
+                                                      },
+                                               "R8":  {
+                                                          "name":  "Identify each person accessing the system by name and distinguish user and administrator roles",
+                                                          "detail":  {
+                                                                         "cv_both_observed":  "Local administrators: {adminList}. Guest account: {guestState}.",
+                                                                         "pv_guest_only":  "Guest account {guestState} (observed). Administrator account enumeration not available (access denied).",
+                                                                         "pv_default":  "Local account enumeration unavailable."
+                                                                     }
+                                                      },
+                                               "R9":  {
+                                                          "name":  "Assign correct rights to sensitive resources of the information system",
+                                                          "detail":  {
+                                                                         "pv_default":  "SMB share inventory captured as a snapshot. Access rights adequacy is not assessable without business context."
+                                                                     }
+                                                      },
+                                               "R10":  {
+                                                           "name":  "Define and verify password selection and sizing rules",
+                                                           "detail":  {
+                                                                          "pv_default":  "Local password policy is not extracted by current probes (G1 extension planned)."
+                                                                      }
+                                                       },
+                                               "R11":  {
+                                                           "name":  "Protect passwords stored on systems",
+                                                           "detail":  {
+                                                                          "pv_with_lsa":  "Credential Manager: {credInfo}. LSA (PPL) protection active. Coverage of storage vectors remains partial.",
+                                                                          "pv_without_lsa":  "Credential Manager: {credInfo}. Coverage of storage vectors remains partial.",
+                                                                          "pv_no_inspect":  "Credential Manager not inspected."
+                                                                      }
+                                                       },
+                                               "R12":  {
+                                                           "name":  "Change default authentication elements on equipment and services",
+                                                           "detail":  {
+                                                                          "pv_observed":  "Auto-logon: {autoLogonValue}. Default authentications of other components have not been tested.",
+                                                                          "pv_default":  "No auto-logon detected in the registry. Default authentications of other components have not been tested."
+                                                                      }
+                                                       },
+                                               "R13":  {
+                                                           "name":  "Favour strong authentication where possible",
+                                                           "detail":  {
+                                                                          "cv_full":  "Strong authentication configured: Windows Hello ({helloValue}), TPM operational.",
+                                                                          "pv_tpm_ok":  "TPM 2.0 present and operational - strong authentication capability available. Effective Windows Hello configuration is not observed.",
+                                                                          "pv_default":  "Strong authentication state undetermined."
+                                                                      }
+                                                       },
+                                               "R14":  {
+                                                           "name":  "Establish a minimum security level across the entire IT estate",
+                                                           "detail":  {
+                                                                          "cv_default":  "Compliant at Standard level: local firewall active on all profiles, Microsoft Defender in real-time protection, BitLocker active on the system volume. Autorun element detection is not yet covered (G2 extension).",
+                                                                          "pv_partial":  "Partial security baseline: {bits}. Standard level not fully achieved."
+                                                                      },
+                                                           "phrases":  {
+                                                                           "fwOk":  "firewall active",
+                                                                           "fwNotConfirmed":  "firewall not confirmed",
+                                                                           "defOk":  "Defender active",
+                                                                           "defNotConfirmed":  "Defender not confirmed",
+                                                                           "blOk":  "BitLocker active",
+                                                                           "blNotConfirmed":  "BitLocker not confirmed"
+                                                                       }
+                                                       },
+                                               "R15":  {
+                                                           "name":  "Protect against threats related to removable media",
+                                                           "detail":  {
+                                                                          "pv_default":  "USB restriction policy / AppLocker is not extracted by current probes (G3 extension planned)."
+                                                                      }
+                                                       },
+                                               "R16":  {
+                                                           "name":  "Use a centralised management tool to homogenise security policies",
+                                                           "detail":  {
+                                                                          "cv_default":  "Workstation joined to a directory - centralised estate management confirmed, presumably via Microsoft Intune.",
+                                                                          "pv_unknown":  "Directory join state undetermined."
+                                                                      }
+                                                       },
+                                               "R17":  {
+                                                           "name":  "Activate and configure the local firewall on workstations",
+                                                           "detail":  {
+                                                                          "cv_all_active":  "All {count} Windows Firewall profiles (Domain, Private, Public) are active. Reinforced-level configuration (administration port blocking) is not evaluated.",
+                                                                          "pv_partial":  "{passing}/{total} firewall profile(s) active. The firewall must be active on all profiles.",
+                                                                          "pv_no_data":  "Local firewall state not extracted."
+                                                                      }
+                                                       },
+                                               "R18":  {
+                                                           "name":  "Encrypt sensitive data transmitted over the Internet",
+                                                           "detail":  {
+                                                                          "hp_default":  "In-transit data encryption - depends on application and messaging usage, outside the workstation scope."
+                                                                      }
+                                                       },
+                                               "R19":  {
+                                                           "name":  "Segment the network and isolate zones of varying exposure",
+                                                           "detail":  {
+                                                                          "pv_default":  "Local subnet and virtual adapters observed. Network segmentation architecture is outside the workstation scope."
+                                                                      }
+                                                       },
+                                               "R20":  {
+                                                           "name":  "Ensure security of Wi-Fi access networks and separation of usages",
+                                                           "detail":  {
+                                                                          "cv_wpa3":  "Wi-Fi connection encrypted with WPA3 - protocol compliant with current recommendations.",
+                                                                          "cv_wpa2":  "Active Wi-Fi connection encrypted with WPA2-Personal. Encryption protocol compliant with current recommendations.",
+                                                                          "pv_weak":  "Wi-Fi network with weak or absent encryption ({algorithm}). Migration to WPA2 or WPA3 recommended.",
+                                                                          "pv_other":  "Wi-Fi observed: {value}. Encryption level to be confirmed.",
+                                                                          "pv_no_wifi":  "No Wi-Fi connection observed at the time of the diagnostic."
+                                                                      }
+                                                       },
+                                               "R21":  {
+                                                           "name":  "Use secure network protocols wherever they exist",
+                                                           "detail":  {
+                                                                          "pv_smbv1_observed":  "SMBv1: {smbStatus}. Complete audit of obsolete protocols (TLS, LLMNR, NetBIOS) not yet implemented.",
+                                                                          "pv_default":  "SMBv1 absent from the workstation. Complete audit of obsolete protocols not yet implemented."
+                                                                      }
+                                                       },
+                                               "R22":  {
+                                                           "name":  "Establish a secure Internet access gateway",
+                                                           "detail":  {
+                                                                          "pv_default":  "Internet access configuration: {proxyConfig}. URL filtering and secure DNS are not evaluated in detail.",
+                                                                          "pv_no_analysis":  "Internet access gateway not analysed."
+                                                                      }
+                                                       },
+                                               "R23":  {
+                                                           "name":  "Isolate Internet-facing services from the rest of the information system",
+                                                           "detail":  {
+                                                                          "hp_default":  "Isolation of exposed services - network architecture domain, outside the workstation scope."
+                                                                      }
+                                                       },
+                                               "R24":  {
+                                                           "name":  "Protect professional email",
+                                                           "detail":  {
+                                                                          "hp_default":  "Email security - server-side configuration, outside the workstation scope."
+                                                                      }
+                                                       },
+                                               "R25":  {
+                                                           "name":  "Secure dedicated network interconnections with partners",
+                                                           "detail":  {
+                                                                          "hp_default":  "Partner interconnections - inter-entity architecture, outside the workstation scope."
+                                                                      }
+                                                       },
+                                               "R26":  {
+                                                           "name":  "Control and protect access to server rooms and technical premises",
+                                                           "detail":  {
+                                                                          "hp_default":  "Physical access - organisational measure, outside the software scope."
+                                                                      }
+                                                       },
+                                               "R27":  {
+                                                           "name":  "Forbid Internet access from workstations or servers used for IS administration",
+                                                           "detail":  {
+                                                                          "hp_default":  "Administration workstation usage - architecture and usage policy, outside scope."
+                                                                      }
+                                                       },
+                                               "R28":  {
+                                                           "name":  "Use a dedicated and isolated network for IS administration",
+                                                           "detail":  {
+                                                                          "hp_default":  "Administration-dedicated network - network architecture, outside the workstation scope."
+                                                                      }
+                                                       },
+                                               "R29":  {
+                                                           "name":  "Limit administration rights on workstations to strict operational need",
+                                                           "detail":  {
+                                                                          "cv_full":  "Elevation control: UAC {uacPolicy}. Local administrators: {adminList}.",
+                                                                          "pv_uac_only":  "UAC active (policy: {uacPolicy}). Administrator account enumeration not available (access denied).",
+                                                                          "pv_no_data":  "UAC state and number of administrators not extracted."
+                                                                      }
+                                                       },
+                                               "R30":  {
+                                                           "name":  "Take physical security measures for mobile terminals",
+                                                           "detail":  {
+                                                                          "pv_default":  "Hardware identified (portable workstation). Physical security measures are not technically observable.",
+                                                                          "pv_no_hardware_id":  "Hardware identification unavailable."
+                                                                      }
+                                                       },
+                                               "R31":  {
+                                                           "name":  "Encrypt sensitive data, particularly on potentially losable hardware",
+                                                           "detail":  {
+                                                                          "cv_single_volume":  "System volume encrypted by BitLocker (AES encryption). On a portable workstation, the system volume is the primary data-loss vector.",
+                                                                          "cv_all_volumes":  "All {total} detected volumes are encrypted by BitLocker (AES encryption).",
+                                                                          "pv_partial":  "{on}/{total} volume(s) encrypted. Unencrypted volumes should be encrypted to limit risk in case of loss.",
+                                                                          "pv_no_data":  "BitLocker status unavailable."
+                                                                      }
+                                                       },
+                                               "R32":  {
+                                                           "name":  "Secure the network connection of workstations in mobile situations",
+                                                           "detail":  {
+                                                                          "cv_connected":  "VPN tunnel active ({vpnInfo}). Mobile connection encrypted.",
+                                                                          "pv_inactive":  "VPN client installed but inactive at the time of the diagnostic ({vpnInfo}). Cryptographic tunnel quality is not assessable offline.",
+                                                                          "pv_no_vpn":  "No VPN solution detected."
+                                                                      }
+                                                       },
+                                               "R33":  {
+                                                           "name":  "Adopt security policies dedicated to mobile terminals",
+                                                           "detail":  {
+                                                                          "hp_default":  "Mobile terminal policy - concerns smartphones and tablets, outside the scope of a Windows workstation."
+                                                                      }
+                                                       },
+                                               "R34":  {
+                                                           "name":  "Define a policy for updating IS components",
+                                                           "detail":  {
+                                                                          "cv_with_failures":  "Windows Update operational. {count} update failure(s) detected in the last 30 days, to be retried.",
+                                                                          "cv_clean":  "Windows Update operational - no recent failures detected.",
+                                                                          "pv_no_data":  "Update policy not observed in probes."
+                                                                      }
+                                                       },
+                                               "R35":  {
+                                                           "name":  "Anticipate end of maintenance of software and systems and limit software adhesions",
+                                                           "detail":  {
+                                                                          "cv_obsolete_drivers":  "System under active support. {count} obsolete driver(s) detected, predating supported versions - replacement recommended.",
+                                                                          "cv_clean":  "System and components under active support - no obsolete components detected."
+                                                                      }
+                                                       },
+                                               "R36":  {
+                                                           "name":  "Activate and configure logs of the most important components",
+                                                           "detail":  {
+                                                                          "cv_full":  "Active logging: connection auditing ({auditMode}), PowerShell Script Block Logging active.",
+                                                                          "pv_partial":  "{bits}.",
+                                                                          "pv_no_data":  "Log configuration not extracted."
+                                                                      },
+                                                           "phrases":  {
+                                                                           "pwshActive":  "PowerShell logging (Script Block Logging) active",
+                                                                           "auditWeak":  "connection audit policy at minimal level - reinforcement recommended for security event traceability",
+                                                                           "auditObservedTemplate":  "connection audit: {value}"
+                                                                       }
+                                                       },
+                                               "R37":  {
+                                                           "name":  "Define and apply a backup policy for critical components",
+                                                           "detail":  {
+                                                                          "hp_default":  "Backup policy - infrastructure and procedures domain, outside the workstation scope."
+                                                                      }
+                                                       },
+                                               "R38":  {
+                                                           "name":  "Carry out regular security controls and audits and apply associated corrective actions",
+                                                           "detail":  {
+                                                                          "cv_default":  "Execution of FieldOps Pro itself constitutes a regular technical audit control, directly responding to this measure."
+                                                                      }
+                                                       },
+                                               "R39":  {
+                                                           "name":  "Designate an information system security contact",
+                                                           "detail":  {
+                                                                          "hp_default":  "SSI reference designation - organisational measure."
+                                                                      }
+                                                       },
+                                               "R40":  {
+                                                           "name":  "Define a security incident management procedure",
+                                                           "detail":  {
+                                                                          "hp_default":  "Incident management procedure - organisational measure."
+                                                                      }
+                                                       },
+                                               "R41":  {
+                                                           "name":  "Conduct a formal risk analysis",
+                                                           "detail":  {
+                                                                          "hp_default":  "Formal risk analysis (EBIOS RM methodology) - methodological approach, outside the technical scope."
+                                                                      }
+                                                       },
+                                               "R42":  {
+                                                           "name":  "Favour the use of ANSSI-qualified products and services",
+                                                           "detail":  {
+                                                                          "pv_default":  "Software inventory captured as a snapshot. Automatic cross-referencing with the ANSSI catalogue of qualified products is not yet implemented (G7 extension)."
+                                                                      }
+                                                       }
+                                           },
+                                 "ruleNote":  {
+                                                  "prefix":  "Rule {num} -"
+                                              },
+                                 "evaluator":  {
+                                                   "evaluatedRules":  "Evaluating 42 ANSSI rules...",
+                                                   "evaluationFailed":  "Evaluation of rule {rid}: internal failure.",
+                                                   "evaluationFailedFallback":  "Evaluation interrupted.",
+                                                   "noTopFinding":  "No priority point of attention identified on this workstation."
+                                               },
+                                 "conclusion":  {
+                                                    "sectionTitle":  "Conclusion",
+                                                    "synthesisTitle":  "Synthesis and attestation",
+                                                    "perimeterLabel":  "Diagnostic perimeter",
+                                                    "perimeterBody":  "This technical diagnostic automatically verifies {cvCount} ANSSI hygiene rules out of 42 at the local workstation level, and provides observational elements for {pvCount} additional rules. The remaining {hpCount} rules pertain to governance, inter-machine architecture, or organisational procedures that cannot be attested by a technical tool on an isolated workstation and require contextual evaluation.",
+                                                    "limitsLabel":  "Explicit limits",
+                                                    "limit1":  "Informative diagnostic. This document constitutes neither an ANSSI certification nor an attestation within the meaning of the IT Hygiene Guide.",
+                                                    "limit2":  "ANSSI is the sole authority empowered to deliver official qualifications or certifications (see rule 42).",
+                                                    "limit3":  "Coverage limited to the audited workstation. Organisational evaluation (training, procedures, governance) is the subject of a separate audit.",
+                                                    "limit4":  "State observed at a given point in time. Any subsequent configuration change invalidates the finding.",
+                                                    "limit5":  "No ANSSI affiliation, accreditation, partnership, or approval. The term \"ANSSI\" is used in reference to the public document IT Hygiene Guide.",
+                                                    "integrityLabel":  "Cryptographic integrity",
+                                                    "integrityBody":  "SHA-256 imprint of the report content - any subsequent modification of this document would invalidate this signature:",
+                                                    "technicianLabel":  "Auditing technician",
+                                                    "contactLabel":  "Recipient contact",
+                                                    "contactPlaceholder":  "To be completed",
+                                                    "signatureLabel":  "Date and signature",
+                                                    "footerRef":  "Reference framework - ANSSI - IT Hygiene Guide - 42 measures - 2017"
+                                                },
+                                 "pageHeader":  {
+                                                    "pageOf":  "Page {current} / {total}"
+                                                }
+                             }
+               }
 }

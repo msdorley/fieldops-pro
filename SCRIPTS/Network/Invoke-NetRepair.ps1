@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     FieldOps Pro - Network Diagnostic & Repair Engine v2.0
 .DESCRIPTION
@@ -900,6 +900,35 @@ function toggleFix(h){var b=h.nextElementSibling,a=h.querySelector('.fix-arrow')
 "@
 
 $HtmlContent | Out-File -FilePath $ReportFile -Encoding UTF8 -Force
+
+# FieldOps-ANSSI-JSON-Sidecar-Marker - DO NOT REMOVE (idempotency check anchor)
+try {
+    $jsonFile = Join-Path $LogsPath ("NetRepair_${Hostname}_${Timestamp}.json")
+    $allChecks = @()
+    if (Get-Variable -Name 'Results' -Scope Script -EA SilentlyContinue) { $allChecks = @($script:Results) }
+    $allFindings = @()
+    if (Get-Variable -Name 'Findings' -Scope Script -EA SilentlyContinue) { $allFindings = @($script:Findings) }
+
+    $reportData = [PSCustomObject]@{
+        Engine     = 'NetRepair'
+        Version    = '2.0'
+        Hostname   = $Hostname
+        Timestamp  = (Get-Date -Format 'yyyy-MM-dd HH:mm:ss')
+        Summary    = @{
+            Total   = ($allChecks | Measure-Object).Count
+            Pass    = ($allChecks | Where-Object { $_.Status -eq 'Pass' }    | Measure-Object).Count
+            Warning = ($allChecks | Where-Object { $_.Status -eq 'Warning' } | Measure-Object).Count
+            Fail    = ($allChecks | Where-Object { $_.Status -eq 'Fail' }    | Measure-Object).Count
+            Info    = ($allChecks | Where-Object { $_.Status -eq 'Info' }    | Measure-Object).Count
+        }
+        Checks     = $allChecks
+        Findings   = $allFindings
+    }
+    $reportData | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $jsonFile -Encoding UTF8 -Force
+    Write-Host "  JSON  : $jsonFile" -ForegroundColor DarkGray
+} catch {
+    Write-Host "  [WARN] JSON sidecar failed: $($_.Exception.Message)" -ForegroundColor Yellow
+}
 Write-Host "  Report: $ReportFile" -ForegroundColor Green
 Write-Host "  Start-Process `"$ReportFile`"" -ForegroundColor Yellow
 Write-Host ''

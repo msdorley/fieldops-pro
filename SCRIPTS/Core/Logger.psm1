@@ -1,4 +1,4 @@
-# Logger.psm1 - GDPR-compliant structured logging (WinPE compatible)
+﻿# Logger.psm1 - GDPR-compliant structured logging (WinPE compatible)
 # GDPR rule: log only technical data. No usernames, passwords, or personal data.
 
 $script:Session = @{
@@ -47,7 +47,7 @@ function Write-Log {
         } catch {}
     }
     $colors = @{ INFO = "Cyan"; OK = "Green"; WARN = "Yellow"; ERROR = "Red" }
-    Write-Host "[$Level] $LogEvent -- $Detail" -ForegroundColor $colors[$Level]
+    Write-Host "[$Level] $LogEvent — $Detail" -ForegroundColor $colors[$Level]
 }
 
 function Stop-Log {
