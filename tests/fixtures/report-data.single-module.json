@@ -1,0 +1,89 @@
+﻿{
+    "Report":  {
+                   "Id":  "FOPS-20260521-TESTHOST-001",
+                   "GeneratedAt":  "2026-05-21T00:22:57.5262531+02:00",
+                   "GeneratedAtHuman":  "21/05/2026 00:22 (heure locale)",
+                   "Technician":  "technician.test",
+                   "CustomerContact":  "A completer"
+               },
+    "Machine":  {
+                    "Hostname":  "TESTHOST",
+                    "MakeModel":  "Dell Latitude 3450",
+                    "Serial":  "SN-TEST-0001",
+                    "Os":  "Windows 11 Professionnel (10.0.26200)",
+                    "Directory":  "Workplace Joined"
+                },
+    "Summary":  {
+                    "CountCV":  0,
+                    "CountPV":  0,
+                    "CountHP":  3,
+                    "Total":  3
+                },
+    "TopFindings":  [
+                        {
+                            "Title":  "Utiliser des protocoles reseau securises",
+                            "RuleNote":  "Regle 21 - SMBv1 absent du poste. Audit complet des protocoles obsoletes non encore implemente.",
+                            "RuleId":  "R21",
+                            "Status":  "pv"
+                        },
+                        {
+                            "Title":  "Definir une politique de mise a jour des composants",
+                            "RuleNote":  "Regle 34 - Windows Update operationnel. 3 echec(s) de mise a jour detecte(s) sur les 30 derniers jours, a relancer.",
+                            "RuleId":  "R34",
+                            "Status":  "cv"
+                        },
+                        {
+                            "Title":  "Anticiper la fin de maintenance des logiciels et systemes",
+                            "RuleNote":  "Regle 35 - Systeme sous support actif. 5 pilote(s) obsolete(s) detecte(s), anterieurs aux versions supportees - remplacement recommande.",
+                            "RuleId":  "R35",
+                            "Status":  "cv"
+                        }
+                    ],
+    "Modules":  [
+                    {
+                        "Number":  "I",
+                        "Title":  "Sensibiliser et former",
+                        "RuleCount":  3,
+                        "Counts":  {
+                                       "Cv":  0,
+                                       "Pv":  0,
+                                       "Hp":  3
+                                   }
+                    }
+                ],
+    "ModuleDetails":  [
+                          {
+                              "Number":  "I",
+                              "Title":  "Sensibiliser et former",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R1",
+                                                "Name":  "Former les equipes operationnelles a la securite des SI",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Formation des equipes operationnelles - releve organisationnel, non observable techniquement.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R2",
+                                                "Name":  "Sensibiliser les utilisateurs aux bonnes pratiques",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Sensibilisation des utilisateurs - releve organisationnel.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R3",
+                                                "Name":  "Maitriser les risques de l\u0027infogerance",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Maitrise des risques de l\u0027infogerance - releve contractuel.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            }
+                                        ]
+                          }
+                      ]
+}

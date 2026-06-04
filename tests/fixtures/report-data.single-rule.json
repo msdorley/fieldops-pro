@@ -1,0 +1,54 @@
+﻿{
+    "Report":  {
+                   "Id":  "FOPS-20260521-TESTHOST-001",
+                   "GeneratedAt":  "2026-05-21T00:22:57.5262531+02:00",
+                   "GeneratedAtHuman":  "21/05/2026 00:22 (heure locale)",
+                   "Technician":  "technician.test",
+                   "CustomerContact":  "A completer"
+               },
+    "Machine":  {
+                    "Hostname":  "TESTHOST",
+                    "MakeModel":  "Dell Latitude 3450",
+                    "Serial":  "SN-TEST-0001",
+                    "Os":  "Windows 11 Professionnel (10.0.26200)",
+                    "Directory":  "Workplace Joined"
+                },
+    "Summary":  {
+                    "CountCV":  0,
+                    "CountPV":  0,
+                    "CountHP":  1,
+                    "Total":  1
+                },
+    "TopFindings":  [
+
+                    ],
+    "Modules":  [
+                    {
+                        "Number":  "I",
+                        "Title":  "Sensibiliser et former",
+                        "RuleCount":  1,
+                        "Counts":  {
+                                       "Cv":  0,
+                                       "Pv":  0,
+                                       "Hp":  1
+                                   }
+                    }
+                ],
+    "ModuleDetails":  [
+                          {
+                              "Number":  "I",
+                              "Title":  "Sensibiliser et former",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R1",
+                                                "Name":  "Former les equipes operationnelles a la securite des SI",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Formation des equipes operationnelles - releve organisationnel, non observable techniquement.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            }
+                                        ]
+                          }
+                      ]
+}

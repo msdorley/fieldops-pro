@@ -1,0 +1,31 @@
+﻿{
+    "Report":  {
+                   "Id":  "FOPS-20260521-TESTHOST-001",
+                   "GeneratedAt":  "2026-05-21T00:22:57.5262531+02:00",
+                   "GeneratedAtHuman":  "21/05/2026 00:22 (heure locale)",
+                   "Technician":  "technician.test",
+                   "CustomerContact":  "A completer"
+               },
+    "Machine":  {
+                    "Hostname":  "TESTHOST",
+                    "MakeModel":  "Dell Latitude 3450",
+                    "Serial":  "SN-TEST-0001",
+                    "Os":  "Windows 11 Professionnel (10.0.26200)",
+                    "Directory":  "Workplace Joined"
+                },
+    "Summary":  {
+                    "CountCV":  7,
+                    "CountPV":  19,
+                    "CountHP":  16,
+                    "Total":  42
+                },
+    "TopFindings":  [
+
+                    ],
+    "Modules":  [
+
+                ],
+    "ModuleDetails":  [
+
+                      ]
+}
