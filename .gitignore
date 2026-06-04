@@ -101,3 +101,23 @@ _archive/
 reports-draft/
 *.config.local.json
 FieldOps.config.json
+
+# ---- Pester offline bundle (D2) -- intentionally tracked for air-gap USB ---
+!TOOLS/
+!TOOLS/PowerShellModules/
+!TOOLS/PowerShellModules/**
+!TOOLS/PowerShellModules/Populate-PesterBundle.ps1
+!TOOLS/PowerShellModules/README.md
+!TOOLS/PowerShellModules/Pester/
+!TOOLS/PowerShellModules/Pester/5.7.1/
+!TOOLS/PowerShellModules/Pester/5.7.1/**
+
+# ---- Pester offline bundle (D2) -- intentionally tracked for air-gap USB ---
+!TOOLS/
+!TOOLS/PowerShellModules/
+!TOOLS/PowerShellModules/**
+!TOOLS/PowerShellModules/Populate-PesterBundle.ps1
+!TOOLS/PowerShellModules/README.md
+!TOOLS/PowerShellModules/Pester/
+!TOOLS/PowerShellModules/Pester/5.7.1/
+!TOOLS/PowerShellModules/Pester/5.7.1/**
