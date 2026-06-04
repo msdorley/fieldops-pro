@@ -1,0 +1,567 @@
+﻿{
+    "Report":  {
+                   "Id":  "FOPS-20260521-TESTHOST-001",
+                   "GeneratedAt":  "2026-05-21T00:22:57.5262531+02:00",
+                   "GeneratedAtHuman":  "21/05/2026 00:22 (heure locale)",
+                   "Technician":  "technician.test",
+                   "CustomerContact":  "A completer"
+               },
+    "Machine":  {
+                    "Hostname":  "TESTHOST",
+                    "MakeModel":  "Dell Latitude 3450",
+                    "Serial":  "SN-TEST-0001",
+                    "Os":  "Windows 11 Professionnel (10.0.26200)",
+                    "Directory":  "Workplace Joined"
+                },
+    "Summary":  {
+                    "CountCV":  7,
+                    "CountPV":  19,
+                    "CountHP":  16,
+                    "Total":  42
+                },
+    "TopFindings":  [
+
+                    ],
+    "Modules":  [
+                    {
+                        "Number":  "I",
+                        "Title":  "Sensibiliser et former",
+                        "RuleCount":  3,
+                        "Counts":  {
+                                       "Cv":  0,
+                                       "Pv":  0,
+                                       "Hp":  3
+                                   }
+                    },
+                    {
+                        "Number":  "II",
+                        "Title":  "Connaitre le systeme d\u0027information",
+                        "RuleCount":  4,
+                        "Counts":  {
+                                       "Cv":  0,
+                                       "Pv":  3,
+                                       "Hp":  1
+                                   }
+                    },
+                    {
+                        "Number":  "III",
+                        "Title":  "Authentifier et controler les acces",
+                        "RuleCount":  6,
+                        "Counts":  {
+                                       "Cv":  0,
+                                       "Pv":  6,
+                                       "Hp":  0
+                                   }
+                    },
+                    {
+                        "Number":  "IV",
+                        "Title":  "Securiser les postes",
+                        "RuleCount":  5,
+                        "Counts":  {
+                                       "Cv":  3,
+                                       "Pv":  1,
+                                       "Hp":  1
+                                   }
+                    },
+                    {
+                        "Number":  "V",
+                        "Title":  "Securiser le reseau",
+                        "RuleCount":  8,
+                        "Counts":  {
+                                       "Cv":  0,
+                                       "Pv":  4,
+                                       "Hp":  4
+                                   }
+                    },
+                    {
+                        "Number":  "VI",
+                        "Title":  "Securiser l\u0027administration",
+                        "RuleCount":  3,
+                        "Counts":  {
+                                       "Cv":  0,
+                                       "Pv":  1,
+                                       "Hp":  2
+                                   }
+                    },
+                    {
+                        "Number":  "VII",
+                        "Title":  "Gerer le nomadisme",
+                        "RuleCount":  4,
+                        "Counts":  {
+                                       "Cv":  1,
+                                       "Pv":  2,
+                                       "Hp":  1
+                                   }
+                    },
+                    {
+                        "Number":  "VIII",
+                        "Title":  "Maintenir le SI a jour",
+                        "RuleCount":  2,
+                        "Counts":  {
+                                       "Cv":  2,
+                                       "Pv":  0,
+                                       "Hp":  0
+                                   }
+                    },
+                    {
+                        "Number":  "IX",
+                        "Title":  "Superviser, auditer, reagir",
+                        "RuleCount":  5,
+                        "Counts":  {
+                                       "Cv":  1,
+                                       "Pv":  1,
+                                       "Hp":  3
+                                   }
+                    },
+                    {
+                        "Number":  "X",
+                        "Title":  "Pour aller plus loin",
+                        "RuleCount":  2,
+                        "Counts":  {
+                                       "Cv":  0,
+                                       "Pv":  1,
+                                       "Hp":  1
+                                   }
+                    }
+                ],
+    "ModuleDetails":  [
+                          {
+                              "Number":  "I",
+                              "Title":  "Sensibiliser et former",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R1",
+                                                "Name":  "Former les equipes operationnelles a la securite des SI",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Formation des equipes operationnelles - releve organisationnel, non observable techniquement.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R2",
+                                                "Name":  "Sensibiliser les utilisateurs aux bonnes pratiques",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Sensibilisation des utilisateurs - releve organisationnel.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R3",
+                                                "Name":  "Maitriser les risques de l\u0027infogerance",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Maitrise des risques de l\u0027infogerance - releve contractuel.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "II",
+                              "Title":  "Connaitre le systeme d\u0027information",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R4",
+                                                "Name":  "Identifier informations et serveurs sensibles",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Cartographie reseau locale observee. Inventaire SI global hors perimetre.",
+                                                "Detail":  "",
+                                                "Evidence":  "NetRepair - Configuration reseau"
+                                            },
+                                            {
+                                                "Id":  "R5",
+                                                "Name":  "Inventaire exhaustif des comptes privilegies",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Enumeration des administrateurs locaux non disponible (acces refuse).",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Identity"
+                                            },
+                                            {
+                                                "Id":  "R6",
+                                                "Name":  "Procedures arrivee/depart/changement de fonction",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Procedures arrivee/depart - releve RH et gouvernance.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R7",
+                                                "Name":  "Connexion reseau aux seuls equipements maitrises",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Poste rattache a un annuaire. Controle d\u0027admission reseau non observable depuis le poste.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Identity"
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "III",
+                              "Title":  "Authentifier et controler les acces",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R8",
+                                                "Name":  "Comptes nominatifs, distinguer usage et administration",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Compte invite desactive. Enumeration des comptes administrateurs non disponible.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Identity"
+                                            },
+                                            {
+                                                "Id":  "R9",
+                                                "Name":  "Attribuer les bons droits sur les ressources sensibles",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Inventaire des partages SMB capture. Adequation des droits non evaluable sans contexte.",
+                                                "Detail":  "",
+                                                "Evidence":  "ComplianceDiff"
+                                            },
+                                            {
+                                                "Id":  "R10",
+                                                "Name":  "Definir et verifier une politique de mots de passe",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Politique de mots de passe locale non extraite par les sondes actuelles.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R11",
+                                                "Name":  "Proteger les mots de passe stockes sur les postes",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Credential Manager : 0 stored credential(s). Protection LSA active.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Identity"
+                                            },
+                                            {
+                                                "Id":  "R12",
+                                                "Name":  "Changer les elements d\u0027authentification par defaut",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Auto-logon non detecte dans le registre.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Identity"
+                                            },
+                                            {
+                                                "Id":  "R13",
+                                                "Name":  "Privilegier l\u0027authentification forte",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "TPM 2.0 present et operationnel. Configuration effective de Windows Hello non observee.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Firmware"
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "IV",
+                              "Title":  "Securiser les postes",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R14",
+                                                "Name":  "Mettre en place un niveau de securite minimal sur le parc",
+                                                "Status":  "cv",
+                                                "StatusLabel":  "Verifie",
+                                                "Meta":  "Pare-feu local actif, Defender en protection temps reel, BitLocker actif sur le volume systeme.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan"
+                                            },
+                                            {
+                                                "Id":  "R15",
+                                                "Name":  "Se proteger des menaces des supports amovibles",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Politique de restriction USB non extraite par les sondes actuelles.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R16",
+                                                "Name":  "Utiliser un outil de gestion centralisee du parc",
+                                                "Status":  "cv",
+                                                "StatusLabel":  "Verifie",
+                                                "Meta":  "Poste rattache a un annuaire - gestion centralisee confirmee.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Identity"
+                                            },
+                                            {
+                                                "Id":  "R17",
+                                                "Name":  "Activer et configurer le pare-feu local",
+                                                "Status":  "cv",
+                                                "StatusLabel":  "Verifie",
+                                                "Meta":  "Les 3 profils du pare-feu Windows sont actifs.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan NetSec"
+                                            },
+                                            {
+                                                "Id":  "R18",
+                                                "Name":  "Chiffrer les donnees sensibles transmises par Internet",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Chiffrement en transit - depend de l\u0027usage applicatif, hors perimetre.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "V",
+                              "Title":  "Securiser le reseau",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R19",
+                                                "Name":  "Segmenter le reseau et cloisonner les acces",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Sous-reseau local observe. Architecture de segmentation hors perimetre.",
+                                                "Detail":  "",
+                                                "Evidence":  "NetRepair"
+                                            },
+                                            {
+                                                "Id":  "R20",
+                                                "Name":  "Securiser les reseaux Wi-Fi",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Pas de connexion Wi-Fi observee au moment du diagnostic.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R21",
+                                                "Name":  "Utiliser des protocoles reseau securises",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "SMBv1 absent du poste. Audit complet des protocoles obsoletes non encore implemente.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Surface"
+                                            },
+                                            {
+                                                "Id":  "R22",
+                                                "Name":  "Mettre en place une passerelle d\u0027acces securise a Internet",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Configuration d\u0027acces Internet : Proxy: Direct | PAC: None.",
+                                                "Detail":  "",
+                                                "Evidence":  "NetRepair"
+                                            },
+                                            {
+                                                "Id":  "R23",
+                                                "Name":  "Cloisonner les services exposes sur Internet",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Architecture reseau, hors perimetre du poste.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R24",
+                                                "Name":  "Proteger la messagerie professionnelle",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Securite messagerie - configuration cote serveur, hors perimetre.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R25",
+                                                "Name":  "Securiser les interconnexions avec les partenaires",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Architecture inter-entites, hors perimetre.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R26",
+                                                "Name":  "Controler les acces physiques aux locaux et salles serveurs",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Mesure organisationnelle, hors perimetre logiciel.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "VI",
+                              "Title":  "Securiser l\u0027administration",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R27",
+                                                "Name":  "Interdire l\u0027acces Internet depuis les postes d\u0027administration",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Architecture et politique d\u0027usage, hors perimetre.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R28",
+                                                "Name":  "Utiliser un reseau dedie a l\u0027administration",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Architecture reseau, hors perimetre du poste.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R29",
+                                                "Name":  "Limiter au strict besoin les droits d\u0027administration",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "UAC actif. Enumeration des comptes administrateurs non disponible.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan PrivEsc"
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "VII",
+                              "Title":  "Gerer le nomadisme",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R30",
+                                                "Name":  "Prendre des mesures de securisation physique des terminaux nomades",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Materiel identifie (poste portable). Mesures physiques non observables.",
+                                                "Detail":  "",
+                                                "Evidence":  "PCHealth"
+                                            },
+                                            {
+                                                "Id":  "R31",
+                                                "Name":  "Chiffrer les donnees sensibles sur le materiel perdable",
+                                                "Status":  "cv",
+                                                "StatusLabel":  "Verifie",
+                                                "Meta":  "Volume systeme chiffre par BitLocker (chiffrement AES).",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan Encryption"
+                                            },
+                                            {
+                                                "Id":  "R32",
+                                                "Name":  "Securiser la connexion reseau des postes nomades",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Client VPN installe mais inactif au moment du diagnostic.",
+                                                "Detail":  "",
+                                                "Evidence":  "NetRepair"
+                                            },
+                                            {
+                                                "Id":  "R33",
+                                                "Name":  "Adopter des politiques de securite dediees aux terminaux mobiles",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Concerne smartphones et tablettes, hors perimetre d\u0027un poste Windows.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "VIII",
+                              "Title":  "Maintenir le SI a jour",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R34",
+                                                "Name":  "Definir une politique de mise a jour des composants",
+                                                "Status":  "cv",
+                                                "StatusLabel":  "Verifie",
+                                                "Meta":  "Windows Update operationnel. 3 echec(s) de mise a jour detecte(s) sur les 30 derniers jours.",
+                                                "Detail":  "",
+                                                "Evidence":  "PCHealth"
+                                            },
+                                            {
+                                                "Id":  "R35",
+                                                "Name":  "Anticiper la fin de maintenance des logiciels et systemes",
+                                                "Status":  "cv",
+                                                "StatusLabel":  "Verifie",
+                                                "Meta":  "Systeme sous support actif. 5 pilote(s) obsolete(s) detecte(s).",
+                                                "Detail":  "",
+                                                "Evidence":  "PCHealth"
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "IX",
+                              "Title":  "Superviser, auditer, reagir",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R36",
+                                                "Name":  "Activer et configurer les journaux des composants",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Politique d\u0027audit des connexions au niveau minimal - renforcement recommande.",
+                                                "Detail":  "",
+                                                "Evidence":  "SecurityScan WinSec"
+                                            },
+                                            {
+                                                "Id":  "R37",
+                                                "Name":  "Definir et appliquer une politique de sauvegarde",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Infrastructure et procedures, hors perimetre du poste.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R38",
+                                                "Name":  "Proceder a des controles et audits de securite reguliers",
+                                                "Status":  "cv",
+                                                "StatusLabel":  "Verifie",
+                                                "Meta":  "L\u0027execution de FieldOps Pro constitue elle-meme un controle d\u0027audit technique regulier.",
+                                                "Detail":  "",
+                                                "Evidence":  "FieldOps Pro"
+                                            },
+                                            {
+                                                "Id":  "R39",
+                                                "Name":  "Designer un referent securite des systemes d\u0027information",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Designation d\u0027un referent SSI - mesure organisationnelle.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R40",
+                                                "Name":  "Definir une procedure de gestion des incidents",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Procedure de gestion des incidents - mesure organisationnelle.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            }
+                                        ]
+                          },
+                          {
+                              "Number":  "X",
+                              "Title":  "Pour aller plus loin",
+                              "Rules":  [
+                                            {
+                                                "Id":  "R41",
+                                                "Name":  "Mener une analyse de risque formelle",
+                                                "Status":  "hp",
+                                                "StatusLabel":  "Hors perimetre",
+                                                "Meta":  "Analyse de risque formelle (EBIOS RM) - demarche methodologique, hors perimetre.",
+                                                "Detail":  "",
+                                                "Evidence":  ""
+                                            },
+                                            {
+                                                "Id":  "R42",
+                                                "Name":  "Privilegier les produits et services qualifies par l\u0027ANSSI",
+                                                "Status":  "pv",
+                                                "StatusLabel":  "Partiel",
+                                                "Meta":  "Inventaire logiciel capture. Croisement avec catalogue ANSSI non encore implemente.",
+                                                "Detail":  "",
+                                                "Evidence":  "ComplianceDiff"
+                                            }
+                                        ]
+                          }
+                      ]
+}
