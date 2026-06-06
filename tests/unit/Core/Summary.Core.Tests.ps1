@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
     FieldOps Pro - Chapter 6.6 Continuous Validation
     Summary block invariant tests across all non-schema-breaking fixtures.
@@ -21,41 +21,47 @@ BeforeAll {
     }
 
     . $fixtureScript
-
-    # Load all fixtures that have a Summary block
-    $allNames = Get-FixtureNames
-    $script:FixturesWithSummary = @(
-        $allNames |
-        Where-Object { $_ -ne 'missing-summary' } |
-        ForEach-Object {
-            $d = Get-Fixture -Name $_
-            if ($null -ne $d.Summary) {
-                [PSCustomObject]@{ Name = $_; Data = $d }
-            }
-        }
-    )
 }
 
+# Discovery-scope data for -ForEach. Pester 5 parses Describe/It blocks
+# during a discovery phase that runs BEFORE BeforeAll, so any variable
+# referenced by -ForEach must be built here at top-level script scope.
+# Dot-source the helper again at this scope and pass only fixture NAMES
+# (plain strings survive the discovery->run phase boundary cleanly).
+$discoveryTestsRoot     = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
+$discoveryFixtureScript = Join-Path $discoveryTestsRoot 'Get-Fixture.ps1'
+. $discoveryFixtureScript
+
+$SummaryFixtureNames = @(
+    Get-FixtureNames |
+    Where-Object { $_ -ne 'missing-summary' } |
+    Where-Object {
+        $d = Get-Fixture -Name $_
+        $null -ne $d.Summary
+    }
+)
+
 Describe 'Summary block invariants across fixtures' -Tag 'Fast' {
-    It '<_.Name>: CountCV + CountPV + CountHP equals Total' -ForEach $script:FixturesWithSummary {
-        $s = $_.Data.Summary
+    It '<_>: CountCV + CountPV + CountHP equals Total' -ForEach $SummaryFixtureNames {
+        $d = Get-Fixture -Name $_
+        $s = $d.Summary
         ($s.CountCV + $s.CountPV + $s.CountHP) | Should -Be $s.Total
     }
 
-    It '<_.Name>: Total is non-negative' -ForEach $script:FixturesWithSummary {
-        $_.Data.Summary.Total | Should -BeGreaterOrEqual 0
+    It '<_>: Total is non-negative' -ForEach $SummaryFixtureNames {
+        (Get-Fixture -Name $_).Summary.Total | Should -BeGreaterOrEqual 0
     }
 
-    It '<_.Name>: CountCV is non-negative' -ForEach $script:FixturesWithSummary {
-        $_.Data.Summary.CountCV | Should -BeGreaterOrEqual 0
+    It '<_>: CountCV is non-negative' -ForEach $SummaryFixtureNames {
+        (Get-Fixture -Name $_).Summary.CountCV | Should -BeGreaterOrEqual 0
     }
 
-    It '<_.Name>: CountPV is non-negative' -ForEach $script:FixturesWithSummary {
-        $_.Data.Summary.CountPV | Should -BeGreaterOrEqual 0
+    It '<_>: CountPV is non-negative' -ForEach $SummaryFixtureNames {
+        (Get-Fixture -Name $_).Summary.CountPV | Should -BeGreaterOrEqual 0
     }
 
-    It '<_.Name>: CountHP is non-negative' -ForEach $script:FixturesWithSummary {
-        $_.Data.Summary.CountHP | Should -BeGreaterOrEqual 0
+    It '<_>: CountHP is non-negative' -ForEach $SummaryFixtureNames {
+        (Get-Fixture -Name $_).Summary.CountHP | Should -BeGreaterOrEqual 0
     }
 }
 
