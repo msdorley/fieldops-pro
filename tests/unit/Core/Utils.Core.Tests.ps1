@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
     FieldOps Pro - Chapter 6.6 Continuous Validation
     Unit tests for SCRIPTS\Core\Utils.psm1
@@ -90,32 +90,32 @@ Describe 'Invoke-WithRetry' -Tag 'Fast' {
     }
 
     It 'retries and succeeds when scriptblock fails then succeeds' {
-        $callCount = 0
+        $state = @{ Count = 0 }
         $result = Invoke-WithRetry -ScriptBlock {
-            $callCount++
-            if ($callCount -lt 2) { throw 'transient error' }
+            $state.Count++
+            if ($state.Count -lt 2) { throw 'transient error' }
         } -MaxRetries 3 -DelaySeconds 0
         $result | Should -BeTrue
-        $callCount | Should -Be 2
+        $state.Count | Should -Be 2
     }
 
     It 'throws after exhausting all retries' {
-        $callCount = 0
+        $state = @{ Count = 0 }
         {
             Invoke-WithRetry -ScriptBlock {
-                $callCount++
+                $state.Count++
                 throw 'always fails'
             } -MaxRetries 2 -DelaySeconds 0
         } | Should -Throw
-        $callCount | Should -Be 2
+        $state.Count | Should -Be 2
     }
 
     It 'calls scriptblock exactly MaxRetries times on consistent failure' {
-        $calls = 0
+        $state = @{ Count = 0 }
         try {
-            Invoke-WithRetry -ScriptBlock { $calls++; throw 'fail' } -MaxRetries 3 -DelaySeconds 0
+            Invoke-WithRetry -ScriptBlock { $state.Count++; throw 'fail' } -MaxRetries 3 -DelaySeconds 0
         } catch { }
-        $calls | Should -Be 3
+        $state.Count | Should -Be 3
     }
 
     It 'accepts a scriptblock that returns a value' {
