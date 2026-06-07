@@ -140,12 +140,13 @@ exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/Run-FastTests
 # Must use LF line endings (POSIX sh requirement)
 # ---------------------------------------------------------------------------
 $hookContentLF = $hookContent -replace "`r`n", "`n" -replace "`r", "`n"
+$utf8NoBom     = New-Object System.Text.UTF8Encoding($false)
 
 try {
     [System.IO.File]::WriteAllText(
         $hookFile,
         $hookContentLF,
-        [System.Text.Encoding]::UTF8
+        $utf8NoBom
     )
 } catch {
     throw "Failed to write hook file at '$hookFile': $_"
@@ -161,6 +162,14 @@ if (-not (Test-Path $hookFile)) {
 $written = [System.IO.File]::ReadAllText($hookFile, [System.Text.Encoding]::UTF8)
 if ($written -notmatch 'Run-FastTests') {
     throw "Hook file content verification failed: Run-FastTests not found in written file."
+}
+
+$firstBytes = [System.IO.File]::ReadAllBytes($hookFile)
+if ($firstBytes.Length -ge 3 -and
+    $firstBytes[0] -eq 0xEF -and
+    $firstBytes[1] -eq 0xBB -and
+    $firstBytes[2] -eq 0xBF) {
+    throw "Hook file was written with a UTF-8 BOM, which breaks sh shebang resolution. This is a bug in the writer."
 }
 
 # ---------------------------------------------------------------------------
