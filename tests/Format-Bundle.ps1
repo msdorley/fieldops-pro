@@ -255,6 +255,24 @@ function Get-BundleValue {
     return $null
 }
 
+function Get-BundleMap {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory = $false)][string]$Locale = '',
+        [Parameter(Mandatory = $false)][string]$BundlePath = '',
+        [Parameter(Mandatory = $false)][string]$BundleDir = ''
+    )
+    if ($BundlePath -eq '' -and $Locale -eq '') {
+        throw "Get-BundleMap: supply either -Locale or -BundlePath."
+    }
+    if ($BundlePath -eq '') {
+        $dir       = Resolve-BundleDir -Override $BundleDir
+        $BundlePath = Join-Path $dir "$Locale.json"
+    }
+    $parsed = Read-BundleFile -FilePath $BundlePath
+    return Expand-BundleObject -Node $parsed
+}
+
 # ---------------------------------------------------------------------------
 # Public: Compare-BundleKeys
 # ---------------------------------------------------------------------------
@@ -313,8 +331,14 @@ function Compare-BundleKeys {
     $baseKeys    = Get-BundleKeys -Locale $BaseLocale    -BundlePath $BasePath    -BundleDir $BundleDir
     $compareKeys = Get-BundleKeys -Locale $CompareLocale -BundlePath $ComparePath -BundleDir $BundleDir
 
-    $baseSet    = [System.Collections.Generic.HashSet[string]]::new($baseKeys)
-    $compareSet = [System.Collections.Generic.HashSet[string]]::new($compareKeys)
+    # PS 5.1 cannot reliably resolve the HashSet[string](IEnumerable<string>)
+    # constructor when passed a PowerShell object[] array (it reports
+    # "no overload for 'new' and argument count 1"). Build empty sets and
+    # populate them explicitly to avoid the overload-resolution ambiguity.
+    $baseSet    = New-Object 'System.Collections.Generic.HashSet[string]'
+    $compareSet = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($k in $baseKeys)    { $null = $baseSet.Add($k) }
+    foreach ($k in $compareKeys) { $null = $compareSet.Add($k) }
 
     $onlyInBase    = @($baseKeys    | Where-Object { -not $compareSet.Contains($_) } | Sort-Object)
     $onlyInCompare = @($compareKeys | Where-Object { -not $baseSet.Contains($_) }    | Sort-Object)
