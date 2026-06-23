@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     FieldOps Pro - ANSSI Hygiene Data Collector v0.4
 .DESCRIPTION
@@ -422,7 +422,7 @@ function Get-R32 {
     $vpn = Find-Check -EngineData $Net -Category 'VPN'
     if (Test-Observed $vpn) {
         $val = "$(Get-CheckValue $vpn)"
-        if ($val -match 'Connected|Connecte|actif') {
+        if ($val -match '\b(?<!dis)(?<!not\s)(connected|connecte|actif)\b') {
             return @{ Status='cv'; Detail="Tunnel VPN actif ($val). Connexion nomade chiffree."; Evidence='NetRepair - Statut VPN' }
         }
         return @{ Status='pv'; Detail="Client VPN installe mais inactif au moment du diagnostic ($val). Qualite cryptographique du tunnel non evaluable hors connexion."; Evidence='NetRepair - Statut VPN' }
