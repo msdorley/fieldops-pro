@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     FieldOps Pro - ANSSI Hygiene Diagnostic Report Builder v0.4
 .DESCRIPTION

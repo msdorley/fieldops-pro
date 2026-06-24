@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     FieldOps Pro - Hardware Diagnostic Suite (PCHealth) v1.1

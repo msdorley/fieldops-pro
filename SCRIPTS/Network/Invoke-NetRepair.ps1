@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     FieldOps Pro - Network Diagnostic & Repair Engine v2.0
 .DESCRIPTION

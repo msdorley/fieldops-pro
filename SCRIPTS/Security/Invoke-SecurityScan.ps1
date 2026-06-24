@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     FieldOps Pro - Enterprise Security Posture Engine v1.0
 .DESCRIPTION

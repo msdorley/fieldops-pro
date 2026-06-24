@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     FieldOps Pro -- AI Risk Planning Engine v1.0
@@ -58,7 +58,7 @@ function Initialize-RiskPlanner {
         [string]$Locale    = 'en'
     )
 
-    # Auto-detect dirs from module location: ...\SCRIPTS\Core\ â†’ ...\
+    # Auto-detect dirs from module location: ...\SCRIPTS\Core\ -> ...\
     if ($ConfigDir -eq '' -or $LogsDir -eq '') {
         $modDir   = $PSScriptRoot
         $usbRoot  = Split-Path -Parent (Split-Path -Parent $modDir)
@@ -77,7 +77,7 @@ function Initialize-RiskPlanner {
     # Lookup priority:
     #   Tier 0: Windows Credential Manager target 'FieldOpsPro:Anthropic'
     #           (or whatever target name is configured in technician.json
-    #           under ai.credentialTarget â€” useful for orgs with naming
+    #           under ai.credentialTarget - useful for orgs with naming
     #           conventions like 'MyOrg:Claude')
     #   Tier 1: Environment variable ANTHROPIC_API_KEY (CI/scripted use)
     #   Tier 2: None -- fall back to local mock plan in Get-FixRiskPlan
@@ -323,7 +323,7 @@ function New-LocalMockPlan {
     $whatCouldGoWrong = switch ($FixRule.Level) {
         'Safe' {
             if ($isFr) {
-                "Risque faible. Cette correction est classee SAFE et est conÃ§ue pour etre completement reversible. Aucun impact connu sur la compatibilite logicielle ou materielle."
+                "Risque faible. Cette correction est classee SAFE et est concue pour etre completement reversible. Aucun impact connu sur la compatibilite logicielle ou materielle."
             } else {
                 "Low risk. This fix is classified SAFE and is designed to be fully reversible. No known software or hardware compatibility impact."
             }

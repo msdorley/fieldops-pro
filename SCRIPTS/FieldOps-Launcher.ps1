@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     FieldOps Pro - Main Launcher v2.1 (Compact Pro layout)

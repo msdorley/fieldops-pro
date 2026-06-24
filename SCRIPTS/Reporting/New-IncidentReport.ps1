@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     FieldOps Pro - Incident Report Generator v1.0
 .DESCRIPTION

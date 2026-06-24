@@ -17,10 +17,10 @@
         Tier 0: Windows Credential Manager (target 'FieldOpsPro:Anthropic',
                 or override from technician.json ai.credentialTarget)
         Tier 1: Environment variable ANTHROPIC_API_KEY (CI/scripted use)
-        Tier 2: None — the planner falls back to the local mock plan
+        Tier 2: None - the planner falls back to the local mock plan
 
     The model name (claude-sonnet-4-6 by default) can still be overridden
-    in technician.json via ai.model — model names are not secrets.
+    in technician.json via ai.model - model names are not secrets.
 .NOTES
     Run from the repo root (where SCRIPTS\Core\ lives).
 #>
@@ -41,7 +41,7 @@ Write-Host "  [OK] Backup: $bak" -ForegroundColor Green
 # Read
 $content = Get-Content $plannerPath -Raw
 
-# The OLD block we are replacing — the entire JSON-key-lookup section,
+# The OLD block we are replacing - the entire JSON-key-lookup section,
 # from the comment line down to the env-var fallback. We keep the env-var
 # fallback but REORDER it (Cred Mgr first, env var second) and strip the
 # insecure JSON paths.
@@ -90,7 +90,7 @@ $oldBlock = @'
     }
 '@
 
-# The NEW block — Credential Manager first, env var second.
+# The NEW block - Credential Manager first, env var second.
 # We preserve the model-name lookup from technician.json (not a secret).
 $newBlock = @'
     # ----------------------------------------------------------------
@@ -98,7 +98,7 @@ $newBlock = @'
     # Lookup priority:
     #   Tier 0: Windows Credential Manager target 'FieldOpsPro:Anthropic'
     #           (or whatever target name is configured in technician.json
-    #           under ai.credentialTarget — useful for orgs with naming
+    #           under ai.credentialTarget - useful for orgs with naming
     #           conventions like 'MyOrg:Claude')
     #   Tier 1: Environment variable ANTHROPIC_API_KEY (CI/scripted use)
     #   Tier 2: None -- fall back to local mock plan in Get-FixRiskPlan
