@@ -137,7 +137,7 @@ BeforeAll {
     $script:TestIsExcludedUtility = ${function:Test-IsExcludedUtility}
 }
 
-Describe 'D14 Audit - documented scope' -Tag 'Fast' {
+Describe 'D14 Audit - documented scope' -Tag 'Slow' {
     It 'prints the audit scope and exclusion contract' {
         Write-Host ''
         Write-Host '  --- D14 Repository Audit: scope ---'
@@ -155,7 +155,7 @@ Describe 'D14 Audit - documented scope' -Tag 'Fast' {
     }
 }
 
-Describe 'A1 - ASCII-only source (universal law)' -Tag 'Fast' {
+Describe 'A1 - ASCII-only source (universal law)' -Tag 'Slow' {
     It 'every .ps1/.psm1 under SCRIPTS\ contains zero bytes > 127' {
         $dirty = @()
         foreach ($f in $script:AllSource) {
@@ -174,7 +174,7 @@ Describe 'A1 - ASCII-only source (universal law)' -Tag 'Fast' {
     }
 }
 
-Describe 'A2 - no UTF-8 BOM (universal law)' -Tag 'Fast' {
+Describe 'A2 - no UTF-8 BOM (universal law)' -Tag 'Slow' {
     It 'no source file begins with the EF BB BF BOM signature' {
         $bommed = @()
         foreach ($f in $script:AllSource) {
@@ -190,7 +190,7 @@ Describe 'A2 - no UTF-8 BOM (universal law)' -Tag 'Fast' {
     }
 }
 
-Describe 'A5 - no developer/USB-specific paths in production code (universal law)' -Tag 'Fast' {
+Describe 'A5 - no developer/USB-specific paths in production code (universal law)' -Tag 'Slow' {
     It 'no deployed .ps1/.psm1 hardcodes a C:\Dev, C:\Users, or E:\ path (provider drives and standard OS paths allowed)' {
         $violations = @()
         foreach ($f in $script:AllSource) {
@@ -205,7 +205,7 @@ Describe 'A5 - no developer/USB-specific paths in production code (universal law
     }
 }
 
-Describe 'A3 - StrictMode contract (production allowlist)' -Tag 'Fast' {
+Describe 'A3 - StrictMode contract (production allowlist)' -Tag 'Slow' {
     It '<File> declares Set-StrictMode -Version 1.0' -ForEach @(
         @{ File = 'Compliance\Build-ANSSIData.ps1' }
     ) {
@@ -217,7 +217,7 @@ Describe 'A3 - StrictMode contract (production allowlist)' -Tag 'Fast' {
     }
 }
 
-Describe 'A4 - exactly 42 ANSSI rule evaluators' -Tag 'Fast' {
+Describe 'A4 - exactly 42 ANSSI rule evaluators' -Tag 'Slow' {
     It 'Build-ANSSIData.ps1 defines Get-R1..Get-R42 with no gaps or extras' {
         $bd = Join-Path $script:ScriptsRoot 'Compliance\Build-ANSSIData.ps1'
         Test-Path $bd | Should -BeTrue
@@ -240,7 +240,7 @@ Describe 'A4 - exactly 42 ANSSI rule evaluators' -Tag 'Fast' {
     }
 }
 
-Describe 'A6 - report-data sample schema' -Tag 'Fast' {
+Describe 'A6 - report-data sample schema' -Tag 'Slow' {
     It 'report-data.sample.json has the 6 contract keys and Summary.Total = 42' {
         $jsonPath = Join-Path $script:ScriptsRoot 'Compliance\report-data.sample.json'
         Test-Path $jsonPath | Should -BeTrue

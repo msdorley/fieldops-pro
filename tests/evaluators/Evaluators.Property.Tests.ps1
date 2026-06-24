@@ -122,7 +122,7 @@ AfterAll {
     Remove-Module 'PropertyTests' -Force -ErrorAction SilentlyContinue
 }
 
-Describe 'P1 - no computed evaluator ever throws on random engine data' -Tag 'Fast' {
+Describe 'P1 - no computed evaluator ever throws on random engine data' -Tag 'Slow' {
     It '<Name> survives 200 random/adversarial engine inputs' -ForEach @(
         @{ Name='Get-R5';  ArgN=3 }, @{ Name='Get-R7';  ArgN=1 }, @{ Name='Get-R8';  ArgN=1 },
         @{ Name='Get-R11'; ArgN=1 }, @{ Name='Get-R12'; ArgN=1 }, @{ Name='Get-R13'; ArgN=1 },
@@ -146,7 +146,7 @@ Describe 'P1 - no computed evaluator ever throws on random engine data' -Tag 'Fa
     }
 }
 
-Describe 'P2 - every evaluator returns a valid cv/pv/hp status on random data' -Tag 'Fast' {
+Describe 'P2 - every evaluator returns a valid cv/pv/hp status on random data' -Tag 'Slow' {
     It '<Name> always returns cv/pv/hp across 200 random inputs' -ForEach @(
         @{ Name='Get-R5';  ArgN=3 }, @{ Name='Get-R8';  ArgN=1 }, @{ Name='Get-R13'; ArgN=1 },
         @{ Name='Get-R14'; ArgN=2 }, @{ Name='Get-R17'; ArgN=3 }, @{ Name='Get-R20'; ArgN=2 },
@@ -170,7 +170,7 @@ Describe 'P2 - every evaluator returns a valid cv/pv/hp status on random data' -
     }
 }
 
-Describe 'P3 - evaluators are deterministic' -Tag 'Fast' {
+Describe 'P3 - evaluators are deterministic' -Tag 'Slow' {
     It '<Name> yields the same status on repeat calls with identical input' -ForEach @(
         @{ Name='Get-R14'; ArgN=2 }, @{ Name='Get-R20'; ArgN=2 }, @{ Name='Get-R31'; ArgN=2 },
         @{ Name='Get-R32'; ArgN=1 }, @{ Name='Get-R36'; ArgN=1 }
@@ -192,7 +192,7 @@ Describe 'P3 - evaluators are deterministic' -Tag 'Fast' {
     }
 }
 
-Describe 'P4 - helper totality on random input' -Tag 'Fast' {
+Describe 'P4 - helper totality on random input' -Tag 'Slow' {
     It 'Get-DictValue never throws on random object/key combinations' {
         $gen  = $script:NewRandomCheck
         $dict = $script:GetDictValueSB

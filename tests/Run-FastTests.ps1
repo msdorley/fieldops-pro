@@ -147,30 +147,23 @@ if (-not (Test-Path $OutputDir)) {
 }
 
 # ---------------------------------------------------------------------------
-# Step 3: Discover test files (unit + evaluators only -- no audit)
+# Step 3: Discover test files (unit + evaluators + audit). Tier selection is
+# tag-driven: the Fast tag filter (Step 4) runs only Fast-tagged Describe
+# blocks. Property and audit tests are tagged Slow, so they are discovered
+# but not executed in the fast pre-commit gate -- they run via Run-AllTests
+# (pre-push). One source of truth = the tag, not the filename.
 # ---------------------------------------------------------------------------
-Write-Step "Discovering test files (unit + evaluators) ..."
-
-$unitDir = Join-Path $testsRoot 'unit'
-$evalDir = Join-Path $testsRoot 'evaluators'
+Write-Step "Discovering test files (unit + evaluators + audit) ..."
 
 $testFiles = [System.Collections.Generic.List[string]]::new()
-
-if (Test-Path $unitDir) {
-    $found = @(Get-ChildItem -Path $unitDir -Recurse -Filter '*.Tests.ps1' |
-        Sort-Object FullName |
-        Select-Object -ExpandProperty FullName)
-    foreach ($f in $found) { $testFiles.Add($f) }
-}
-
-if (Test-Path $evalDir) {
-    $propFile = Join-Path $evalDir 'PropertyTests-Evaluators.ps1'
-    $found = @(Get-ChildItem -Path $evalDir -Recurse -Filter '*.Tests.ps1' |
-        Sort-Object FullName |
-        Select-Object -ExpandProperty FullName)
-    $found = @($found | Where-Object { $_ -ne $propFile })
-    foreach ($f in $found) { $testFiles.Add($f) }
-    # Property tests excluded from fast run (they are tagged Slow)
+foreach ($sub in @('unit', 'evaluators', 'audit')) {
+    $dir = Join-Path $testsRoot $sub
+    if (Test-Path $dir) {
+        $found = @(Get-ChildItem -Path $dir -Recurse -Filter '*.Tests.ps1' |
+            Sort-Object FullName |
+            Select-Object -ExpandProperty FullName)
+        foreach ($f in $found) { $testFiles.Add($f) }
+    }
 }
 
 if ($testFiles.Count -eq 0) {
