@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     FieldOps Pro -- AutoFix with Plan-Before-Execute v1.0
