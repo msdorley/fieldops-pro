@@ -169,3 +169,144 @@ Describe 'Get-AvailableLocales' -Tag 'Fast' {
         @(Get-AvailableLocales).Count | Should -BeGreaterOrEqual 2
     }
 }
+
+# ===========================================================================
+# Phase 6.1 (Stream 6.1-R1): Rich-text bundle value rendering
+# Appended to D10 locale engine tests.
+#
+# Render-RichTextValue and the Flatten-Object rich-text guard are INTERNAL to
+# FieldOps-Locale.psm1, so these tests reach them via InModuleScope.
+# ===========================================================================
+
+Describe 'Render-RichTextValue - separator semantics (6.1-R1)' -Tag 'Fast' {
+    BeforeAll {
+        Import-Module $script:LocalePath -Force -DisableNameChecking
+    }
+    AfterAll {
+        Remove-Module 'FieldOps-Locale' -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'br joins parts with <br> (visual line break)' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @('Diagnostic ANSSI','FieldOps Pro'); separator = 'br' }
+            Render-RichTextValue -Value $v | Should -Be 'Diagnostic ANSSI<br>FieldOps Pro'
+        }
+    }
+
+    It 'br joins three parts with two <br>' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @('A','B','C'); separator = 'br' }
+            Render-RichTextValue -Value $v | Should -Be 'A<br>B<br>C'
+        }
+    }
+
+    It 'space joins parts with a single space' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @('Bonjour','monde'); separator = 'space' }
+            Render-RichTextValue -Value $v | Should -Be 'Bonjour monde'
+        }
+    }
+
+    It 'none concatenates parts directly' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @('Field','Ops'); separator = 'none' }
+            Render-RichTextValue -Value $v | Should -Be 'FieldOps'
+        }
+    }
+
+    It 'para wraps each part in its own <p> element' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @('Para un','Para deux'); separator = 'para' }
+            Render-RichTextValue -Value $v | Should -Be '<p>Para un</p><p>Para deux</p>'
+        }
+    }
+
+    It 'a single part renders without any separator' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @('Solo'); separator = 'br' }
+            Render-RichTextValue -Value $v | Should -Be 'Solo'
+        }
+    }
+}
+
+Describe 'Render-RichTextValue - defensive behaviour (6.1-R1)' -Tag 'Fast' {
+    BeforeAll {
+        Import-Module $script:LocalePath -Force -DisableNameChecking
+    }
+    AfterAll {
+        Remove-Module 'FieldOps-Locale' -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'an unknown separator falls back to br (never throws)' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @('A','B'); separator = 'xyzzy' }
+            Render-RichTextValue -Value $v | Should -Be 'A<br>B'
+        }
+    }
+
+    It 'a null value returns empty string' {
+        InModuleScope 'FieldOps-Locale' {
+            Render-RichTextValue -Value $null | Should -Be ''
+        }
+    }
+
+    It 'an object missing parts returns empty string' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ separator = 'br' }
+            Render-RichTextValue -Value $v | Should -Be ''
+        }
+    }
+
+    It 'an object missing separator returns empty string' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @('A','B') }
+            Render-RichTextValue -Value $v | Should -Be ''
+        }
+    }
+
+    It 'an empty parts array returns empty string' {
+        InModuleScope 'FieldOps-Locale' {
+            $v = [PSCustomObject]@{ parts = @(); separator = 'br' }
+            Render-RichTextValue -Value $v | Should -Be ''
+        }
+    }
+}
+
+Describe 'Flatten-Object - rich-text leaf guard (6.1-R1)' -Tag 'Fast' {
+    BeforeAll {
+        Import-Module $script:LocalePath -Force -DisableNameChecking
+    }
+    AfterAll {
+        Remove-Module 'FieldOps-Locale' -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'a rich-text object flattens to ONE key, not exploded sub-keys' {
+        InModuleScope 'FieldOps-Locale' {
+            $obj = [PSCustomObject]@{
+                cover = [PSCustomObject]@{
+                    title = [PSCustomObject]@{ parts = @('Diagnostic ANSSI','FieldOps Pro'); separator = 'br' }
+                }
+            }
+            $out = @{}
+            Flatten-Object -Obj $obj -Prefix '' -Output $out
+            # The rich-text value becomes a single rendered key...
+            $out.ContainsKey('cover.title')           | Should -BeTrue
+            $out['cover.title']                        | Should -Be 'Diagnostic ANSSI<br>FieldOps Pro'
+            # ...and is NOT exploded into parts/separator sub-keys
+            $out.ContainsKey('cover.title.parts')      | Should -BeFalse
+            $out.ContainsKey('cover.title.separator')  | Should -BeFalse
+        }
+    }
+
+    It 'ordinary nested objects still flatten normally (no regression)' {
+        InModuleScope 'FieldOps-Locale' {
+            $obj = [PSCustomObject]@{
+                dashboard = [PSCustomObject]@{ title = 'OPERATIONS'; subtitle = 'READY' }
+            }
+            $out = @{}
+            Flatten-Object -Obj $obj -Prefix '' -Output $out
+            $out['dashboard.title']    | Should -Be 'OPERATIONS'
+            $out['dashboard.subtitle'] | Should -Be 'READY'
+        }
+    }
+}

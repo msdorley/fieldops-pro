@@ -13,6 +13,29 @@ missing from the bundle are left unchanged (visible debug hint).
 ================================================================================
 #>
 
+function ConvertTo-RichTextHtml {
+    # Render a {parts,separator} bundle object to HTML for injection. Each
+    # part is HTML-escaped (& < >); the separator is trusted structural markup
+    # from our own bundle (br/para/space/none), emitted raw. No injection
+    # surface: separators are never translator-controlled free text.
+    param($Value)
+    if ($null -eq $Value) { return '' }
+    $names = @($Value.PSObject.Properties.Name)
+    if (($names -notcontains 'parts') -or ($names -notcontains 'separator')) { return '' }
+    $parts = @($Value.parts | ForEach-Object {
+        "$_".Replace('&','&amp;').Replace('<','&lt;').Replace('>','&gt;')
+    })
+    if ($parts.Count -eq 0) { return '' }
+    $sep = "$($Value.separator)"
+    switch ($sep) {
+        'br'    { return ($parts -join '<br>') }
+        'space' { return ($parts -join ' ') }
+        'none'  { return ($parts -join '') }
+        'para'  { return (($parts | ForEach-Object { "<p>$_</p>" }) -join '') }
+        default  { return ($parts -join '<br>') }
+    }
+}
+
 function Resolve-LocaleTokensInFile {
     [CmdletBinding()]
     param(
@@ -69,6 +92,7 @@ function Resolve-LocaleTokensInFile {
 
     # Build a unique set of keys, resolve once per key
     $uniqueKeys = @{}
+    $richKeys   = @{}
     foreach ($m in $matches) {
         $key = $m.Groups[1].Value
         if (-not $uniqueKeys.ContainsKey($key)) {
@@ -89,6 +113,8 @@ function Resolve-LocaleTokensInFile {
         }
         if ($found -and $null -ne $current -and $current -is [string]) {
             $uniqueKeys[$key] = $current
+        } elseif ($found -and $null -ne $current -and ($current.PSObject.Properties.Name -contains 'parts') -and ($current.PSObject.Properties.Name -contains 'separator')) {
+            $richKeys[$key] = ConvertTo-RichTextHtml -Value $current
         } else {
             $uniqueKeys[$key] = $null
         }
@@ -111,6 +137,11 @@ function Resolve-LocaleTokensInFile {
         } else {
             $unresolved++
         }
+    }
+    foreach ($key in @($richKeys.Keys)) {
+        $token = "{{t:$key}}"
+        $content = $content.Replace($token, $richKeys[$key])
+        $resolved++
     }
 
     [System.IO.File]::WriteAllText($Path, $content, $utf8Bom)

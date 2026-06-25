@@ -163,6 +163,35 @@ function Load-StringFile {
     return $flat
 }
 
+function Render-RichTextValue {
+    <#
+    .SYNOPSIS
+        Render a structured rich-text bundle value (Phase 6.1 Option B) to an
+        HTML string. The value has a parts array and a separator; presentation
+        lives here, not in the translation, so translators see plain text only.
+    .NOTES
+        Separators: br (visual line break), para (each part in its own <p>),
+        space (single space), none (direct concatenation). Unknown separators
+        fall back to br. Never throws; degrades to empty string on bad input.
+    #>
+    param($Value)
+    if ($null -eq $Value) { return '' }
+    $names = @($Value.PSObject.Properties.Name)
+    if (($names -notcontains 'parts') -or ($names -notcontains 'separator')) { return '' }
+    $parts = @($Value.parts)
+    $sep   = "$($Value.separator)"
+    # Normalize parts to strings
+    $parts = @($parts | ForEach-Object { "$_" })
+    if ($parts.Count -eq 0) { return '' }
+    switch ($sep) {
+        'br'    { return ($parts -join '<br>') }
+        'space' { return ($parts -join ' ') }
+        'none'  { return ($parts -join '') }
+        'para'  { return (($parts | ForEach-Object { "<p>$_</p>" }) -join '') }
+        default  { return ($parts -join '<br>') }
+    }
+}
+
 function Flatten-Object {
     param($Obj, [string]$Prefix, [hashtable]$Output)
 
@@ -186,7 +215,18 @@ function Flatten-Object {
         } elseif ($val -is [string] -or $val -is [int] -or $val -is [bool] -or $val -is [double]) {
             $Output[$key] = "$val"
         } elseif ($val -is [System.Management.Automation.PSCustomObject] -or $val -is [System.Collections.IDictionary]) {
-            Flatten-Object -Obj $val -Prefix $key -Output $Output
+            # Rich-text leaf: an object with both 'parts' and 'separator' is a
+            # structured value (Phase 6.1 Option B), NOT a namespace to flatten.
+            $isRich = $false
+            if ($val -is [System.Management.Automation.PSCustomObject]) {
+                $vn = @($val.PSObject.Properties.Name)
+                if (($vn -contains 'parts') -and ($vn -contains 'separator')) { $isRich = $true }
+            }
+            if ($isRich) {
+                $Output[$key] = Render-RichTextValue -Value $val
+            } else {
+                Flatten-Object -Obj $val -Prefix $key -Output $Output
+            }
         } elseif ($val -is [array]) {
             # Arrays stored as joined string (for lists of items)
             $Output[$key] = ($val -join '|')
