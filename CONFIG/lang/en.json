@@ -480,7 +480,10 @@
                                            },
                                  "cover":  {
                                                "documentType":  "Technical Audit Report",
-                                               "title":  "IT Hygiene Diagnostic",
+                                               "title":  {
+                                                   "parts":  ["IT Hygiene", "Diagnostic"],
+                                                   "separator":  "br"
+                                               },
                                                "subtitle":  "Compliance with the ANSSI IT Hygiene Guide - 42-measure reference framework",
                                                "disclaimerLead":  "Informative diagnostic.",
                                                "disclaimerBody":  "This document constitutes neither an ANSSI certification nor a legal opinion. It provides a technical mapping of the audited workstation\u0027s security posture against the ANSSI IT Hygiene Guide (42-measure reference framework).",

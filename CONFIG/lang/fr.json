@@ -480,7 +480,10 @@
                                            },
                                  "cover":  {
                                                "documentType":  "Rapport d\u0027audit technique",
-                                               "title":  "Diagnostic d\u0027hygiène informatique",
+                                               "title":  {
+                                                   "parts":  ["Diagnostic d\u0027hygi\u00e8ne", "informatique"],
+                                                   "separator":  "br"
+                                               },
                                                "subtitle":  "Conformité au Guide d\u0027hygiène informatique de l\u0027ANSSI — référentiel des 42 mesures",
                                                "disclaimerLead":  "Diagnostic informatif.",
                                                "disclaimerBody":  "Le présent document ne constitue ni une certification ANSSI, ni un avis juridique. Il propose une cartographie technique de la posture de sécurité du poste audité au regard du Guide d\u0027hygiène informatique de l\u0027ANSSI (référentiel de 42 mesures).",
