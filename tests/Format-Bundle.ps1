@@ -110,7 +110,18 @@ function Expand-BundleObject {
         if ($null -eq $val) {
             $Output[$fullKey] = ''
         } elseif ($val -is [System.Management.Automation.PSCustomObject]) {
-            Expand-BundleObject -Node $val -Prefix $fullKey -Output $Output | Out-Null
+            # Rich-text leaf guard (Phase 6.1-R1). A value carrying both
+            # 'parts' and 'separator' is a structured rich-text VALUE, not a
+            # namespace, and must flatten to ONE key so this helper's key set
+            # matches the engine's. The value here is indicative only (parts
+            # joined); the engine renders the authoritative HTML. This helper
+            # exists for key-set fidelity, so the KEY is what must agree.
+            $vNames = @($val.PSObject.Properties.Name)
+            if (($vNames -contains 'parts') -and ($vNames -contains 'separator')) {
+                $Output[$fullKey] = (@($val.parts) -join ' ')
+            } else {
+                Expand-BundleObject -Node $val -Prefix $fullKey -Output $Output | Out-Null
+            }
         } elseif ($val -is [System.Object[]]) {
             # Arrays stored as pipe-joined string (mirrors FieldOps-Locale.psm1 behaviour)
             $Output[$fullKey] = ($val -join '|')
