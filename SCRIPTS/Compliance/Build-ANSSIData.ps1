@@ -487,61 +487,61 @@ function Get-R42 { @{ Status='pv'; Detail='Inventaire logiciel capture en instan
 # METADATA
 # ===========================================================================
 $RuleMeta = @(
-    @{ Id='R1';  Mod='I';    Name='Former les equipes operationnelles a la securite des SI' }
-    @{ Id='R2';  Mod='I';    Name='Sensibiliser les utilisateurs aux bonnes pratiques' }
-    @{ Id='R3';  Mod='I';    Name='Maitriser les risques de l''infogerance' }
-    @{ Id='R4';  Mod='II';   Name='Identifier informations et serveurs sensibles' }
-    @{ Id='R5';  Mod='II';   Name='Inventaire exhaustif des comptes privilegies' }
-    @{ Id='R6';  Mod='II';   Name='Procedures arrivee/depart/changement de fonction' }
-    @{ Id='R7';  Mod='II';   Name='Connexion reseau aux seuls equipements maitrises' }
-    @{ Id='R8';  Mod='III';  Name='Comptes nominatifs, distinguer usage et administration' }
-    @{ Id='R9';  Mod='III';  Name='Attribuer les bons droits sur les ressources sensibles' }
-    @{ Id='R10'; Mod='III';  Name='Definir et verifier une politique de mots de passe' }
-    @{ Id='R11'; Mod='III';  Name='Proteger les mots de passe stockes sur les postes' }
-    @{ Id='R12'; Mod='III';  Name='Changer les elements d''authentification par defaut' }
-    @{ Id='R13'; Mod='III';  Name='Privilegier l''authentification forte' }
-    @{ Id='R14'; Mod='IV';   Name='Mettre en place un niveau de securite minimal sur le parc' }
-    @{ Id='R15'; Mod='IV';   Name='Se proteger des menaces des supports amovibles' }
-    @{ Id='R16'; Mod='IV';   Name='Utiliser un outil de gestion centralisee du parc' }
-    @{ Id='R17'; Mod='IV';   Name='Activer et configurer le pare-feu local' }
-    @{ Id='R18'; Mod='IV';   Name='Chiffrer les donnees sensibles transmises par Internet' }
-    @{ Id='R19'; Mod='V';    Name='Segmenter le reseau et cloisonner les acces' }
-    @{ Id='R20'; Mod='V';    Name='Securiser les reseaux Wi-Fi' }
-    @{ Id='R21'; Mod='V';    Name='Utiliser des protocoles reseau securises' }
-    @{ Id='R22'; Mod='V';    Name='Mettre en place une passerelle d''acces securise a Internet' }
-    @{ Id='R23'; Mod='V';    Name='Cloisonner les services exposes sur Internet' }
-    @{ Id='R24'; Mod='V';    Name='Proteger la messagerie professionnelle' }
-    @{ Id='R25'; Mod='V';    Name='Securiser les interconnexions avec les partenaires' }
-    @{ Id='R26'; Mod='V';    Name='Controler les acces physiques aux locaux et salles serveurs' }
-    @{ Id='R27'; Mod='VI';   Name='Interdire l''acces Internet depuis les postes d''administration' }
-    @{ Id='R28'; Mod='VI';   Name='Utiliser un reseau dedie a l''administration' }
-    @{ Id='R29'; Mod='VI';   Name='Limiter au strict besoin les droits d''administration' }
-    @{ Id='R30'; Mod='VII';  Name='Prendre des mesures de securisation physique des terminaux nomades' }
-    @{ Id='R31'; Mod='VII';  Name='Chiffrer les donnees sensibles sur le materiel perdable' }
-    @{ Id='R32'; Mod='VII';  Name='Securiser la connexion reseau des postes nomades' }
-    @{ Id='R33'; Mod='VII';  Name='Adopter des politiques de securite dediees aux terminaux mobiles' }
-    @{ Id='R34'; Mod='VIII'; Name='Definir une politique de mise a jour des composants' }
-    @{ Id='R35'; Mod='VIII'; Name='Anticiper la fin de maintenance des logiciels et systemes' }
-    @{ Id='R36'; Mod='IX';   Name='Activer et configurer les journaux des composants' }
-    @{ Id='R37'; Mod='IX';   Name='Definir et appliquer une politique de sauvegarde' }
-    @{ Id='R38'; Mod='IX';   Name='Proceder a des controles et audits de securite reguliers' }
-    @{ Id='R39'; Mod='IX';   Name='Designer un referent securite des systemes d''information' }
-    @{ Id='R40'; Mod='IX';   Name='Definir une procedure de gestion des incidents' }
-    @{ Id='R41'; Mod='X';    Name='Mener une analyse de risque formelle' }
-    @{ Id='R42'; Mod='X';    Name='Privilegier les produits et services qualifies par l''ANSSI' }
+    @{ Id='R1';  Mod='I';    Name=(T 'report.anssi.rules.R1.name' -Default 'Former les equipes operationnelles a la securite des SI') }
+    @{ Id='R2';  Mod='I';    Name=(T 'report.anssi.rules.R2.name' -Default 'Sensibiliser les utilisateurs aux bonnes pratiques') }
+    @{ Id='R3';  Mod='I';    Name=(T 'report.anssi.rules.R3.name' -Default 'Maitriser les risques de l''infogerance') }
+    @{ Id='R4';  Mod='II';   Name=(T 'report.anssi.rules.R4.name' -Default 'Identifier informations et serveurs sensibles') }
+    @{ Id='R5';  Mod='II';   Name=(T 'report.anssi.rules.R5.name' -Default 'Inventaire exhaustif des comptes privilegies') }
+    @{ Id='R6';  Mod='II';   Name=(T 'report.anssi.rules.R6.name' -Default 'Procedures arrivee/depart/changement de fonction') }
+    @{ Id='R7';  Mod='II';   Name=(T 'report.anssi.rules.R7.name' -Default 'Connexion reseau aux seuls equipements maitrises') }
+    @{ Id='R8';  Mod='III';  Name=(T 'report.anssi.rules.R8.name' -Default 'Comptes nominatifs, distinguer usage et administration') }
+    @{ Id='R9';  Mod='III';  Name=(T 'report.anssi.rules.R9.name' -Default 'Attribuer les bons droits sur les ressources sensibles') }
+    @{ Id='R10'; Mod='III';  Name=(T 'report.anssi.rules.R10.name' -Default 'Definir et verifier une politique de mots de passe') }
+    @{ Id='R11'; Mod='III';  Name=(T 'report.anssi.rules.R11.name' -Default 'Proteger les mots de passe stockes sur les postes') }
+    @{ Id='R12'; Mod='III';  Name=(T 'report.anssi.rules.R12.name' -Default 'Changer les elements d''authentification par defaut') }
+    @{ Id='R13'; Mod='III';  Name=(T 'report.anssi.rules.R13.name' -Default 'Privilegier l''authentification forte') }
+    @{ Id='R14'; Mod='IV';   Name=(T 'report.anssi.rules.R14.name' -Default 'Mettre en place un niveau de securite minimal sur le parc') }
+    @{ Id='R15'; Mod='IV';   Name=(T 'report.anssi.rules.R15.name' -Default 'Se proteger des menaces des supports amovibles') }
+    @{ Id='R16'; Mod='IV';   Name=(T 'report.anssi.rules.R16.name' -Default 'Utiliser un outil de gestion centralisee du parc') }
+    @{ Id='R17'; Mod='IV';   Name=(T 'report.anssi.rules.R17.name' -Default 'Activer et configurer le pare-feu local') }
+    @{ Id='R18'; Mod='IV';   Name=(T 'report.anssi.rules.R18.name' -Default 'Chiffrer les donnees sensibles transmises par Internet') }
+    @{ Id='R19'; Mod='V';    Name=(T 'report.anssi.rules.R19.name' -Default 'Segmenter le reseau et cloisonner les acces') }
+    @{ Id='R20'; Mod='V';    Name=(T 'report.anssi.rules.R20.name' -Default 'Securiser les reseaux Wi-Fi') }
+    @{ Id='R21'; Mod='V';    Name=(T 'report.anssi.rules.R21.name' -Default 'Utiliser des protocoles reseau securises') }
+    @{ Id='R22'; Mod='V';    Name=(T 'report.anssi.rules.R22.name' -Default 'Mettre en place une passerelle d''acces securise a Internet') }
+    @{ Id='R23'; Mod='V';    Name=(T 'report.anssi.rules.R23.name' -Default 'Cloisonner les services exposes sur Internet') }
+    @{ Id='R24'; Mod='V';    Name=(T 'report.anssi.rules.R24.name' -Default 'Proteger la messagerie professionnelle') }
+    @{ Id='R25'; Mod='V';    Name=(T 'report.anssi.rules.R25.name' -Default 'Securiser les interconnexions avec les partenaires') }
+    @{ Id='R26'; Mod='V';    Name=(T 'report.anssi.rules.R26.name' -Default 'Controler les acces physiques aux locaux et salles serveurs') }
+    @{ Id='R27'; Mod='VI';   Name=(T 'report.anssi.rules.R27.name' -Default 'Interdire l''acces Internet depuis les postes d''administration') }
+    @{ Id='R28'; Mod='VI';   Name=(T 'report.anssi.rules.R28.name' -Default 'Utiliser un reseau dedie a l''administration') }
+    @{ Id='R29'; Mod='VI';   Name=(T 'report.anssi.rules.R29.name' -Default 'Limiter au strict besoin les droits d''administration') }
+    @{ Id='R30'; Mod='VII';  Name=(T 'report.anssi.rules.R30.name' -Default 'Prendre des mesures de securisation physique des terminaux nomades') }
+    @{ Id='R31'; Mod='VII';  Name=(T 'report.anssi.rules.R31.name' -Default 'Chiffrer les donnees sensibles sur le materiel perdable') }
+    @{ Id='R32'; Mod='VII';  Name=(T 'report.anssi.rules.R32.name' -Default 'Securiser la connexion reseau des postes nomades') }
+    @{ Id='R33'; Mod='VII';  Name=(T 'report.anssi.rules.R33.name' -Default 'Adopter des politiques de securite dediees aux terminaux mobiles') }
+    @{ Id='R34'; Mod='VIII'; Name=(T 'report.anssi.rules.R34.name' -Default 'Definir une politique de mise a jour des composants') }
+    @{ Id='R35'; Mod='VIII'; Name=(T 'report.anssi.rules.R35.name' -Default 'Anticiper la fin de maintenance des logiciels et systemes') }
+    @{ Id='R36'; Mod='IX';   Name=(T 'report.anssi.rules.R36.name' -Default 'Activer et configurer les journaux des composants') }
+    @{ Id='R37'; Mod='IX';   Name=(T 'report.anssi.rules.R37.name' -Default 'Definir et appliquer une politique de sauvegarde') }
+    @{ Id='R38'; Mod='IX';   Name=(T 'report.anssi.rules.R38.name' -Default 'Proceder a des controles et audits de securite reguliers') }
+    @{ Id='R39'; Mod='IX';   Name=(T 'report.anssi.rules.R39.name' -Default 'Designer un referent securite des systemes d''information') }
+    @{ Id='R40'; Mod='IX';   Name=(T 'report.anssi.rules.R40.name' -Default 'Definir une procedure de gestion des incidents') }
+    @{ Id='R41'; Mod='X';    Name=(T 'report.anssi.rules.R41.name' -Default 'Mener une analyse de risque formelle') }
+    @{ Id='R42'; Mod='X';    Name=(T 'report.anssi.rules.R42.name' -Default 'Privilegier les produits et services qualifies par l''ANSSI') }
 )
 
 $ModuleMeta = @(
-    @{ Number='I';    Title='Sensibiliser et former' }
-    @{ Number='II';   Title='Connaitre le systeme d''information' }
-    @{ Number='III';  Title='Authentifier et controler les acces' }
-    @{ Number='IV';   Title='Securiser les postes' }
-    @{ Number='V';    Title='Securiser le reseau' }
-    @{ Number='VI';   Title='Securiser l''administration' }
-    @{ Number='VII';  Title='Gerer le nomadisme' }
-    @{ Number='VIII'; Title='Maintenir le SI a jour' }
-    @{ Number='IX';   Title='Superviser, auditer, reagir' }
-    @{ Number='X';    Title='Pour aller plus loin' }
+    @{ Number='I';    Title=(T 'report.anssi.modules.I.title' -Default 'Sensibiliser et former') }
+    @{ Number='II';   Title=(T 'report.anssi.modules.II.title' -Default 'Connaitre le systeme d''information') }
+    @{ Number='III';  Title=(T 'report.anssi.modules.III.title' -Default 'Authentifier et controler les acces') }
+    @{ Number='IV';   Title=(T 'report.anssi.modules.IV.title' -Default 'Securiser les postes') }
+    @{ Number='V';    Title=(T 'report.anssi.modules.V.title' -Default 'Securiser le reseau') }
+    @{ Number='VI';   Title=(T 'report.anssi.modules.VI.title' -Default 'Securiser l''administration') }
+    @{ Number='VII';  Title=(T 'report.anssi.modules.VII.title' -Default 'Gerer le nomadisme') }
+    @{ Number='VIII'; Title=(T 'report.anssi.modules.VIII.title' -Default 'Maintenir le SI a jour') }
+    @{ Number='IX';   Title=(T 'report.anssi.modules.IX.title' -Default 'Superviser, auditer, reagir') }
+    @{ Number='X';    Title=(T 'report.anssi.modules.X.title' -Default 'Pour aller plus loin') }
 )
 
 # ===========================================================================
