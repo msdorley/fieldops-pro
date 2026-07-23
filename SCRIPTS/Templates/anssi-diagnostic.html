@@ -585,23 +585,23 @@ html, body {
     <strong>{{t:report.anssi.cover.disclaimerLead}}</strong> Ce document n'est pas une certification ANSSI et ne constitue pas un avis juridique. Cartographie technique de la posture de securite du poste audite vis-a-vis du Guide d'Hygiene Informatique ANSSI (referentiel de 42 mesures).
   </div>
 
-  <div class="title-eyebrow">Rapport d'audit technique</div>
+  <div class="title-eyebrow">{{t:report.anssi.cover.documentType}}</div>
   <h1 class="title-h1 serif">{{t:report.anssi.cover.title}}</h1>
-  <p class="title-sub">Conformite au Guide d'Hygiene Informatique de l'ANSSI &mdash; referentiel des 42 mesures</p>
+  <p class="title-sub">{{t:report.anssi.cover.subtitle}}</p>
 
   <div class="cover-flourish"><span class="ornament"></span></div>
 
-  <div class="section-label">Spectre de conformite &mdash; 42 mesures</div>
+  <div class="section-label">{{t:report.anssi.cover.spectrumLabel}}</div>
   {{SPECTRUM}}
 
   <div class="section-label">{{t:report.anssi.cover.machineLabel}}</div>
   <div class="machine-card">
-    <div class="machine-row"><span class="machine-key">Nom de poste</span><span class="machine-val">{{HOSTNAME}}</span></div>
-    <div class="machine-row"><span class="machine-key">Fabricant &middot; Modele</span><span class="machine-val">{{MAKE_MODEL}}</span></div>
-    <div class="machine-row"><span class="machine-key">Numero de serie</span><span class="machine-val">{{SERIAL}}</span></div>
+    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.hostname}}</span><span class="machine-val">{{HOSTNAME}}</span></div>
+    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.makeModel}}</span><span class="machine-val">{{MAKE_MODEL}}</span></div>
+    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.serial}}</span><span class="machine-val">{{SERIAL}}</span></div>
     <div class="machine-row"><span class="machine-key">Systeme d'exploitation</span><span class="machine-val">{{OS}}</span></div>
-    <div class="machine-row"><span class="machine-key">Annuaire</span><span class="machine-val">{{DIRECTORY}}</span></div>
-    <div class="machine-row"><span class="machine-key">Date du diagnostic</span><span class="machine-val">{{REPORT_DATE_HUMAN}}</span></div>
+    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.directory}}</span><span class="machine-val">{{DIRECTORY}}</span></div>
+    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.date}}</span><span class="machine-val">{{REPORT_DATE_HUMAN}}</span></div>
   </div>
 
   <div class="section-label">{{t:report.anssi.cover.findingsLabel}}</div>
@@ -622,7 +622,7 @@ html, body {
     <span class="page-num">Page 2 / {{PAGE_TOTAL}}</span>
   </div>
 
-  <div class="title-h2-meta">Vue d'ensemble</div>
+  <div class="title-h2-meta">{{t:report.anssi.overview.sectionTitle}}</div>
   <h2 class="title-h2 serif">{{t:report.anssi.overview.moduleCoverageTitle}}</h2>
   <p class="title-sub">10 modules &middot; 42 mesures &middot; structure du Guide d'Hygiene Informatique</p>
 
@@ -632,7 +632,7 @@ html, body {
     {{MODULE_BARS}}
   </div>
 
-  <div class="section-label">Lecture du diagnostic</div>
+  <div class="section-label">{{t:report.anssi.overview.legendTitle}}</div>
   <ul class="limits-list">
     <li><strong>Verifie (CV)</strong> &mdash; regle dont la conformite au niveau Standard est observee par un controle technique direct sur le poste.</li>
     <li><strong>Partiellement verifie (PV)</strong> &mdash; regle dont certains aspects sont observes ; d'autres requierent une evaluation manuelle, contextuelle ou organisationnelle complementaire.</li>
@@ -655,27 +655,27 @@ html, body {
     <span class="page-num">Page {{PAGE_TOTAL}} / {{PAGE_TOTAL}}</span>
   </div>
 
-  <div class="title-h2-meta">Conclusion</div>
+  <div class="title-h2-meta">{{t:report.anssi.conclusion.sectionTitle}}</div>
   <h2 class="title-h2 serif">{{t:report.anssi.conclusion.synthesisTitle}}</h2>
 
   <div class="cover-flourish"><span class="ornament"></span></div>
 
-  <div class="section-label">Perimetre du diagnostic</div>
+  <div class="section-label">{{t:report.anssi.conclusion.perimeterLabel}}</div>
   <p class="synth-intro">
     Ce diagnostic technique verifie automatiquement <strong>{{COUNT_CV}} regles d'hygiene ANSSI sur 42</strong> au niveau du poste local, et apporte des elements d'observation pour <strong>{{COUNT_PV}} regles supplementaires</strong>. Les <strong>{{COUNT_HP}} regles restantes</strong> relevent de la gouvernance, de l'architecture inter-machines, ou de procedures organisationnelles qui ne peuvent etre attestees par un outil technique sur un poste isole et necessitent une evaluation contextuelle.
   </p>
 
-  <div class="section-label">Limites explicites</div>
+  <div class="section-label">{{t:report.anssi.conclusion.limitsLabel}}</div>
   <ul class="limits-list">
     <li>{{t:report.anssi.cover.disclaimerLead}} <strong>Ne constitue pas une certification ANSSI</strong>, ni une attestation au sens du Guide d'Hygiene Informatique.</li>
-    <li>L'ANSSI est la seule autorite habilitee a delivrer des qualifications ou certifications officielles (cf. regle 42).</li>
-    <li>Couverture limitee au poste audite. L'evaluation organisationnelle (formation, procedures, gouvernance) releve d'un audit separe.</li>
-    <li>Date et etat observes a un instant T. Les modifications posterieures invalident le constat.</li>
-    <li>Aucune affiliation, agreement, partenariat ou approbation ANSSI. Le terme &laquo;&nbsp;ANSSI&nbsp;&raquo; est employe en reference au document public Guide d'Hygiene Informatique.</li>
+    <li>{{t:report.anssi.conclusion.limit2}}</li>
+    <li>{{t:report.anssi.conclusion.limit3}}</li>
+    <li>{{t:report.anssi.conclusion.limit4}}</li>
+    <li>{{t:report.anssi.conclusion.limit5}}</li>
   </ul>
 
-  <div class="section-label">Integrite cryptographique</div>
-  <p style="font-size: 8.5pt; color: #5C5C5C; margin: 0 0 6pt;">Empreinte SHA-256 du contenu du rapport &mdash; toute modification de ce document apres generation invaliderait cette signature :</p>
+  <div class="section-label">{{t:report.anssi.conclusion.integrityLabel}}</div>
+  <p style="font-size: 8.5pt; color: #5C5C5C; margin: 0 0 6pt;">{{t:report.anssi.conclusion.integrityBody}}</p>
   <div class="hash-block">{{REPORT_HASH}}</div>
 
   <div class="signature-row">
@@ -683,18 +683,18 @@ html, body {
       <div class="sig-lbl">Technicien auditeur</div>
       <div class="sig-name">{{TECHNICIAN}}</div>
       <div class="sig-line"></div>
-      <div class="sig-sub">Date et signature</div>
+      <div class="sig-sub">{{t:report.anssi.conclusion.signatureLabel}}</div>
     </div>
     <div class="signature-cell">
-      <div class="sig-lbl">Contact destinataire</div>
+      <div class="sig-lbl">{{t:report.anssi.conclusion.contactLabel}}</div>
       <div class="sig-name">{{CUSTOMER_CONTACT}}</div>
       <div class="sig-line"></div>
-      <div class="sig-sub">Date et signature</div>
+      <div class="sig-sub">{{t:report.anssi.conclusion.signatureLabel}}</div>
     </div>
   </div>
 
   <div class="page-foot">
-    <span class="ref">Referentiel &middot; ANSSI &middot; Guide d'Hygiene Informatique &middot; 42 mesures &middot; 2017</span>
+    <span class="ref">{{t:report.anssi.conclusion.footerRef}}</span>
     <span class="rid">{{REPORT_ID}}</span>
   </div>
 </div>

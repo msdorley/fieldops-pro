@@ -115,6 +115,11 @@ function Resolve-LocaleTokensInFile {
             $uniqueKeys[$key] = $current
         } elseif ($found -and $null -ne $current -and ($current.PSObject.Properties.Name -contains 'parts') -and ($current.PSObject.Properties.Name -contains 'separator')) {
             $richKeys[$key] = ConvertTo-RichTextHtml -Value $current
+            # Rich-text keys resolve via $richKeys, not $uniqueKeys. Remove the
+            # placeholder entry or the replacement loop counts a resolved key
+            # as unresolved (which would make the R7 zero-unresolved guard
+            # permanently false-fail).
+            [void]$uniqueKeys.Remove($key)
         } else {
             $uniqueKeys[$key] = $null
         }
