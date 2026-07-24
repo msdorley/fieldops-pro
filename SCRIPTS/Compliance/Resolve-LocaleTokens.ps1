@@ -1,15 +1,36 @@
 <#
 ================================================================================
-Resolve-LocaleTokens.ps1 -- FieldOps Pro Phase 5.2
+Resolve-LocaleTokens.ps1 -- FieldOps Pro Phase 5.2, refactored in Phase 6.1-R4b
 ================================================================================
-Post-processes a rendered HTML file, replacing {{t:locale.key}} tokens with
-their resolved values from the locale bundle.
+Replaces {{t:locale.key}} tokens with their resolved values from the locale
+bundle.
 
-Called by Invoke-ANSSIDiagnostic-POC.ps1 after the existing token-replacement
-pass completes. Operates on the file in place.
+TWO ENTRY POINTS
 
-Idempotent: tokens not present in the file are no-ops. Tokens whose keys are
-missing from the bundle are left unchanged (visible debug hint).
+    Resolve-LocaleTokensInString   Takes HTML content, returns resolved content.
+                                   Used by the report renderer, which resolves
+                                   IN MEMORY before hashing and writing.
+
+    Resolve-LocaleTokensInFile     Thin wrapper: read, resolve, write in place.
+                                   Retained for standalone use and for the
+                                   existing token-resolution tests.
+
+WHY THE STRING FORM EXISTS (6.1-R4b)
+
+    The renderer previously computed the report's SHA-256 integrity hash, wrote
+    the file, and only then invoked the file-based resolver, which rewrote that
+    same file in place. The embedded hash therefore covered content that no
+    longer existed on disk -- while the report itself states that any
+    modification after generation invalidates the signature.
+
+    Resolving in memory before the hash is computed makes the signature cover
+    exactly the delivered bytes. It also lets bundle placeholders such as
+    {cvCount} flow through the renderer's normal replacement pass, so no
+    separate variable-substitution mechanism is needed here.
+
+IDEMPOTENT
+    Tokens not present are a no-op. Keys missing from the bundle are left
+    unchanged so they are visible in the output rather than silently blanked.
 ================================================================================
 #>
 
@@ -36,7 +57,132 @@ function ConvertTo-RichTextHtml {
     }
 }
 
+function Resolve-LocaleBundleDir {
+    # Auto-discover the bundle directory when the caller did not supply one.
+    # When this file is dot-sourced, $MyInvocation.MyCommand.Path may not point
+    # at the resolver, so callers should pass -BundleDir explicitly from a
+    # dot-sourced context. This fallback covers standalone invocation.
+    param([string]$BundleDir)
+    if ($BundleDir) { return $BundleDir }
+    $candidate = $null
+    try {
+        if ($PSScriptRoot) { $candidate = $PSScriptRoot }
+        elseif ($MyInvocation.MyCommand.Path) {
+            $candidate = Split-Path -Parent $MyInvocation.MyCommand.Path
+        }
+    } catch { $candidate = $null }
+    if (-not $candidate) { return $null }
+    # ScriptDir is Compliance, parent is SCRIPTS, parent of that is ProjectRoot
+    $projectRoot = Split-Path -Parent (Split-Path -Parent $candidate)
+    return (Join-Path $projectRoot 'CONFIG\lang')
+}
+
+function Resolve-LocaleTokensInString {
+    <#
+    .SYNOPSIS
+        Resolve {{t:locale.key}} tokens in a string against a locale bundle.
+    .OUTPUTS
+        The resolved content. On any failure the input is returned unchanged,
+        so a bundle problem degrades the report to visible tokens rather than
+        aborting generation in the field.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)][AllowEmptyString()][string]$Content,
+        [string]$BundleDir = $null,
+        [string]$Lang      = 'fr'
+    )
+
+    $dir = Resolve-LocaleBundleDir -BundleDir $BundleDir
+    if (-not $dir) {
+        Write-Warning 'Resolve-LocaleTokens: cannot determine bundle directory; pass -BundleDir explicitly'
+        return $Content
+    }
+
+    $bundlePath = Join-Path $dir ($Lang + '.json')
+    if (-not (Test-Path -LiteralPath $bundlePath)) {
+        Write-Warning "Resolve-LocaleTokens: bundle not found: $bundlePath"
+        return $Content
+    }
+
+    $utf8Bom = New-Object System.Text.UTF8Encoding($true)
+    $bundle  = [System.IO.File]::ReadAllText($bundlePath, $utf8Bom) | ConvertFrom-Json
+
+    $tokenPattern = [regex]'\{\{t:([\w.]+)\}\}'
+    $found = $tokenPattern.Matches($Content)
+    if ($found.Count -eq 0) { return $Content }
+
+    # One resolution per distinct key
+    $plainKeys = @{}
+    $richKeys  = @{}
+    foreach ($m in $found) {
+        $key = $m.Groups[1].Value
+        if (-not $plainKeys.ContainsKey($key)) { $plainKeys[$key] = $null }
+    }
+
+    foreach ($key in @($plainKeys.Keys)) {
+        $segments = $key -split '\.'
+        $current  = $bundle
+        $ok       = $true
+        foreach ($s in $segments) {
+            if ($null -eq $current) { $ok = $false; break }
+            if ($current.PSObject.Properties.Name -notcontains $s) { $ok = $false; break }
+            $current = $current.$s
+        }
+        if ($ok -and $null -ne $current -and $current -is [string]) {
+            $plainKeys[$key] = $current
+        } elseif ($ok -and $null -ne $current -and
+                  ($current.PSObject.Properties.Name -contains 'parts') -and
+                  ($current.PSObject.Properties.Name -contains 'separator')) {
+            # Rich-text values resolve through $richKeys and are injected raw
+            # (their parts are escaped individually by ConvertTo-RichTextHtml).
+            # The placeholder must be removed from $plainKeys or the reporting
+            # loop below would count a resolved key as unresolved.
+            $richKeys[$key] = ConvertTo-RichTextHtml -Value $current
+            [void]$plainKeys.Remove($key)
+        } else {
+            $plainKeys[$key] = $null
+        }
+    }
+
+    $resolved   = 0
+    $unresolved = 0
+
+    foreach ($key in @($plainKeys.Keys)) {
+        $value = $plainKeys[$key]
+        $token = "{{t:$key}}"
+        if ($null -ne $value) {
+            # Escape only & < > . Quotes are left alone: the bundle uses
+            # typographic quotation marks for French, which need no escaping.
+            $htmlSafe = $value.Replace('&', '&amp;').Replace('<', '&lt;').Replace('>', '&gt;')
+            $Content = $Content.Replace($token, $htmlSafe)
+            $resolved++
+        } else {
+            $unresolved++
+        }
+    }
+
+    foreach ($key in @($richKeys.Keys)) {
+        $Content = $Content.Replace("{{t:$key}}", $richKeys[$key])
+        $resolved++
+    }
+
+    if ($unresolved -gt 0) {
+        Write-Warning ("Resolve-LocaleTokens: {0} key(s) resolved, {1} unresolved" -f $resolved, $unresolved)
+    }
+
+    return $Content
+}
+
 function Resolve-LocaleTokensInFile {
+    <#
+    .SYNOPSIS
+        Resolve {{t:locale.key}} tokens in an HTML file, in place.
+    .DESCRIPTION
+        Thin wrapper over Resolve-LocaleTokensInString. Preserved so existing
+        callers and tests continue to work unchanged. New code in the render
+        pipeline should use the string form and resolve before hashing.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory=$true)][string]$Path,
@@ -49,109 +195,12 @@ function Resolve-LocaleTokensInFile {
         return
     }
 
-    # Auto-discover BundleDir if not supplied. When this function is dot-sourced
-    # into another script, $MyInvocation.MyCommand.Path may not resolve to the
-    # resolver's own location. Caller should pass -BundleDir explicitly when
-    # invoking from a dot-sourced context. The fallback below only works for
-    # standalone invocation (e.g. testing this script directly).
-    if (-not $BundleDir) {
-        $candidate = $null
-        try {
-            if ($PSScriptRoot) { $candidate = $PSScriptRoot }
-            elseif ($MyInvocation.MyCommand.Path) {
-                $candidate = Split-Path -Parent $MyInvocation.MyCommand.Path
-            }
-        } catch { $candidate = $null }
-        if ($candidate) {
-            # ScriptDir is Compliance, parent is SCRIPTS, parent of that is ProjectRoot
-            $projectRoot = Split-Path -Parent (Split-Path -Parent $candidate)
-            $BundleDir   = Join-Path $projectRoot 'CONFIG\lang'
-        } else {
-            Write-Warning "Resolve-LocaleTokensInFile: cannot auto-discover BundleDir; pass -BundleDir explicitly"
-            return
-        }
-    }
-
-    $bundlePath = Join-Path $BundleDir ($Lang + '.json')
-    if (-not (Test-Path -LiteralPath $bundlePath)) {
-        Write-Warning "Resolve-LocaleTokensInFile: bundle not found: $bundlePath"
-        return
-    }
-
     $utf8Bom = New-Object System.Text.UTF8Encoding($true)
-    $bundle  = [System.IO.File]::ReadAllText($bundlePath, $utf8Bom) | ConvertFrom-Json
     $content = [System.IO.File]::ReadAllText($Path, $utf8Bom)
 
-    # Find every {{t:path.to.key}} token in the file. Replace each with the
-    # resolved value from the bundle. Keys with dots traverse nested objects.
-    $tokenPattern = [regex]'\{\{t:([\w.]+)\}\}'
-    $matches = $tokenPattern.Matches($content)
-    if ($matches.Count -eq 0) {
-        return  # nothing to do
-    }
+    $resolvedContent = Resolve-LocaleTokensInString -Content $content -BundleDir $BundleDir -Lang $Lang
 
-    # Build a unique set of keys, resolve once per key
-    $uniqueKeys = @{}
-    $richKeys   = @{}
-    foreach ($m in $matches) {
-        $key = $m.Groups[1].Value
-        if (-not $uniqueKeys.ContainsKey($key)) {
-            $uniqueKeys[$key] = $null
-        }
-    }
-
-    foreach ($key in @($uniqueKeys.Keys)) {
-        $parts   = $key -split '\.'
-        $current = $bundle
-        $found   = $true
-        foreach ($p in $parts) {
-            if ($null -eq $current) { $found = $false; break }
-            if ($current.PSObject.Properties.Name -notcontains $p) {
-                $found = $false; break
-            }
-            $current = $current.$p
-        }
-        if ($found -and $null -ne $current -and $current -is [string]) {
-            $uniqueKeys[$key] = $current
-        } elseif ($found -and $null -ne $current -and ($current.PSObject.Properties.Name -contains 'parts') -and ($current.PSObject.Properties.Name -contains 'separator')) {
-            $richKeys[$key] = ConvertTo-RichTextHtml -Value $current
-            # Rich-text keys resolve via $richKeys, not $uniqueKeys. Remove the
-            # placeholder entry or the replacement loop counts a resolved key
-            # as unresolved (which would make the R7 zero-unresolved guard
-            # permanently false-fail).
-            [void]$uniqueKeys.Remove($key)
-        } else {
-            $uniqueKeys[$key] = $null
-        }
-    }
-
-    # Apply replacements
-    $resolved = 0
-    $unresolved = 0
-    foreach ($key in @($uniqueKeys.Keys)) {
-        $value = $uniqueKeys[$key]
-        $token = "{{t:$key}}"
-        if ($null -ne $value) {
-            # HTML-encode the bundle value -- the value may contain characters
-            # like apostrophes or angle brackets that need escaping in HTML.
-            # For safety we only escape < > & not quotes (since the bundle
-            # already uses curly quotes for French typography).
-            $htmlSafe = $value.Replace('&', '&amp;').Replace('<', '&lt;').Replace('>', '&gt;')
-            $content = $content.Replace($token, $htmlSafe)
-            $resolved++
-        } else {
-            $unresolved++
-        }
-    }
-    foreach ($key in @($richKeys.Keys)) {
-        $token = "{{t:$key}}"
-        $content = $content.Replace($token, $richKeys[$key])
-        $resolved++
-    }
-
-    [System.IO.File]::WriteAllText($Path, $content, $utf8Bom)
-
-    if ($unresolved -gt 0) {
-        Write-Warning ("Resolve-LocaleTokensInFile: {0} key(s) resolved, {1} unresolved" -f $resolved, $unresolved)
+    if ($resolvedContent -ne $content) {
+        [System.IO.File]::WriteAllText($Path, $resolvedContent, $utf8Bom)
     }
 }

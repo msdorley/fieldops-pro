@@ -37,7 +37,8 @@ param(
     [switch]$NoOpen,
     [ValidateSet('Auto','Edge','Wkhtmltopdf')]
     [string]$PdfEngine = 'Auto',
-    [switch]$NoPdf
+    [switch]$NoPdf,
+    [string]$Language = 'fr'
 )
 
 Set-StrictMode -Version 1.0
@@ -335,6 +336,20 @@ $moduleDetails = New-ModuleDetailsBlock -ModuleDetails $data.ModuleDetails -Page
 
 Write-Step 'Performing token replacement...'
 $html = $template
+
+# === Phase 6.1-R4b: resolve locale tokens IN MEMORY, before hashing =====
+# The bundle text must be present in $html before the SHA-256 is computed,
+# or the embedded signature covers content that never reaches disk. This
+# ordering also lets bundle placeholders such as {cvCount} flow through the
+# normal replacement pass below, so no separate substitution pass is needed.
+try {
+    . (Join-Path $PSScriptRoot 'Resolve-LocaleTokens.ps1')
+    $localeBundleDir = Join-Path (Split-Path (Split-Path $PSScriptRoot -Parent) -Parent) 'CONFIG\lang'
+    $html = Resolve-LocaleTokensInString -Content $html -BundleDir $localeBundleDir -Lang $Language
+    Write-OK "Locale tokens resolved ($Language)"
+} catch {
+    Write-Warn "Locale token resolution failed: $($_.Exception.Message)"
+}
 $hashPlaceholder = '0' * 64
 $replacements = @{
     '{{REPORT_ID}}'         = (ConvertTo-HtmlSafe $data.Report.Id)
@@ -355,6 +370,14 @@ $replacements = @{
     '{{MODULE_BARS}}'       = $moduleBars
     '{{MODULE_DETAILS}}'    = $moduleDetails
     '{{REPORT_HASH}}'       = $hashPlaceholder
+    # Single-brace placeholders carried in by the locale resolution above.
+    # Counts are wrapped in <strong> so the perimeter sentence keeps emphasis
+    # on its figures while remaining one translatable unit.
+    '{cvCount}'             = ('<strong>' + [string]$data.Summary.CountCV + '</strong>')
+    '{pvCount}'             = ('<strong>' + [string]$data.Summary.CountPV + '</strong>')
+    '{hpCount}'             = ('<strong>' + [string]$data.Summary.CountHP + '</strong>')
+    '{reportId}'            = (ConvertTo-HtmlSafe $data.Report.Id)
+    '{dateHuman}'           = (ConvertTo-HtmlSafe $data.Report.GeneratedAtHuman)
 }
 foreach ($key in $replacements.Keys) { $html = $html.Replace($key, $replacements[$key]) }
 # second pass: blocks may contain nested tokens (e.g. {{REPORT_ID}} in module footers)
@@ -365,7 +388,11 @@ foreach ($key in $replacements.Keys) {
 
 # real SHA-256 over the fully-rendered content
 $sha   = [System.Security.Cryptography.SHA256]::Create()
-$bytes = [System.Text.Encoding]::UTF8.GetBytes($html)
+# Hash the exact byte sequence that will be written: UTF-8 WITH BOM, matching
+# the write below. Hashing BOM-less bytes while writing BOM-prefixed bytes
+# would leave the signature unverifiable against the delivered file.
+$utf8BomEnc = New-Object System.Text.UTF8Encoding($true)
+$bytes = $utf8BomEnc.GetPreamble() + [System.Text.Encoding]::UTF8.GetBytes($html)
 $hash  = ([BitConverter]::ToString($sha.ComputeHash($bytes)) -replace '-','').ToLower()
 $html  = $html.Replace($hashPlaceholder, $hash)
 Write-OK "Token replacement complete - hash $($hash.Substring(0,16))..."
@@ -375,30 +402,17 @@ $htmlOutPath = Join-Path $OutputDir "$reportId.html"
 $pdfOutPath  = Join-Path $OutputDir "$reportId.pdf"
 
 Write-Step "Writing HTML: $htmlOutPath"
-Set-Content -LiteralPath $htmlOutPath -Value $html -Encoding UTF8
+# Single write, explicit UTF-8 with BOM -- the exact bytes hashed above.
+# Nothing may modify this file afterwards or the signature is invalidated.
+# [System.IO.File] static methods ignore the PowerShell location and resolve
+# relative paths against the process working directory, so -OutputDir '.\REPORTS'
+# would land in the wrong place. Convert to a full filesystem path first.
+$htmlOutFull = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($htmlOutPath)
+[System.IO.File]::WriteAllText($htmlOutFull, $html, $utf8BomEnc)
 Write-OK "HTML written ($((Get-Item $htmlOutPath).Length) bytes)"
 
-    # === Phase 5.2 -- Resolve {{t:locale.key}} tokens against the bundle ===
-    # Added by Apply-Commit5.ps1. The resolver post-processes the HTML the
-    # renderer just wrote, swapping {{t:locale.key}} for the bundle value
-    # (HTML-escaped). Safe no-op if no such tokens are present.
-    # Variable-independent: scans REPORTS for the most recent FOPS-*.html,
-    # which is the file the renderer wrote moments ago.
-    try {
-        . (Join-Path $PSScriptRoot 'Resolve-LocaleTokens.ps1')
-        $projectRoot = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
-        $rptDir      = Join-Path $projectRoot 'REPORTS'
-        $bundleDir   = Join-Path $projectRoot 'CONFIG\lang'
-        if (Test-Path -LiteralPath $rptDir) {
-            $latestReport = Get-ChildItem -LiteralPath $rptDir -Filter 'FOPS-*.html' -ErrorAction SilentlyContinue |
-                            Sort-Object LastWriteTime -Descending | Select-Object -First 1
-            if ($latestReport) {
-                Resolve-LocaleTokensInFile -Path $latestReport.FullName -BundleDir $bundleDir -Lang 'fr'
-            }
-        }
-    } catch {
-        Write-Warning "Locale token resolution failed: $($_.Exception.Message)"
-    }
+    # Locale token resolution moved into the in-memory pipeline above
+    # (Phase 6.1-R4b) so the integrity hash covers the delivered content.
 
 if ($NoPdf) {
     Write-Host ''
