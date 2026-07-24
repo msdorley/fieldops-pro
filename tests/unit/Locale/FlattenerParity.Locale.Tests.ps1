@@ -153,13 +153,13 @@ Describe 'Hardcoded-string audit script behaviour (6.1-R4a)' -Tag 'Fast' {
         Test-IsWhitelisted -Candidate 'Spectre de conformite'           | Should -BeFalse
     }
 
-    It 'reports the live template with a stable, non-zero finding count' {
+    It 'the live template contains zero hardcoded French strings (6.1-R6)' {
         # Guards against the scanner silently breaking (returning nothing) or
         # blowing up with CSS noise. The exact number changes as R4b routes
         # strings; the bounds only assert the scanner is functioning.
         $hits = @(Find-HardcodedStringsInTemplate -TemplatePath $script:Template |
                   Where-Object { -not $_.Whitelisted })
-        $hits.Count | Should -BeGreaterThan 0
-        $hits.Count | Should -BeLessThan 200
+        ($hits | ForEach-Object { "line $($_.Line): $($_.Text)" }) -join ' | ' | Should -Be ''
+        # Was "greater than zero": a canary against the scanner silently
     }
 }

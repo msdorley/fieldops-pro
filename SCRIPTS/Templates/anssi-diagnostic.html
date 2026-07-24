@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<html lang="fr">
+<html lang="{{t:_meta.code}}">
 <head>
 <meta charset="UTF-8">
 <title>{{t:report.anssi.cover.documentTitle}} - {{HOSTNAME}}</title>
@@ -662,7 +662,7 @@ html, body {
 
   <div class="section-label">{{t:report.anssi.conclusion.perimeterLabel}}</div>
   <p class="synth-intro">
-    Ce diagnostic technique verifie automatiquement <strong>{{COUNT_CV}} regles d'hygiene ANSSI sur 42</strong> au niveau du poste local, et apporte des elements d'observation pour <strong>{{COUNT_PV}} regles supplementaires</strong>. Les <strong>{{COUNT_HP}} regles restantes</strong> relevent de la gouvernance, de l'architecture inter-machines, ou de procedures organisationnelles qui ne peuvent etre attestees par un outil technique sur un poste isole et necessitent une evaluation contextuelle.
+    {{t:report.anssi.conclusion.perimeterBody}}
   </p>
 
   <div class="section-label">{{t:report.anssi.conclusion.limitsLabel}}</div>
