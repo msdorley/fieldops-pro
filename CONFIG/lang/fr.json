@@ -480,6 +480,7 @@
                                            },
                                  "cover":  {
                                                "documentType":  "Rapport d\u0027audit technique",
+                                               "documentTitle":  "Diagnostic d\u0027hygi\u00e8ne informatique ANSSI",
                                                "title":  {
                                                    "parts":  ["Diagnostic d\u0027hygi\u00e8ne", "informatique"],
                                                    "separator":  "br"
@@ -501,7 +502,7 @@
                                                        "hostname":  "Nom de poste",
                                                        "makeModel":  "Fabricant / modèle",
                                                        "serial":  "Numéro de série",
-                                                       "os":  "Système",
+                                                       "os":  "Syst\u00e8me d\u0027exploitation",
                                                        "directory":  "Annuaire",
                                                        "date":  "Date du diagnostic",
                                                        "technician":  "Technicien",
@@ -525,7 +526,15 @@
                                                   "legendTitle":  "Lecture du diagnostic",
                                                   "legendCv":  "Vérifié (CV) — règle dont la conformité au niveau Standard est observée par un contrôle technique direct sur le poste.",
                                                   "legendPv":  "Partiellement vérifié (PV) — règle dont certains aspects sont observés ; d\u0027autres requièrent une évaluation manuelle, contextuelle ou organisationnelle complémentaire.",
-                                                  "legendHp":  "Hors périmètre (HP) — règle organisationnelle, contractuelle ou d\u0027architecture inter-machines, non attestable par un outil technique sur un poste isolé."
+                                                  "legendHp":  "Hors périmètre (HP) — règle organisationnelle, contractuelle ou d\u0027architecture inter-machines, non attestable par un outil technique sur un poste isolé.",
+                                                  "legendCvLabel":  "V\u00e9rifi\u00e9 (CV)",
+                                                  "legendCvBody":  "r\u00e8gle dont la conformit\u00e9 au niveau Standard est observ\u00e9e par un contr\u00f4le technique direct sur le poste.",
+                                                  "legendPvLabel":  "Partiellement v\u00e9rifi\u00e9 (PV)",
+                                                  "legendPvBody":  "r\u00e8gle dont certains aspects sont observ\u00e9s ; d\u0027autres requi\u00e8rent une \u00e9valuation manuelle, contextuelle ou organisationnelle compl\u00e9mentaire.",
+                                                  "legendHpLabel":  "Hors p\u00e9rim\u00e8tre (HP)",
+                                                  "legendHpBody":  "r\u00e8gle organisationnelle, contractuelle ou d\u0027architecture inter-machines, non attestable par un outil technique sur un poste isol\u00e9.",
+                                                  "coverageCaption":  "10 modules \u00b7 42 mesures \u00b7 structure du Guide d\u0027hygi\u00e8ne informatique",
+                                                  "footerRef":  "R\u00e9f\u00e9rentiel \u00b7 ANSSI \u00b7 Guide d\u0027hygi\u00e8ne informatique \u00b7 42 mesures"
                                               },
                                  "status":  {
                                                 "cv":  "Vérifié",

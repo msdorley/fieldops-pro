@@ -480,6 +480,7 @@
                                            },
                                  "cover":  {
                                                "documentType":  "Technical Audit Report",
+                                               "documentTitle":  "ANSSI IT Hygiene Diagnostic",
                                                "title":  {
                                                    "parts":  ["IT Hygiene", "Diagnostic"],
                                                    "separator":  "br"
@@ -525,7 +526,15 @@
                                                   "legendTitle":  "Reading the diagnostic",
                                                   "legendCv":  "Verified (CV) - rule whose compliance at the Standard level is observed by direct technical control on the workstation.",
                                                   "legendPv":  "Partially verified (PV) - rule for which some aspects are observed; others require additional manual, contextual, or organisational evaluation.",
-                                                  "legendHp":  "Out of scope (HP) - organisational, contractual, or inter-machine architecture rule, not technically attestable on an isolated workstation."
+                                                  "legendHp":  "Out of scope (HP) - organisational, contractual, or inter-machine architecture rule, not technically attestable on an isolated workstation.",
+                                                  "legendCvLabel":  "Verified (CV)",
+                                                  "legendCvBody":  "rule whose compliance at the Standard level is observed by direct technical control on the workstation.",
+                                                  "legendPvLabel":  "Partially verified (PV)",
+                                                  "legendPvBody":  "rule for which some aspects are observed; others require additional manual, contextual, or organisational evaluation.",
+                                                  "legendHpLabel":  "Out of scope (HP)",
+                                                  "legendHpBody":  "organisational, contractual, or inter-machine architecture rule, not technically attestable on an isolated workstation.",
+                                                  "coverageCaption":  "10 modules \u00b7 42 measures \u00b7 structure of the IT Hygiene Guide",
+                                                  "footerRef":  "Reference framework \u00b7 ANSSI \u00b7 IT Hygiene Guide \u00b7 42 measures"
                                               },
                                  "status":  {
                                                 "cv":  "Verified",
