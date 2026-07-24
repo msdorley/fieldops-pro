@@ -1,0 +1,108 @@
+{
+  "_meta": {
+    "schemaVersion": "1.0",
+    "snapshotDate": "2026-07-24",
+    "source": "https://docs.anthropic.com/en/docs/about-claude/pricing",
+    "currency": "USD",
+    "unit": "per million tokens",
+    "freshnessWarnDays": 90,
+    "freshnessFailDays": 180,
+    "notes": [
+      "Prices are STANDARD list rates. Promotional or introductory rates are",
+      "deliberately NOT used: cost ceilings exist to protect the operator, so",
+      "estimation must never under-report. Claude Sonnet 5 carries an",
+      "introductory rate of 2.00/10.00 through 2026-08-31; the standard",
+      "3.00/15.00 is recorded here so ceilings trigger conservatively.",
+      "Regional multipliers (US-only inference is 1.1x) and Batch API (-50%)",
+      "and prompt caching (-90% on cached input) are NOT applied here. Those",
+      "are applied by the client at estimation time when the relevant option",
+      "is in use, again only where doing so cannot under-report."
+    ]
+  },
+
+  "tiers": {
+    "Classification": "claude-haiku-4-5-20251001",
+    "Narration": "claude-sonnet-5",
+    "Reasoning": "claude-opus-4-8"
+  },
+
+  "estimation": {
+    "charsPerTokenConservative": 2.6,
+    "defaultOutputMultiplier": 2.0,
+    "unknownModelFallback": "claude-opus-4-8",
+    "notes": [
+      "charsPerTokenConservative is deliberately LOW. Fewer characters per",
+      "token means more tokens estimated, means higher estimated cost, means",
+      "the ceiling engages earlier. Typical French and English prose runs",
+      "roughly 3.5-4.0 chars/token on the v1 tokenizer; the v2 tokenizer",
+      "(Opus 4.7 and later) can emit up to 35 percent more tokens for the",
+      "same input. 2.6 is chosen to stay conservative across both.",
+      "This value is a SAFE PLACEHOLDER, not a calibrated measurement.",
+      "Design doc risk 6.5-Risk-7 calls for benchmarking before migration;",
+      "until that benchmark exists, erring high is the correct posture.",
+      "unknownModelFallback: if a configured model is absent from the table",
+      "below, price it as the most expensive current model rather than",
+      "refusing the call or assuming it is cheap. An unrecognised model must",
+      "never estimate lower than a recognised one."
+    ]
+  },
+
+  "models": {
+    "claude-opus-4-8": {
+      "status": "current",
+      "family": "opus",
+      "inputPerMTok": 5.00,
+      "outputPerMTok": 25.00,
+      "tokenizerVariant": "v2",
+      "released": "2026-05-28"
+    },
+    "claude-sonnet-5": {
+      "status": "current",
+      "family": "sonnet",
+      "inputPerMTok": 3.00,
+      "outputPerMTok": 15.00,
+      "tokenizerVariant": "v2",
+      "introRateInputPerMTok": 2.00,
+      "introRateOutputPerMTok": 10.00,
+      "introRateExpires": "2026-08-31"
+    },
+    "claude-haiku-4-5-20251001": {
+      "status": "current",
+      "family": "haiku",
+      "inputPerMTok": 1.00,
+      "outputPerMTok": 5.00,
+      "tokenizerVariant": "v1"
+    },
+
+    "claude-opus-4-7": {
+      "status": "legacy",
+      "family": "opus",
+      "inputPerMTok": 5.00,
+      "outputPerMTok": 25.00,
+      "tokenizerVariant": "v2",
+      "released": "2026-04-16"
+    },
+    "claude-opus-4-6": {
+      "status": "legacy",
+      "family": "opus",
+      "inputPerMTok": 5.00,
+      "outputPerMTok": 25.00,
+      "tokenizerVariant": "v1"
+    },
+    "claude-sonnet-4-6": {
+      "status": "legacy",
+      "family": "sonnet",
+      "inputPerMTok": 3.00,
+      "outputPerMTok": 15.00,
+      "tokenizerVariant": "v1"
+    }
+  },
+
+  "legacyRetentionPolicy": {
+    "reason": "Requirement 6.5-R13. Deployed field configurations reference these model identifiers; removing them from this table would cause the client to reject a working production configuration. Legacy entries are retained with accurate pricing so that existing deployments keep correct cost estimation, and are marked status=legacy so tooling can surface an upgrade recommendation without forcing one.",
+    "deployedReferences": [
+      "SCRIPTS/Core/Invoke-ComplianceDiff.ps1 uses claude-sonnet-4-6 with a fallback chain to claude-haiku-4-5-20251001",
+      "SCRIPTS/Core/FieldOps-RiskPlanner.psm1 uses claude-sonnet-4-6"
+    ]
+  }
+}
