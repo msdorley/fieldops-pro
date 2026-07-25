@@ -97,6 +97,7 @@ $script:FailureReasons = @{
     NonTransient          = 'NonTransientFailure'
     MalformedResponse     = 'MalformedResponse'
     UnknownTier           = 'UnknownTaskTier'
+    ModelUnavailable      = 'ModelUnavailable'
 }
 
 # ------------------------------------------------------------------------------
@@ -528,13 +529,81 @@ function New-AIResult {
 # PUBLIC API
 # ==============================================================================
 
+function Get-AIModelFallbackChain {
+    <#
+    .SYNOPSIS
+        Ordered list of models to try: the requested model, then progressively
+        cheaper current models (graceful capability degradation).
+    .DESCRIPTION
+        Fallback preserves capability as far as possible rather than minimising
+        cost. The chain is the requested model, then the current models that are
+        CHEAPER than it, in descending price order -- closest capability first.
+        Price is the proxy for capability, and this matches the existing
+        sonnet -> haiku fallback intent in Invoke-ComplianceDiff.
+
+        A model is never upgraded on fallback: asking for Sonnet does not opt
+        the operator into Opus pricing. Only status=current models are eligible,
+        so a fallback never lands on a legacy model that is itself likely 404.
+        Requested model always first, deduplicated.
+
+        An explicit -Override replaces the derived tail entirely (requested
+        model still first).
+    #>
+    param($Pricing, [string]$RequestedModel, [string[]]$Override = @())
+
+    # Build the chain as an explicit array to avoid scalar+array fusion.
+    $chain = New-Object System.Collections.Generic.List[string]
+    if ($RequestedModel) { [void]$chain.Add($RequestedModel) }
+
+    if ($Override -and $Override.Count -gt 0) {
+        foreach ($m in $Override) {
+            if ($m -and (-not $chain.Contains($m))) { [void]$chain.Add($m) }
+        }
+        return $chain.ToArray()
+    }
+
+    if ($Pricing -and $Pricing.models) {
+        # Price of the requested model, so we only fall to CHEAPER ones.
+        $requestedPrice = [double]::MaxValue
+        if ($RequestedModel -and (@($Pricing.models.PSObject.Properties.Name) -contains $RequestedModel)) {
+            $requestedPrice = [double]$Pricing.models.$RequestedModel.inputPerMTok
+        }
+
+        $candidates = @()
+        foreach ($name in $Pricing.models.PSObject.Properties.Name) {
+            $mdl = $Pricing.models.$name
+            if ($mdl.status -ne 'current') { continue }
+            $price = [double]$mdl.inputPerMTok
+            # Strictly cheaper than the requested model: graceful degradation,
+            # never an upgrade.
+            if ($price -lt $requestedPrice) {
+                $candidates += [PSCustomObject]@{ Name = $name; Price = $price }
+            }
+        }
+        # Descending price = closest capability first.
+        foreach ($c in ($candidates | Sort-Object Price -Descending)) {
+            if (-not $chain.Contains($c.Name)) { [void]$chain.Add($c.Name) }
+        }
+    }
+
+    return $chain.ToArray()
+}
 function Invoke-FieldOpsAICall {
     <#
     .SYNOPSIS
-        Make a cost-governed Anthropic API call.
+        Make a cost-governed Anthropic API call, with cross-model fallback.
     .DESCRIPTION
         Never throws. Always returns a result object; branch on .Success and
         read .FailureReason. See module header for the failure-reason contract.
+
+        Tries the resolved model first. On a 404 (model unavailable on this
+        plan) it advances to the next model in the fallback chain. On success,
+        or on any non-404 failure, it returns immediately. Cost estimate and
+        both ceilings are re-evaluated for each candidate, since candidates
+        differ in price.
+    .PARAMETER ModelFallbacks
+        Optional explicit fallback chain, overriding the price-ordered default
+        derived from the pricing config.
     .PARAMETER CaptureFullTranscript
         Opt in to retaining full prompt and response text in the result.
         Named in place of the design document's -Verbose to avoid colliding
@@ -550,6 +619,7 @@ function Invoke-FieldOpsAICall {
         [double]$MaxCostUSD = 0.0,
         [double]$OutputMultiplier = 0.0,
         [string]$Model = '',
+        [string[]]$ModelFallbacks = @(),
         [double]$SessionCeilingUSD = 0.0,
         [int]$MaxTokens = 4096,
         [switch]$ExpectPlaybookReference,
@@ -583,97 +653,138 @@ function Invoke-FieldOpsAICall {
                             -TaskTier $TaskTier -DurationMs $sw.ElapsedMilliseconds
     }
 
-    # --- estimate BEFORE spending anything ----------------------------------
-    $charCount = $Prompt.Length + $SystemPrompt.Length
-    $inputTokens = Measure-AIEstimatedTokens -Pricing $pricing -CharCount $charCount
-    $estimate = Get-AICostEstimate -Pricing $pricing -Model $resolvedModel `
-                    -InputTokens $inputTokens -OutputMultiplier $OutputMultiplier
-
-    if ($estimate.TotalCostUSD -gt $MaxCostUSD) {
-        return New-AIResult -FailureReason $script:FailureReasons.InvocationCeiling `
-                    -Model $resolvedModel -TaskTier $TaskTier `
-                    -EstimatedCostUSD $estimate.TotalCostUSD `
-                    -InputTokens $inputTokens -DurationMs $sw.ElapsedMilliseconds
-    }
-
-    if (($script:SessionCostUSD + $estimate.TotalCostUSD) -gt $SessionCeilingUSD) {
-        return New-AIResult -FailureReason $script:FailureReasons.SessionCeiling `
-                    -Model $resolvedModel -TaskTier $TaskTier `
-                    -EstimatedCostUSD $estimate.TotalCostUSD `
-                    -InputTokens $inputTokens -DurationMs $sw.ElapsedMilliseconds
-    }
-
-    # --- key ----------------------------------------------------------------
+    # --- key (once; shared across all candidates) --------------------------
     $apiKey = Get-AIApiKey -ConfigDir $ConfigDir
     if (-not $apiKey) {
         return New-AIResult -FailureReason $script:FailureReasons.NoApiKey `
                     -Model $resolvedModel -TaskTier $TaskTier `
-                    -EstimatedCostUSD $estimate.TotalCostUSD `
-                    -InputTokens $inputTokens -DurationMs $sw.ElapsedMilliseconds
+                    -DurationMs $sw.ElapsedMilliseconds
     }
 
-    # --- call, with retry ----------------------------------------------------
-    $attempt = 0
-    $retryCount = 0
-    $lastReason = $script:FailureReasons.NonTransient
+    # --- fallback chain -----------------------------------------------------
+    $chain = Get-AIModelFallbackChain -Pricing $pricing -RequestedModel $resolvedModel -Override $ModelFallbacks
 
-    while ($attempt -lt $script:MaxAttempts) {
-        $attempt++
-        if ($attempt -gt 1) {
-            $delay = Get-AIRetryDelaySeconds -AttemptNumber $attempt
-            if ($delay -gt 0) { Start-Sleep -Seconds $delay }
-            $retryCount++
+    $charCount   = $Prompt.Length + $SystemPrompt.Length
+    $inputTokens = Measure-AIEstimatedTokens -Pricing $pricing -CharCount $charCount
+
+    # Remember the last "soft" refusal (ceiling) so that if EVERY model is
+    # refused by its ceiling we report that rather than a model error.
+    $lastResult = $null
+
+    foreach ($candidate in $chain) {
+
+        # --- estimate BEFORE spending anything, per candidate --------------
+        $estimate = Get-AICostEstimate -Pricing $pricing -Model $candidate `
+                        -InputTokens $inputTokens -OutputMultiplier $OutputMultiplier
+
+        if ($estimate.TotalCostUSD -gt $MaxCostUSD) {
+            # Too expensive on this model. A cheaper candidate may still pass,
+            # so record and continue rather than returning.
+            $lastResult = New-AIResult -FailureReason $script:FailureReasons.InvocationCeiling `
+                        -Model $candidate -TaskTier $TaskTier `
+                        -EstimatedCostUSD $estimate.TotalCostUSD `
+                        -InputTokens $inputTokens -DurationMs $sw.ElapsedMilliseconds
+            continue
         }
 
-        $http = Invoke-AIHttpRequest -ApiKey $apiKey -Model $resolvedModel `
-                    -SystemPrompt $SystemPrompt -Prompt $Prompt -MaxTokens $MaxTokens
+        if (($script:SessionCostUSD + $estimate.TotalCostUSD) -gt $SessionCeilingUSD) {
+            $lastResult = New-AIResult -FailureReason $script:FailureReasons.SessionCeiling `
+                        -Model $candidate -TaskTier $TaskTier `
+                        -EstimatedCostUSD $estimate.TotalCostUSD `
+                        -InputTokens $inputTokens -DurationMs $sw.ElapsedMilliseconds
+            continue
+        }
 
-        if ($http.Success) {
-            $parsed = ConvertFrom-AIResponseBody -Body $http.Body
-            if (-not $parsed.Ok) {
-                # Malformed success response is not worth retrying.
-                return New-AIResult -FailureReason $script:FailureReasons.MalformedResponse `
-                            -Model $resolvedModel -TaskTier $TaskTier `
+        # --- call, with retry, on THIS candidate ---------------------------
+        $attempt = 0
+        $retryCount = 0
+        $lastReason = $script:FailureReasons.NonTransient
+        $modelUnavailable = $false
+
+        while ($attempt -lt $script:MaxAttempts) {
+            $attempt++
+            if ($attempt -gt 1) {
+                $delay = Get-AIRetryDelaySeconds -AttemptNumber $attempt
+                if ($delay -gt 0) { Start-Sleep -Seconds $delay }
+                $retryCount++
+            }
+
+            $http = Invoke-AIHttpRequest -ApiKey $apiKey -Model $candidate `
+                        -SystemPrompt $SystemPrompt -Prompt $Prompt -MaxTokens $MaxTokens
+
+            if ($http.Success) {
+                $parsed = ConvertFrom-AIResponseBody -Body $http.Body
+                if (-not $parsed.Ok) {
+                    return New-AIResult -FailureReason $script:FailureReasons.MalformedResponse `
+                                -Model $candidate -TaskTier $TaskTier `
+                                -EstimatedCostUSD $estimate.TotalCostUSD `
+                                -InputTokens $inputTokens -RetryCount $retryCount `
+                                -DurationMs $sw.ElapsedMilliseconds
+                }
+
+                $actualCost = Get-AIActualCost -Pricing $pricing -Model $candidate `
+                                -InputTokens $parsed.InputTokens -OutputTokens $parsed.OutputTokens
+                $script:SessionCostUSD   = $script:SessionCostUSD + $actualCost
+                $script:SessionCallCount = $script:SessionCallCount + 1
+
+                $responseText = $parsed.Text
+                if (-not $CaptureFullTranscript -and $responseText.Length -gt 100000) {
+                    $responseText = $responseText.Substring(0, 100000)
+                }
+
+                return New-AIResult -Success $true -Response $responseText `
+                            -Model $candidate -TaskTier $TaskTier `
+                            -CostUSD $actualCost -EstimatedCostUSD $estimate.TotalCostUSD `
+                            -InputTokens $parsed.InputTokens -OutputTokens $parsed.OutputTokens `
+                            -RetryCount $retryCount -DurationMs $sw.ElapsedMilliseconds
+            }
+
+            # 404 = model unavailable on this plan: stop retrying this model and
+            # let the outer loop try the next candidate.
+            if ($http.StatusCode -eq 404) {
+                $modelUnavailable = $true
+                break
+            }
+
+            $transient = Test-AITransientFailure -StatusCode $http.StatusCode -Message $http.ErrorMessage
+            if (-not $transient) {
+                # A real error with this request (400/401/403, malformed). Trying
+                # other models would repeat it, so return now.
+                return New-AIResult -FailureReason $script:FailureReasons.NonTransient `
+                            -Model $candidate -TaskTier $TaskTier `
                             -EstimatedCostUSD $estimate.TotalCostUSD `
                             -InputTokens $inputTokens -RetryCount $retryCount `
                             -DurationMs $sw.ElapsedMilliseconds
             }
-
-            $actualCost = Get-AIActualCost -Pricing $pricing -Model $resolvedModel `
-                            -InputTokens $parsed.InputTokens -OutputTokens $parsed.OutputTokens
-            $script:SessionCostUSD   = $script:SessionCostUSD + $actualCost
-            $script:SessionCallCount = $script:SessionCallCount + 1
-
-            $responseText = $parsed.Text
-            if (-not $CaptureFullTranscript -and $responseText.Length -gt 100000) {
-                $responseText = $responseText.Substring(0, 100000)
-            }
-
-            return New-AIResult -Success $true -Response $responseText `
-                        -Model $resolvedModel -TaskTier $TaskTier `
-                        -CostUSD $actualCost -EstimatedCostUSD $estimate.TotalCostUSD `
-                        -InputTokens $parsed.InputTokens -OutputTokens $parsed.OutputTokens `
-                        -RetryCount $retryCount -DurationMs $sw.ElapsedMilliseconds
+            $lastReason = $script:FailureReasons.RetriesExhausted
         }
 
-        $transient = Test-AITransientFailure -StatusCode $http.StatusCode -Message $http.ErrorMessage
-        if (-not $transient) {
-            return New-AIResult -FailureReason $script:FailureReasons.NonTransient `
-                        -Model $resolvedModel -TaskTier $TaskTier `
+        if ($modelUnavailable) {
+            # Record and advance to the next candidate.
+            $lastResult = New-AIResult -FailureReason $script:FailureReasons.ModelUnavailable `
+                        -Model $candidate -TaskTier $TaskTier `
                         -EstimatedCostUSD $estimate.TotalCostUSD `
                         -InputTokens $inputTokens -RetryCount $retryCount `
                         -DurationMs $sw.ElapsedMilliseconds
+            continue
         }
-        $lastReason = $script:FailureReasons.RetriesExhausted
+
+        # Transient retries exhausted on this candidate. This is not a model
+        # problem, so do not burn the rest of the chain on it: return.
+        return New-AIResult -FailureReason $lastReason `
+                    -Model $candidate -TaskTier $TaskTier `
+                    -EstimatedCostUSD $estimate.TotalCostUSD `
+                    -InputTokens $inputTokens -RetryCount $retryCount `
+                    -DurationMs $sw.ElapsedMilliseconds
     }
 
-    return New-AIResult -FailureReason $lastReason `
+    # Chain exhausted. Return the last recorded failure (ceiling or the final
+    # ModelUnavailable), or a bare ModelUnavailable if somehow nothing was set.
+    if ($null -ne $lastResult) { return $lastResult }
+    return New-AIResult -FailureReason $script:FailureReasons.ModelUnavailable `
                 -Model $resolvedModel -TaskTier $TaskTier `
-                -EstimatedCostUSD $estimate.TotalCostUSD `
-                -InputTokens $inputTokens -RetryCount $retryCount `
-                -DurationMs $sw.ElapsedMilliseconds
+                -InputTokens $inputTokens -DurationMs $sw.ElapsedMilliseconds
 }
-
 function Get-FieldOpsAISessionCost {
     <#
     .SYNOPSIS
@@ -1072,6 +1183,7 @@ function Invoke-FieldOpsAI {
         [double]$MaxCostUSD = 0.0,
         [double]$OutputMultiplier = 0.0,
         [string]$Model = '',
+        [string[]]$ModelFallbacks = @(),
         [double]$SessionCeilingUSD = 0.0,
         [int]$MaxTokens = 4096,
         [switch]$ExpectPlaybookReference,
@@ -1085,7 +1197,7 @@ function Invoke-FieldOpsAI {
                 -Prompt $Prompt -SystemPrompt $SystemPrompt `
                 -CallingContext $CallingContext -TaskTier $TaskTier `
                 -MaxCostUSD $MaxCostUSD -OutputMultiplier $OutputMultiplier `
-                -Model $Model -SessionCeilingUSD $SessionCeilingUSD `
+                -Model $Model -ModelFallbacks $ModelFallbacks -SessionCeilingUSD $SessionCeilingUSD `
                 -MaxTokens $MaxTokens `
                 -ExpectPlaybookReference:$ExpectPlaybookReference `
                 -CaptureFullTranscript:$CaptureFullTranscript `
