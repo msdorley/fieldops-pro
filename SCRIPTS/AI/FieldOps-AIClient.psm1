@@ -528,7 +528,7 @@ function New-AIResult {
 # PUBLIC API
 # ==============================================================================
 
-function Invoke-FieldOpsAI {
+function Invoke-FieldOpsAICall {
     <#
     .SYNOPSIS
         Make a cost-governed Anthropic API call.
@@ -725,5 +725,237 @@ function Test-FieldOpsAIAvailability {
     }
 }
 
+
+# ==============================================================================
+# AUDIT LOGGING (6.5-R6, D2, schema 1.1)
+# ==============================================================================
+#
+# HASHING IS SPECIFIED PRECISELY, ON PURPOSE
+#
+#   Every hash below is SHA-256 over the UTF-8 bytes of the string, WITHOUT a
+#   byte order mark, rendered lowercase hex. That is stated in the schema and
+#   reproducible by anyone holding the original text. A hash whose input is
+#   not pinned down cannot be checked by an auditor, and an integrity claim
+#   nobody can verify is worse than none. This project has already shipped one
+#   such hash.
+#
+# AUDIT FAILURE DOES NOT FAIL THE CALL
+#
+#   The record is written after the API responds, because it carries token
+#   counts and actual cost. By then the call has happened and been billed.
+#   A write failure warns and sets AuditRecordPath to null so the caller can
+#   detect the gap; it never throws and never discards a paid-for response.
+
+function Get-AISha256Hex {
+    <#
+    .SYNOPSIS
+        SHA-256 of a string, UTF-8 without BOM, lowercase hex. $null for empty.
+    #>
+    param([string]$Text)
+    if ([string]::IsNullOrEmpty($Text)) { return $null }
+    $enc = New-Object System.Text.UTF8Encoding($false)
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $bytes = $sha.ComputeHash($enc.GetBytes($Text))
+        return (([BitConverter]::ToString($bytes)) -replace '-','').ToLower()
+    } finally {
+        $sha.Dispose()
+    }
+}
+
+function Get-AITechnicianId {
+    <#
+    .SYNOPSIS
+        Pseudonymous technician id: truncated SHA-256 of the technician name.
+    .DESCRIPTION
+        Pseudonymity, not anonymity. A short name space is brute-forceable by
+        anyone holding a candidate list; this keeps names out of a shared log
+        but must not be described to customers as anonymisation.
+    #>
+    param([string]$ConfigDir = '')
+    $name = ''
+    $dir = Resolve-AIConfigRoot -ConfigDir $ConfigDir
+    if ($dir) {
+        $p = Join-Path $dir 'technician.json'
+        if (Test-Path -LiteralPath $p) {
+            try {
+                $cfg = Get-Content -LiteralPath $p -Raw -Encoding UTF8 | ConvertFrom-Json
+                foreach ($a in @('TechnicianName','Technician','TechName','Name','FullName')) {
+                    if (@($cfg.PSObject.Properties.Name) -contains $a -and $cfg.$a) {
+                        $name = [string]$cfg.$a; break
+                    }
+                }
+            } catch { $name = '' }
+        }
+    }
+    if (-not $name) { $name = $env:USERNAME }
+    if (-not $name) { return 'unknown' }
+    $full = Get-AISha256Hex -Text $name
+    if (-not $full) { return 'unknown' }
+    return $full.Substring(0, 12)
+}
+
+function Resolve-AIAuditLogPath {
+    <#
+    .SYNOPSIS
+        Absolute path to LOGS/ai-audit.jsonl, creating LOGS if needed.
+    #>
+    param([string]$LogsDir = '')
+    $dir = $LogsDir
+    if (-not $dir) {
+        if (-not $PSScriptRoot) { return '' }
+        $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+        $dir = Join-Path $repoRoot 'LOGS'
+    }
+    if (-not (Test-Path -LiteralPath $dir)) {
+        try { New-Item -ItemType Directory -Path $dir -Force | Out-Null } catch { return '' }
+    }
+    return (Join-Path $dir 'ai-audit.jsonl')
+}
+
+function New-AIAuditRecord {
+    <#
+    .SYNOPSIS
+        Build a schema-1.1-conformant record from a call result.
+    #>
+    param(
+        $Result, [string]$Prompt, [string]$SystemPrompt,
+        [string]$CallingContext, [bool]$ModelOverride, [string]$ConfigDir = ''
+    )
+
+    $variance = 0.0
+    if ($null -ne $Result.CostUSD -and $null -ne $Result.EstimatedCostUSD) {
+        # Positive means the estimate came in low: the ceiling was consulted
+        # against a smaller figure than reality. That is the direction to watch.
+        $variance = [double]$Result.CostUSD - [double]$Result.EstimatedCostUSD
+    }
+
+    $severity = 'UNCLASSIFIED'
+    $severityMethod = 'unclassified'
+    if ($Result.Severity) { $severity = [string]$Result.Severity; $severityMethod = 'keyword' }
+
+    $failureReason = $null
+    if ($Result.FailureReason) { $failureReason = [string]$Result.FailureReason }
+
+    $needsReview = $false
+    if ($null -ne $Result.NeedsHumanReview) { $needsReview = [bool]$Result.NeedsHumanReview }
+
+    return [ordered]@{
+        schemaVersion      = '1.1'
+        ts                 = (Get-Date).ToString('o')
+        ctx                = $CallingContext
+        tier               = [string]$Result.TaskTier
+        model              = [string]$Result.Model
+        model_override     = $ModelOverride
+        in_tok             = [int]$Result.InputTokens
+        out_tok            = [int]$Result.OutputTokens
+        est_cost_usd       = [double]$Result.EstimatedCostUSD
+        cost_usd           = [double]$Result.CostUSD
+        cost_variance      = $variance
+        severity           = $severity
+        severity_method    = $severityMethod
+        playbook_ref       = $Result.PlaybookRef
+        playbook_valid     = $Result.PlaybookValid
+        prompt_sha256      = (Get-AISha256Hex -Text $Prompt)
+        system_sha256      = (Get-AISha256Hex -Text $SystemPrompt)
+        response_sha256    = (Get-AISha256Hex -Text $Result.Response)
+        tech               = (Get-AITechnicianId -ConfigDir $ConfigDir)
+        duration_ms        = [int]$Result.DurationMs
+        retries            = [int]$Result.RetryCount
+        success            = [bool]$Result.Success
+        failure_reason     = $failureReason
+        needs_human_review = $needsReview
+    }
+}
+
+function Write-AIAuditRecord {
+    <#
+    .SYNOPSIS
+        Append one JSON Lines record. Never throws. Returns path or $null.
+    #>
+    param($Record, [string]$LogsDir = '')
+    try {
+        $path = Resolve-AIAuditLogPath -LogsDir $LogsDir
+        if (-not $path) { return $null }
+        # JSON Lines requires exactly one record per physical line.
+        $json = ($Record | ConvertTo-Json -Depth 5 -Compress)
+        if ($json -match "[`r`n]") { $json = ($json -replace "[`r`n]", ' ') }
+        $enc = New-Object System.Text.UTF8Encoding($false)
+        $sw = New-Object System.IO.StreamWriter($path, $true, $enc)
+        try { $sw.WriteLine($json) } finally { $sw.Dispose() }
+        return $path
+    } catch {
+        Write-Warning "AI audit record could not be written: $($_.Exception.Message)"
+        return $null
+    }
+}
+
+function Get-FieldOpsAIAuditLogPath {
+    <#
+    .SYNOPSIS
+        Path of the audit log, for operators and for 6.3 fleet aggregation.
+    #>
+    [CmdletBinding()]
+    param([string]$LogsDir = '')
+    return Resolve-AIAuditLogPath -LogsDir $LogsDir
+}
+
+# ==============================================================================
+# PUBLIC ENTRY POINT
+# ==============================================================================
+
+function Invoke-FieldOpsAI {
+    <#
+    .SYNOPSIS
+        Make a cost-governed Anthropic API call and record it (6.5-R1, R6).
+    .DESCRIPTION
+        Thin wrapper over Invoke-FieldOpsAICall. Every outcome passes through
+        this single exit, so no return path can skip the audit record. Never
+        throws.
+    #>
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory=$true)][string]$Prompt,
+        [string]$SystemPrompt = '',
+        [string]$CallingContext = '',
+        [ValidateSet('Classification','Narration','Reasoning')]
+        [string]$TaskTier = 'Narration',
+        [double]$MaxCostUSD = 0.0,
+        [double]$OutputMultiplier = 0.0,
+        [string]$Model = '',
+        [double]$SessionCeilingUSD = 0.0,
+        [int]$MaxTokens = 4096,
+        [switch]$ExpectPlaybookReference,
+        [switch]$CaptureFullTranscript,
+        [string]$ConfigDir = '',
+        [string]$LogsDir = '',
+        [switch]$NoAudit
+    )
+
+    $result = Invoke-FieldOpsAICall `
+                -Prompt $Prompt -SystemPrompt $SystemPrompt `
+                -CallingContext $CallingContext -TaskTier $TaskTier `
+                -MaxCostUSD $MaxCostUSD -OutputMultiplier $OutputMultiplier `
+                -Model $Model -SessionCeilingUSD $SessionCeilingUSD `
+                -MaxTokens $MaxTokens `
+                -ExpectPlaybookReference:$ExpectPlaybookReference `
+                -CaptureFullTranscript:$CaptureFullTranscript `
+                -ConfigDir $ConfigDir
+
+    if (-not $NoAudit) {
+        $record = New-AIAuditRecord -Result $result -Prompt $Prompt `
+                    -SystemPrompt $SystemPrompt -CallingContext $CallingContext `
+                    -ModelOverride ([bool]$Model) -ConfigDir $ConfigDir
+        $written = Write-AIAuditRecord -Record $record -LogsDir $LogsDir
+
+        $result.AuditRecordPath = $written
+        if ($written) {
+            $result.AuditRecordSha256 = Get-AISha256Hex -Text ($record | ConvertTo-Json -Depth 5 -Compress)
+        }
+    }
+
+    return $result
+}
 Export-ModuleMember -Function Invoke-FieldOpsAI, Get-FieldOpsAISessionCost,
-                              Reset-FieldOpsAISession, Test-FieldOpsAIAvailability
+                              Reset-FieldOpsAISession, Test-FieldOpsAIAvailability,
+                              Get-FieldOpsAIAuditLogPath
