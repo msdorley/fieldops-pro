@@ -1,0 +1,120 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/msdorley/fieldops-pro/schemas/ai-audit-record.json",
+  "title": "FieldOps Pro AI Audit Record",
+  "description": "One JSON Lines record per Anthropic API invocation. Written by SCRIPTS/AI/FieldOps-AIClient.psm1 to LOGS/ai-audit.jsonl. See DOCS/AI-INTEGRATION.md for the hash verification procedure.",
+  "type": "object",
+
+  "required": [
+    "schemaVersion", "ts", "ctx", "tier", "model", "in_tok", "out_tok",
+    "cost_usd", "severity", "prompt_sha256", "response_sha256",
+    "tech", "duration_ms", "retries", "success"
+  ],
+
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.1",
+      "description": "1.1 adds the optional system_sha256 field to 1.0. Records without it remain valid, so the change is backward compatible."
+    },
+
+    "ts": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 with offset, of when the call completed."
+    },
+
+    "ctx": {
+      "type": "string",
+      "description": "Calling context, e.g. Invoke-ComplianceDiff/Narration."
+    },
+
+    "tier": {
+      "type": "string",
+      "enum": ["Classification", "Narration", "Reasoning"]
+    },
+
+    "model": {
+      "type": "string",
+      "description": "Model identifier actually used for the call."
+    },
+
+    "model_override": {
+      "type": "boolean",
+      "description": "True when the caller supplied an explicit model rather than accepting the tier default."
+    },
+
+    "in_tok":  { "type": "integer", "minimum": 0 },
+    "out_tok": { "type": "integer", "minimum": 0 },
+
+    "est_cost_usd": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Cost estimated before the call, used for ceiling enforcement."
+    },
+
+    "cost_usd": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Actual cost from the usage the API reported. Zero when the call was refused or failed before billing."
+    },
+
+    "cost_variance": {
+      "type": "number",
+      "description": "cost_usd minus est_cost_usd. POSITIVE means the estimate came in LOW, which is the direction that matters: the ceiling was consulted against a figure smaller than reality. Design doc risk 6.5-Risk-1 calls for tuning on this series."
+    },
+
+    "severity": {
+      "type": "string",
+      "enum": ["INFORMATIONAL", "ADVISORY", "ACTION_REQUIRED", "CRITICAL", "UNCLASSIFIED"]
+    },
+
+    "severity_method": {
+      "type": "string",
+      "enum": ["keyword", "structural", "default", "unclassified"]
+    },
+
+    "playbook_ref": {
+      "type": ["string", "null"],
+      "pattern": "^RB-[A-Z]{2,4}-[0-9]{3}$"
+    },
+
+    "playbook_valid": { "type": ["boolean", "null"] },
+
+    "prompt_sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 over the UTF-8 bytes, WITHOUT byte order mark, of the user prompt exactly as sent. Lowercase hex. A hash whose input is not precisely specified cannot be reproduced by an auditor and is therefore decorative; see DOCS/AI-INTEGRATION.md for the verification procedure."
+    },
+
+    "system_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of the system prompt, same encoding rule as prompt_sha256. Null when no system prompt was sent. ADDED IN 1.1. This supports provenance rather than tamper detection: it lets an operator demonstrate that a set of machines was assessed under identical instructions, which is the question a compliance auditor actually asks. It is not a security control, since anyone able to alter the system prompt can equally alter the writer that records it."
+    },
+
+    "response_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 of the response text, same encoding rule. Null when no response was received."
+    },
+
+    "tech": {
+      "type": "string",
+      "description": "Pseudonymous technician identifier: a truncated SHA-256 of the technician name. Pseudonymous, NOT anonymous -- a short name space is brute-forceable by anyone holding a candidate list. It prevents casual disclosure in a shared log; it does not defeat a determined re-identification attempt, and should not be described to customers as if it does."
+    },
+
+    "duration_ms": { "type": "integer", "minimum": 0 },
+    "retries":     { "type": "integer", "minimum": 0 },
+    "success":     { "type": "boolean" },
+
+    "failure_reason": {
+      "type": ["string", "null"],
+      "description": "Machine-readable reason from the client's failure contract, e.g. EstimateExceedsCeiling."
+    },
+
+    "needs_human_review": { "type": "boolean" }
+  },
+
+  "additionalProperties": false
+}
