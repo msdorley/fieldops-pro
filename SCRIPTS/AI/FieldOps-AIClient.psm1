@@ -727,6 +727,155 @@ function Test-FieldOpsAIAvailability {
 
 
 # ==============================================================================
+# ==============================================================================
+# SEVERITY CLASSIFIER (6.5-R7, D3, design 6.5.4.6)
+# ==============================================================================
+
+$script:SeverityConfig = $null
+$script:SeverityConfigPath = ''
+
+function Import-AISeverityConfig {
+    <#
+    .SYNOPSIS
+        Load and cache CONFIG/AISeverityKeywords.json. $null on failure.
+    #>
+    param([string]$ConfigDir = '', [switch]$Force)
+
+    $dir = Resolve-AIConfigRoot -ConfigDir $ConfigDir
+    if (-not $dir) { return $null }
+    $path = Join-Path $dir 'AISeverityKeywords.json'
+
+    if ($script:SeverityConfig -and -not $Force -and $script:SeverityConfigPath -eq $path) {
+        return $script:SeverityConfig
+    }
+    if ($script:SeverityConfigPath -ne $path) { $script:SeverityConfig = $null }
+
+    if (-not (Test-Path -LiteralPath $path)) { $script:SeverityConfigPath = $path; return $null }
+    try {
+        $cfg = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+    } catch { return $null }
+
+    $script:SeverityConfig = $cfg
+    $script:SeverityConfigPath = $path
+    return $cfg
+}
+
+function Get-AIStructuralSeverity {
+    <#
+    .SYNOPSIS
+        Tier 2. Return the level from an explicit "Severity: <LEVEL>" line, or ''.
+    .DESCRIPTION
+        The model naming its own severity is the strongest signal, so it
+        overrides keyword matching. Only the enum values are accepted; a free
+        text severity line is ignored rather than guessed at.
+    #>
+    param([string]$Text)
+    if (-not $Text) { return '' }
+    $m = [regex]::Match($Text, '(?im)^\s*severity\s*[:=]\s*(INFORMATIONAL|ADVISORY|ACTION_REQUIRED|CRITICAL)\b')
+    if ($m.Success) { return $m.Groups[1].Value.ToUpper() }
+    return ''
+}
+
+function Get-AISeverityClassification {
+    <#
+    .SYNOPSIS
+        Classify AI response text into the audit severity enum.
+    .OUTPUTS
+        PSCustomObject: Severity, Method (structural|keyword|default),
+        NeedsHumanReview, MatchedPatternCount.
+    .DESCRIPTION
+        Tier 2 structural override, then Tier 1 keyword (highest matched level
+        wins), then ADVISORY default. needs_human_review is set for a
+        low-confidence single match, and by the structural distress guard when
+        a distress marker is present but the classified level is below
+        ACTION_REQUIRED.
+    #>
+    param([string]$Text, [string]$ConfigDir = '')
+
+    $result = [PSCustomObject]@{
+        Severity            = 'ADVISORY'
+        Method              = 'default'
+        NeedsHumanReview    = $false
+        MatchedPatternCount = 0
+    }
+    if ([string]::IsNullOrWhiteSpace($Text)) {
+        # Nothing to classify: default, and flag for a human since we cannot
+        # actually assess an empty response.
+        $result.NeedsHumanReview = $true
+        return $result
+    }
+
+    # Tier 2: structural override.
+    $structural = Get-AIStructuralSeverity -Text $Text
+    if ($structural) {
+        $result.Severity = $structural
+        $result.Method   = 'structural'
+        return $result
+    }
+
+    $cfg = Import-AISeverityConfig -ConfigDir $ConfigDir
+    if ($null -eq $cfg) {
+        # No keyword config: cannot classify, so default and flag. Never guess.
+        $result.NeedsHumanReview = $true
+        return $result
+    }
+
+    # Tier 1: keyword. Highest-ranked matching level wins.
+    $rank = @{}
+    foreach ($p in $cfg.levelRank.PSObject.Properties) { $rank[$p.Name] = [int]$p.Value }
+
+    $bestLevel = ''
+    $bestRank  = -1
+    $totalMatches = 0
+
+    foreach ($levelProp in $cfg.keywords.PSObject.Properties) {
+        $level = $levelProp.Name
+        $patterns = @($levelProp.Value)
+        $levelMatches = 0
+        foreach ($pat in $patterns) {
+            if ([string]::IsNullOrEmpty($pat)) { continue }
+            if ([regex]::IsMatch($Text, [regex]::Escape($pat), 'IgnoreCase')) {
+                $levelMatches++
+            }
+        }
+        if ($levelMatches -gt 0) {
+            $totalMatches += $levelMatches
+            if ($rank[$level] -gt $bestRank) {
+                $bestRank  = $rank[$level]
+                $bestLevel = $level
+            }
+        }
+    }
+
+    if ($bestLevel) {
+        $result.Severity = $bestLevel
+        $result.Method   = 'keyword'
+        $result.MatchedPatternCount = $totalMatches
+        # Low-confidence: a single pattern matched, nothing else corroborates.
+        if ($totalMatches -le 1) { $result.NeedsHumanReview = $true }
+    } else {
+        # No keyword matched anywhere: safe middle, and flag, because "no
+        # vocabulary we recognise" is not the same as "benign".
+        $result.Severity = $cfg.default
+        $result.Method   = 'default'
+        $result.NeedsHumanReview = $true
+    }
+
+    # Structural distress guard: a marker of severity is present, but we did
+    # not classify at ACTION_REQUIRED or above. Do not trust the lower label.
+    $distress = $false
+    if ($cfg.structuralDistressMarkers -and $cfg.structuralDistressMarkers.patterns) {
+        foreach ($dp in @($cfg.structuralDistressMarkers.patterns)) {
+            if ([string]::IsNullOrEmpty($dp)) { continue }
+            if ([regex]::IsMatch($Text, $dp, 'IgnoreCase')) { $distress = $true; break }
+        }
+    }
+    if ($distress -and $rank[$result.Severity] -lt $rank['ACTION_REQUIRED']) {
+        $result.NeedsHumanReview = $true
+    }
+
+    return $result
+}
 # AUDIT LOGGING (6.5-R6, D2, schema 1.1)
 # ==============================================================================
 #
@@ -943,6 +1092,14 @@ function Invoke-FieldOpsAI {
                 -ConfigDir $ConfigDir
 
     if (-not $NoAudit) {
+        # Classify the response severity before building the audit record so
+        # the severity, severity_method and needs_human_review fields reflect
+        # what the model actually returned (6.5-R7).
+        if ($result.Success -and $result.Response) {
+            $sev = Get-AISeverityClassification -Text $result.Response -ConfigDir $ConfigDir
+            $result.Severity         = $sev.Severity
+            $result.NeedsHumanReview = $sev.NeedsHumanReview
+        }
         $record = New-AIAuditRecord -Result $result -Prompt $Prompt `
                     -SystemPrompt $SystemPrompt -CallingContext $CallingContext `
                     -ModelOverride ([bool]$Model) -ConfigDir $ConfigDir
@@ -958,4 +1115,4 @@ function Invoke-FieldOpsAI {
 }
 Export-ModuleMember -Function Invoke-FieldOpsAI, Get-FieldOpsAISessionCost,
                               Reset-FieldOpsAISession, Test-FieldOpsAIAvailability,
-                              Get-FieldOpsAIAuditLogPath
+                              Get-FieldOpsAIAuditLogPath, Get-AISeverityClassification

@@ -1,0 +1,81 @@
+{
+  "_meta": {
+    "schemaVersion": "1.0",
+    "purpose": "Tier-1 keyword classification of AI response text into the audit severity enum. Bilingual (EN/FR) because AI narration follows the report language. Patterns are added over time from quarterly audit-log review WITHOUT code change, per design 6.5.4.6.",
+    "matching": "Case-insensitive substring/regex match against the AI response text. The HIGHEST severity whose patterns match wins. Tier-2 structural (an explicit 'Severity: <LEVEL>' line in the response) overrides this entirely.",
+    "confidenceNote": "A match on a SINGLE pattern of a SINGLE word is low-confidence and flags needs_human_review, per the design's confidence threshold. Multi-word or multi-pattern matches are treated as confident.",
+    "levels": ["INFORMATIONAL", "ADVISORY", "ACTION_REQUIRED", "CRITICAL"]
+  },
+
+  "levelRank": {
+    "INFORMATIONAL": 0,
+    "ADVISORY": 1,
+    "ACTION_REQUIRED": 2,
+    "CRITICAL": 3
+  },
+
+  "default": "ADVISORY",
+
+  "keywords": {
+    "CRITICAL": [
+      "actively exploited", "activement exploit",
+      "remote code execution", "execution de code a distance", "execution de code a distance",
+      "unauthenticated", "non authentifie", "sans authentification",
+      "privilege escalation", "elevation de privilege", "escalade de privilege",
+      "data breach", "fuite de donnees", "violation de donnees",
+      "ransomware", "rancongiciel",
+      "domain admin", "administrateur de domaine",
+      "credential theft", "vol d'identifiant", "vol de justificatif",
+      "critical vulnerability", "vulnerabilite critique",
+      "immediate action", "action immediate",
+      "wormable", "propagation automatique"
+    ],
+    "ACTION_REQUIRED": [
+      "must be remediated", "doit etre corrige", "doit etre remedie",
+      "exploitable", "exploitable",
+      "known vulnerability", "vulnerabilite connue",
+      "exposed", "expose", "exposee",
+      "misconfiguration", "erreur de configuration", "mauvaise configuration",
+      "outdated", "obsolete", "perime",
+      "unpatched", "non corrige", "sans correctif",
+      "weak encryption", "chiffrement faible",
+      "disabled protection", "protection desactivee",
+      "requires remediation", "necessite une remediation", "necessite une correction",
+      "non-compliant", "non conforme"
+    ],
+    "ADVISORY": [
+      "recommended", "recommande", "il est recommande",
+      "should be reviewed", "devrait etre revu", "a examiner",
+      "consider", "envisager", "il convient d'envisager",
+      "best practice", "bonne pratique", "meilleure pratique",
+      "hardening", "durcissement", "renforcement",
+      "advisory", "avis", "recommandation",
+      "monitor", "surveiller", "a surveiller"
+    ],
+    "INFORMATIONAL": [
+      "no action required", "aucune action requise", "aucune action necessaire",
+      "compliant", "conforme",
+      "informational", "informatif", "pour information",
+      "no issues", "aucun probleme", "aucune anomalie",
+      "verified", "verifie", "controle effectue",
+      "within policy", "conforme a la politique"
+    ]
+  },
+
+  "structuralDistressMarkers": {
+    "_note": "These patterns indicate that the finding MIGHT be severe even if no severity keyword fired. When any of these is present but keyword classification produced a level below ACTION_REQUIRED, the result is NOT silently trusted: needs_human_review is set. This guards the design's default-to-ADVISORY rule against silently downgrading a genuinely critical finding phrased in vocabulary the keyword list does not yet cover. Aggregate accuracy can look healthy while this specific, dangerous error slips through; this catches it.",
+    "patterns": [
+      "CVE-",
+      "CVSS",
+      "\\b9\\.[0-9]\\b",
+      "\\b10\\.0\\b",
+      "zero.?day",
+      "jour zero",
+      "backdoor",
+      "porte derobee",
+      "exfiltrat",
+      "lateral movement",
+      "mouvement lateral"
+    ]
+  }
+}
