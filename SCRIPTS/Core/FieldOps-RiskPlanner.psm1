@@ -31,11 +31,24 @@
 $script:RiskPlannerInitialized = $false
 $script:ApiKey               = ''
 $script:ApiModel             = 'claude-sonnet-4-6'
-$script:ApiEndpoint          = 'https://api.anthropic.com/v1/messages'
-$script:ApiVersion           = '2023-06-01'
 $script:CacheDir             = ''
 $script:CacheTTLDays         = 7
 $script:Locale               = 'en'
+
+# Route all Anthropic calls through the shared client (6.5-R1): cost ceilings,
+# audit logging, retry, and cross-model fallback. Path is ..\AI from Core.
+$script:AIClientLoaded = $false
+try {
+    $aiClientPath = Join-Path $PSScriptRoot '..\AI\FieldOps-AIClient.psm1'
+    if (Test-Path $aiClientPath) {
+        Import-Module $aiClientPath -Force -DisableNameChecking -ErrorAction Stop
+        $script:AIClientLoaded = $true
+    }
+} catch {
+    # Client unavailable: Tier 1 will decline (return $null) and the orchestrator
+    # falls through to the local mock, exactly as when no API key is present.
+    Write-Verbose "RiskPlanner: AI client load failed (non-fatal): $_"
+}
 
 # ==============================================================================
 # INITIALIZATION
@@ -254,37 +267,34 @@ Return ONLY a single JSON object (no prose, no markdown fences) with these exact
 }
 "@
 
-    $body = @{
-        model      = $script:ApiModel
-        max_tokens = 1200
-        messages   = @(
-            @{ role = 'user'; content = $userPrompt }
-        )
-    } | ConvertTo-Json -Depth 10 -Compress
-
-    $headers = @{
-        'x-api-key'         = $script:ApiKey
-        'anthropic-version' = $script:ApiVersion
-        'content-type'      = 'application/json'
-    }
+    # Route through the shared client. If the client did not load, or the call
+    # did not succeed for any reason (no key, ceiling, retry exhausted, all
+    # models unavailable), return $null so the orchestrator falls through to
+    # the local mock -- the same three-tier contract as before.
+    if (-not $script:AIClientLoaded) { return $null }
 
     try {
-        $resp = Invoke-RestMethod -Uri $script:ApiEndpoint -Method Post `
-                  -Headers $headers -Body $body -TimeoutSec 30 -ErrorAction Stop
+        $aiResult = Invoke-FieldOpsAI -Prompt $userPrompt -TaskTier 'Reasoning' `
+                        -MaxTokens 1200 -CallingContext 'RiskPlanner/FixRiskPlan'
 
-        # Extract text from first content block
-        $text = $resp.content[0].text
+        if (-not $aiResult.Success) {
+            Write-Verbose "RiskPlanner: AI call did not succeed: $($aiResult.FailureReason)"
+            return $null
+        }
+
+        $text = $aiResult.Response
         if (-not $text) { return $null }
 
-        # Strip ```json fences if model included them
+        # Strip ```json fences if the model included them.
         $text = $text -replace '```json',''  -replace '```',''
         $text = $text.Trim()
 
         $plan = $text | ConvertFrom-Json -ErrorAction Stop
 
-        # Add metadata about how this plan was produced
+        # Metadata. The model is taken from the client result, which reflects
+        # any cross-model fallback that occurred rather than the requested one.
         $plan | Add-Member -NotePropertyName 'source'    -NotePropertyValue 'anthropic_api' -Force
-        $plan | Add-Member -NotePropertyName 'model'     -NotePropertyValue $script:ApiModel -Force
+        $plan | Add-Member -NotePropertyName 'model'     -NotePropertyValue $aiResult.Model -Force
         $plan | Add-Member -NotePropertyName 'generated' -NotePropertyValue (Get-Date).ToString('o') -Force
 
         return $plan
