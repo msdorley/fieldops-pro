@@ -1,0 +1,88 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/msdorley/fieldops-pro/schemas/playbook-frontmatter.json",
+  "title": "FieldOps Pro Remediation Playbook Front Matter",
+  "description": "YAML front matter block at the head of every PLAYBOOKS/RB-*.md file. Validated by SCRIPTS/AI/FieldOps-AIClient.psm1 when a call is made with -ExpectPlaybookReference (6.5-R8), so that an AI recommendation can only cite a remediation procedure that actually exists and conforms. See PLAYBOOKS/SCHEMA.md for the authoring guide.",
+  "type": "object",
+
+  "required": [
+    "id", "title", "category", "severity", "estimatedDurationMinutes",
+    "revertable", "schemaVersion"
+  ],
+
+  "additionalProperties": false,
+
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^RB-[A-Z]{2,4}-[0-9]{3}$",
+      "description": "Stable identifier, RB-<2-4 letter category>-<3-digit serial>. Must match the filename stem: RB-AV-001 lives in RB-AV-001.md. IDs are permanent -- a retired playbook keeps its ID and is marked deprecated rather than being reused, because AI responses and audit records reference it by ID indefinitely."
+    },
+
+    "title": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 120,
+      "description": "Imperative summary of what the playbook does, e.g. 'Re-enable Microsoft Defender real-time protection'."
+    },
+
+    "category": {
+      "type": "string",
+      "enum": ["AV", "BL", "FW", "UAC", "WU", "NET", "CRED", "AUD"],
+      "description": "Must equal the category segment of the id. AV=anti-malware, BL=BitLocker/encryption, FW=firewall, UAC=User Account Control, WU=Windows Update, NET=networking, CRED=credentials, AUD=auditing/logging. AUD is deliberately three letters: the id pattern admits 2-4, so the design doc's original 'RB-AUDIT-*' could never have matched it."
+    },
+
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low"],
+      "description": "Severity of the condition this playbook remediates -- NOT the risk of running it. Lowercase; distinct from the client's severity classification vocabulary (6.5-R7), which describes an AI response rather than a finding."
+    },
+
+    "prerequisites": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 3 },
+      "description": "Conditions required before the procedure can be followed, e.g. 'Administrator rights'. Optional: a playbook with no prerequisites omits the key rather than supplying an empty list."
+    },
+
+    "relatedRules": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Compliance rules this remediation satisfies, keyed by framework. Every key is optional: ANSSI is the only framework live in Phase 6.1/6.5, and the nis2/iso27001/rgs keys are carried as data ahead of Stream 6.2 activating them. A playbook written today may populate them; nothing reads them yet.",
+      "properties": {
+        "anssi":    { "type": "array", "items": { "type": "string", "pattern": "^R[0-9]{1,2}$" } },
+        "nis2":     { "type": "array", "items": { "type": "string" } },
+        "iso27001": { "type": "array", "items": { "type": "string" } },
+        "rgs":      { "type": "array", "items": { "type": "string" } }
+      }
+    },
+
+    "estimatedDurationMinutes": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 480,
+      "description": "Realistic hands-on time for a competent technician. Used to sequence remediation work in a field visit; an estimate over 480 minutes indicates the procedure should be split."
+    },
+
+    "revertable": {
+      "type": "boolean",
+      "description": "True only if the playbook documents a complete rollback returning the machine to its prior state. This gates whether the procedure may be offered as an automated fix, so it is deliberately conservative: when in doubt, false."
+    },
+
+    "deprecated": {
+      "type": "boolean",
+      "description": "Set true instead of deleting a playbook whose procedure no longer applies. The ID stays resolvable so historical audit records remain interpretable, but the validator will not treat it as a valid citation for new responses."
+    },
+
+    "supersededBy": {
+      "type": "string",
+      "pattern": "^RB-[A-Z]{2,4}-[0-9]{3}$",
+      "description": "ID of the playbook replacing this one. Only meaningful alongside deprecated: true."
+    },
+
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Version of THIS front-matter contract, not of the playbook content. Bumped only when the required-field set or a field's meaning changes."
+    }
+  }
+}

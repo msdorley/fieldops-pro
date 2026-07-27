@@ -944,7 +944,14 @@ Playbook ID pattern: `RB-<2-4 letter category>-<3-digit serial>`:
 - `RB-WU-*` — Windows Update
 - `RB-NET-*` — networking
 - `RB-CRED-*` — credentials
-- `RB-AUDIT-*` — auditing / logging
+- `RB-AUD-*` — auditing / logging
+
+> **Corrected during 6.5 PR6a.** This list previously read `RB-AUDIT-*`, which
+> the 2-4 letter pattern above cannot match, and `schemas/ai-audit-record.json`
+> had already shipped that pattern for `playbook_ref` under schemaVersion 1.1.
+> The published schema was taken as authoritative and the category shortened to
+> `AUD`. A test asserts `schemas/playbook-frontmatter.json` and
+> `schemas/ai-audit-record.json` continue to declare an identical pattern.
 
 Front matter schema:
 

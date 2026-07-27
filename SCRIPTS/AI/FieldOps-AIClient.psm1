@@ -1203,6 +1203,310 @@ function Get-AISeverityClassification {
 #   A write failure warns and sets AuditRecordPath to null so the caller can
 #   detect the gap; it never throws and never discards a paid-for response.
 
+# ==============================================================================
+# PLAYBOOK REFERENCE VALIDATION (6.5-R8, D5, design 6.5.4.7)
+# ==============================================================================
+#
+# WHY VALIDATE AT ALL
+#
+#     An AI recommendation that cites "see playbook RB-AV-001" is only worth
+#     more than prose if RB-AV-001 exists and says what the model implies. An
+#     unchecked citation is worse than none: it reads as authoritative and
+#     sends a technician looking for a document that was never written.
+#     Validation is what makes the citation a claim rather than decoration.
+#
+#     PlaybookValid is therefore three-state, not boolean-with-a-default:
+#       $null  -- not checked (caller did not ask)
+#       $false -- a reference was found and it does NOT resolve to a conformant,
+#                 non-deprecated playbook
+#       $true  -- resolves and conforms
+#     A caller that cannot distinguish "unchecked" from "checked and bad" would
+#     silently treat every un-validated call as clean.
+
+$script:PlaybookIdPattern = '^RB-[A-Z]{2,4}-[0-9]{3}$'
+# AUD, not AUDIT: the ID pattern admits 2-4 letters and 'AUDIT' is five. The
+# design doc listed RB-AUDIT-* alongside a 2-4 pattern it could never satisfy;
+# the pattern wins, because it is what schemas/ai-audit-record.json already
+# publishes for playbook_ref under schemaVersion 1.1.
+$script:PlaybookCategories = @('AV','BL','FW','UAC','WU','NET','CRED','AUD')
+$script:PlaybookSeverities = @('critical','high','medium','low')
+
+# Mirrors schemas/playbook-frontmatter.json "required". A test asserts the two
+# lists match, so the schema cannot drift away from what is enforced here.
+$script:PlaybookRequiredKeys = @(
+    'id','title','category','severity','estimatedDurationMinutes',
+    'revertable','schemaVersion'
+)
+
+function Resolve-AIPlaybookRoot {
+    param([string]$PlaybookDir = '')
+    if ($PlaybookDir) { return $PlaybookDir }
+    if (-not $PSScriptRoot) { return '' }
+    # SCRIPTS\AI -> SCRIPTS -> repo root
+    $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
+    return (Join-Path $repoRoot 'PLAYBOOKS')
+}
+
+function Get-AIPlaybookReference {
+    <#
+    .SYNOPSIS
+        First playbook ID cited in a response, or '' if none.
+    .DESCRIPTION
+        Deliberately takes the FIRST match rather than all of them. A response
+        citing several playbooks is answering a question this field cannot
+        represent, and picking one arbitrarily to fill a scalar would be a
+        worse lie than reporting the primary citation. Multi-reference support
+        is a schema change, not a parsing tweak.
+    #>
+    param([string]$Text)
+    if (-not $Text) { return '' }
+    $m = [regex]::Match($Text, 'RB-[A-Z]{2,4}-[0-9]{3}')
+    if ($m.Success) { return $m.Value }
+    return ''
+}
+
+function ConvertFrom-AIPlaybookFrontMatter {
+    <#
+    .SYNOPSIS
+        Parse the YAML front matter of a playbook into a hashtable, or $null.
+    .DESCRIPTION
+        FAIL CLOSED. PowerShell 5.1 ships no YAML parser, and pulling one in
+        for a USB toolkit that must run air-gapped is not an option. This
+        handles exactly the subset the playbook schema uses:
+
+            key: scalar
+            key: [a, b]
+            key:
+              - item
+            key:
+              sub: [a, b]
+
+        Anything outside that subset returns $null rather than a partial parse.
+        That matters: a half-understood front matter that happens to yield the
+        required keys would validate, and the whole point of the check is to
+        refuse to vouch for a document we did not actually read. A playbook the
+        parser cannot handle is a playbook to reformat, not to trust.
+    #>
+    param([string]$Text)
+
+    if (-not $Text) { return $null }
+
+    $lines = $Text -split "`r?`n"
+    if ($lines.Count -lt 3) { return $null }
+
+    # Must open on --- and close on a later ---.
+    if ($lines[0].Trim() -ne '---') { return $null }
+    $endIndex = -1
+    for ($i = 1; $i -lt $lines.Count; $i++) {
+        if ($lines[$i].Trim() -eq '---') { $endIndex = $i; break }
+    }
+    if ($endIndex -lt 1) { return $null }
+
+    $result     = @{}
+    $currentKey = ''
+    $currentMap = $null
+
+    for ($i = 1; $i -lt $endIndex; $i++) {
+        $raw = $lines[$i]
+        if ($raw.Trim() -eq '' -or $raw.Trim().StartsWith('#')) { continue }
+
+        $indent = $raw.Length - $raw.TrimStart(' ').Length
+        $line   = $raw.Trim()
+
+        # Tabs are not YAML indentation and silently break alignment.
+        if ($raw -match "`t") { return $null }
+
+        if ($indent -eq 0) {
+            if ($line -notmatch '^([A-Za-z][A-Za-z0-9_]*):\s*(.*)$') { return $null }
+            $currentKey = $Matches[1]
+            $value      = $Matches[2].Trim()
+            $currentMap = $null
+
+            if ($value -eq '') {
+                # Container: the following indented lines decide list vs map.
+                $result[$currentKey] = $null
+            } else {
+                $result[$currentKey] = ConvertFrom-AIPlaybookScalar -Value $value
+            }
+            continue
+        }
+
+        # Indented line without an owning key is malformed.
+        if ($currentKey -eq '') { return $null }
+
+        if ($line.StartsWith('- ')) {
+            $item = ConvertFrom-AIPlaybookScalar -Value $line.Substring(2).Trim()
+            if ($null -eq $result[$currentKey]) { $result[$currentKey] = @() }
+            if ($result[$currentKey] -isnot [array]) { return $null }
+            $result[$currentKey] = @($result[$currentKey]) + @($item)
+            continue
+        }
+
+        if ($line -match '^([A-Za-z][A-Za-z0-9_]*):\s*(.*)$') {
+            $subKey = $Matches[1]
+            $subVal = $Matches[2].Trim()
+            if ($null -eq $result[$currentKey]) {
+                $currentMap = @{}
+                $result[$currentKey] = $currentMap
+            }
+            if ($result[$currentKey] -isnot [hashtable]) { return $null }
+            $currentMap = $result[$currentKey]
+            if ($subVal -eq '') { return $null }   # nested containers unsupported
+            $currentMap[$subKey] = ConvertFrom-AIPlaybookScalar -Value $subVal
+            continue
+        }
+
+        return $null
+    }
+
+    return $result
+}
+
+function ConvertFrom-AIPlaybookScalar {
+    <#
+    .SYNOPSIS
+        YAML scalar or inline array to a PowerShell value.
+    #>
+    param([string]$Value)
+
+    $v = $Value.Trim()
+
+    # Inline array: [a, b, c]
+    if ($v.StartsWith('[') -and $v.EndsWith(']')) {
+        $inner = $v.Substring(1, $v.Length - 2).Trim()
+        if ($inner -eq '') { return @() }
+        return @($inner -split ',' | ForEach-Object { ConvertFrom-AIPlaybookScalar -Value $_ })
+    }
+
+    # Quoted: keep as string, so schemaVersion "1.0" does not become 1.0 double.
+    if (($v.StartsWith('"') -and $v.EndsWith('"') -and $v.Length -ge 2) -or
+        ($v.StartsWith("'") -and $v.EndsWith("'") -and $v.Length -ge 2)) {
+        return $v.Substring(1, $v.Length - 2)
+    }
+
+    if ($v -eq 'true')  { return $true }
+    if ($v -eq 'false') { return $false }
+    if ($v -match '^-?[0-9]+$') { return [int]$v }
+
+    return $v
+}
+
+function Test-AIPlaybookConformant {
+    <#
+    .SYNOPSIS
+        True when a parsed front matter satisfies the schema's enforced rules.
+    .OUTPUTS
+        PSCustomObject with Ok and Reason. Reason names the first failure, so a
+        playbook author gets a specific complaint rather than "invalid".
+    #>
+    param($FrontMatter, [string]$ExpectedId = '')
+
+    if ($null -eq $FrontMatter -or $FrontMatter -isnot [hashtable]) {
+        return [PSCustomObject]@{ Ok = $false; Reason = 'front matter absent or unparseable' }
+    }
+
+    foreach ($k in $script:PlaybookRequiredKeys) {
+        if (-not $FrontMatter.ContainsKey($k)) {
+            return [PSCustomObject]@{ Ok = $false; Reason = "missing required key '$k'" }
+        }
+        if ($null -eq $FrontMatter[$k] -or "$($FrontMatter[$k])".Trim() -eq '') {
+            return [PSCustomObject]@{ Ok = $false; Reason = "required key '$k' is empty" }
+        }
+    }
+
+    $id = [string]$FrontMatter['id']
+    if ($id -notmatch $script:PlaybookIdPattern) {
+        return [PSCustomObject]@{ Ok = $false; Reason = "id '$id' does not match RB-<2-4 letters>-<3 digits>" }
+    }
+    if ($ExpectedId -and $id -ne $ExpectedId) {
+        # The file was found by ID, so a mismatch means the file's own front
+        # matter disagrees with its name -- exactly the drift that would make a
+        # citation resolve to the wrong procedure.
+        return [PSCustomObject]@{ Ok = $false; Reason = "id '$id' does not match requested '$ExpectedId'" }
+    }
+
+    $category = [string]$FrontMatter['category']
+    if ($script:PlaybookCategories -notcontains $category) {
+        return [PSCustomObject]@{ Ok = $false; Reason = "category '$category' is not a known category" }
+    }
+    # The id carries the category too; disagreement makes the id unreliable.
+    $idCategory = ($id -split '-')[1]
+    if ($idCategory -ne $category) {
+        return [PSCustomObject]@{ Ok = $false; Reason = "category '$category' disagrees with id segment '$idCategory'" }
+    }
+
+    $severity = [string]$FrontMatter['severity']
+    if ($script:PlaybookSeverities -notcontains $severity) {
+        return [PSCustomObject]@{ Ok = $false; Reason = "severity '$severity' is not one of: $($script:PlaybookSeverities -join ', ')" }
+    }
+
+    $duration = $FrontMatter['estimatedDurationMinutes']
+    if ($duration -isnot [int]) {
+        return [PSCustomObject]@{ Ok = $false; Reason = 'estimatedDurationMinutes is not an integer' }
+    }
+    if ($duration -lt 1 -or $duration -gt 480) {
+        return [PSCustomObject]@{ Ok = $false; Reason = "estimatedDurationMinutes $duration outside 1..480" }
+    }
+
+    if ($FrontMatter['revertable'] -isnot [bool]) {
+        return [PSCustomObject]@{ Ok = $false; Reason = 'revertable is not a boolean' }
+    }
+
+    if ([string]$FrontMatter['schemaVersion'] -ne '1.0') {
+        return [PSCustomObject]@{ Ok = $false; Reason = "schemaVersion '$($FrontMatter['schemaVersion'])' is not 1.0" }
+    }
+
+    $title = [string]$FrontMatter['title']
+    if ($title.Length -lt 8 -or $title.Length -gt 120) {
+        return [PSCustomObject]@{ Ok = $false; Reason = "title length $($title.Length) outside 8..120" }
+    }
+
+    if ($FrontMatter.ContainsKey('deprecated') -and $FrontMatter['deprecated'] -eq $true) {
+        # Resolvable on purpose, so old audit records stay interpretable, but
+        # not a valid citation for a new recommendation.
+        return [PSCustomObject]@{ Ok = $false; Reason = "playbook $id is deprecated" }
+    }
+
+    return [PSCustomObject]@{ Ok = $true; Reason = '' }
+}
+
+function Test-AIPlaybookReference {
+    <#
+    .SYNOPSIS
+        Resolve a playbook ID to a file and check it conforms.
+    .OUTPUTS
+        PSCustomObject with Valid and Reason. Never throws.
+    #>
+    param([string]$PlaybookId, [string]$PlaybookDir = '')
+
+    if (-not $PlaybookId) {
+        return [PSCustomObject]@{ Valid = $false; Reason = 'no playbook reference' }
+    }
+    if ($PlaybookId -notmatch $script:PlaybookIdPattern) {
+        return [PSCustomObject]@{ Valid = $false; Reason = "malformed playbook id '$PlaybookId'" }
+    }
+
+    $dir = Resolve-AIPlaybookRoot -PlaybookDir $PlaybookDir
+    if (-not $dir) {
+        return [PSCustomObject]@{ Valid = $false; Reason = 'playbook directory could not be resolved' }
+    }
+
+    $path = Join-Path $dir "$PlaybookId.md"
+    if (-not (Test-Path -LiteralPath $path)) {
+        return [PSCustomObject]@{ Valid = $false; Reason = "playbook $PlaybookId not found" }
+    }
+
+    try {
+        $raw = Get-Content -LiteralPath $path -Raw -Encoding UTF8
+    } catch {
+        return [PSCustomObject]@{ Valid = $false; Reason = "playbook $PlaybookId unreadable" }
+    }
+
+    $fm = ConvertFrom-AIPlaybookFrontMatter -Text $raw
+    $check = Test-AIPlaybookConformant -FrontMatter $fm -ExpectedId $PlaybookId
+    return [PSCustomObject]@{ Valid = $check.Ok; Reason = $check.Reason }
+}
+
 function Get-AISha256Hex {
     <#
     .SYNOPSIS
@@ -1387,6 +1691,7 @@ function Invoke-FieldOpsAI {
         [switch]$CaptureFullTranscript,
         [string]$ConfigDir = '',
         [string]$LogsDir = '',
+        [string]$PlaybookDir = '',
         [switch]$NoAudit
     )
 
@@ -1400,6 +1705,33 @@ function Invoke-FieldOpsAI {
                 -CaptureFullTranscript:$CaptureFullTranscript `
                 -ConfigDir $ConfigDir
 
+    # Playbook reference validation (6.5-R8). Runs before the audit record is
+    # built so playbook_ref and playbook_valid describe this call rather than
+    # being written null and corrected nowhere. Outside the -NoAudit branch:
+    # the caller asked for the check, and whether the call is audited is a
+    # separate question from whether its citation holds up.
+    if ($ExpectPlaybookReference -and $result.Success) {
+        $ref = Get-AIPlaybookReference -Text $result.Response
+        if ($ref) {
+            $result.PlaybookRef = $ref
+            $check = Test-AIPlaybookReference -PlaybookId $ref -PlaybookDir $PlaybookDir
+            $result.PlaybookValid = $check.Valid
+            if (-not $check.Valid) {
+                # A recommendation citing a playbook that does not hold up is
+                # exactly the case a human must see, whatever the wording made
+                # the keyword classifier think.
+                $result.NeedsHumanReview = $true
+                Write-Verbose "Playbook reference $ref failed validation: $($check.Reason)"
+            }
+        } else {
+            # Asked for a citation, got none. False, not null: the check ran.
+            $result.PlaybookRef   = $null
+            $result.PlaybookValid = $false
+            $result.NeedsHumanReview = $true
+            Write-Verbose 'Playbook reference expected but none present in response.'
+        }
+    }
+
     if (-not $NoAudit) {
         # Classify the response severity before building the audit record so
         # the severity, severity_method and needs_human_review fields reflect
@@ -1407,7 +1739,11 @@ function Invoke-FieldOpsAI {
         if ($result.Success -and $result.Response) {
             $sev = Get-AISeverityClassification -Text $result.Response -ConfigDir $ConfigDir
             $result.Severity         = $sev.Severity
-            $result.NeedsHumanReview = $sev.NeedsHumanReview
+            # Severity classification must not clear a review flag that playbook
+            # validation just raised.
+            if ($result.NeedsHumanReview -ne $true) {
+                $result.NeedsHumanReview = $sev.NeedsHumanReview
+            }
         }
         $record = New-AIAuditRecord -Result $result -Prompt $Prompt `
                     -SystemPrompt $SystemPrompt -CallingContext $CallingContext `
