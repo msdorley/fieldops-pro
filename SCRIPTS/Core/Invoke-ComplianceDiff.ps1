@@ -202,15 +202,31 @@ if ($script:cfgModel) {
     $AI_MODEL = $env:ANTHROPIC_MODEL
 }
 
-# Fallback model chain: if the primary model returns 404 (not available
-# on this plan), we try the next model down. This ensures AI analysis
-# works on any Anthropic plan without manual configuration.
-$AI_MODEL_FALLBACKS = @('claude-sonnet-4-6', 'claude-haiku-4-5-20251001')
-
-$AI_ENDPOINT= 'https://api.anthropic.com/v1/messages'
-$AI_VERSION = '2023-06-01'
+# The endpoint, API version, and model fallback chain that used to live here
+# are gone: transport, model fallback, retry, cost ceilings and audit logging
+# are all owned by FieldOps-AIClient now (6.5-R1, 6.5-D12). $AI_MODEL survives
+# only as the label shown in the banner and report; the model actually used is
+# whatever the client's fallback chain settled on, and is written back to it
+# after a successful call.
 
 if ($SnapshotId -eq '') { $SnapshotId = "$HOSTNAME`_$($NOW.ToString('yyyyMMdd'))" }
+
+# --------------------------------------------------------------
+# AI CLIENT
+# --------------------------------------------------------------
+# Load the shared client. Path is ..\AI from Core. A failure here is not fatal:
+# AI is an optional enrichment (6.5-R10) and every call site already has a
+# local-rules fallback, so the run continues exactly as it does without a key.
+$script:AIClientLoaded = $false
+try {
+    $aiClientPath = Join-Path $PSScriptRoot '..\AI\FieldOps-AIClient.psm1'
+    if (Test-Path $aiClientPath) {
+        Import-Module $aiClientPath -Force -DisableNameChecking -ErrorAction Stop
+        $script:AIClientLoaded = $true
+    }
+} catch {
+    Write-Host "  [WARN] AI client load failed (non-fatal): $_" -ForegroundColor Yellow
+}
 
 # ==============================================================
 # CONSOLE HELPERS
@@ -247,6 +263,74 @@ function Write-Step { param([string]$M, [string]$C = 'Gray')
 
 function Write-Category { param([string]$Name, [int]$Count)
     Write-Host "    [+] $Name : $Count item(s) captured" -ForegroundColor DarkGray
+}
+
+function Write-AIFailureGuidance {
+    <#
+        Turn a client failure result into something a technician can act on.
+
+        Branching is on .FailureReason, which is a closed vocabulary and the
+        only field the client guarantees. .FailureDetail is the provider's own
+        wording; it is DISPLAYED unconditionally, and additionally sniffed for
+        the two cases worth a specific remedy (no credits, rejected key).
+
+        That sniff is best-effort by design: if the provider rewords its
+        messages the keyword match stops firing, and the operator still sees
+        the raw detail line -- which is the thing that actually tells them what
+        to fix. The heuristic adds a shortcut; it is never load-bearing.
+    #>
+    param($Call)
+
+    $reason = [string]$Call.FailureReason
+    $detail = [string]$Call.FailureDetail
+
+    switch ($reason) {
+        'NoApiKey' {
+            Write-Step "[WARN] AI: no API key found in config or ANTHROPIC_API_KEY." 'Yellow'
+        }
+        'PricingConfigUnavailable' {
+            # Fail-closed by design: with no pricing table the client cannot
+            # enforce a cost ceiling, so it refuses rather than spend blind.
+            Write-Step "[WARN] AI: pricing config unreadable -- cost ceiling cannot be enforced." 'Yellow'
+            Write-Step "  Check CONFIG\AIModelPricing.json" 'Yellow'
+        }
+        'EstimateExceedsCeiling' {
+            Write-Step "[WARN] AI: estimated cost exceeds the per-call ceiling. Prompt too large." 'Yellow'
+        }
+        'SessionCeilingExceeded' {
+            Write-Step "[WARN] AI: session cost ceiling reached. Further calls refused this run." 'Yellow'
+        }
+        'ModelUnavailable' {
+            Write-Step "[WARN] AI: no configured model is available on this plan." 'Yellow'
+        }
+        'TransientFailureRetriesExhausted' {
+            Write-Step "[WARN] AI: provider unavailable after retries (rate limit or overload)." 'Yellow'
+            Write-Step "  This usually clears on its own. Try again shortly." 'Yellow'
+        }
+        'MalformedResponse' {
+            Write-Step "[WARN] AI: provider returned an unexpected response shape." 'Yellow'
+        }
+        'UnknownTaskTier' {
+            Write-Step "[WARN] AI: unknown task tier requested -- configuration error." 'Yellow'
+        }
+        default {
+            Write-Step "[WARN] AI unavailable ($reason)." 'Yellow'
+        }
+    }
+
+    if ($detail) {
+        Write-Step "  Provider says: $detail" 'Yellow'
+
+        if ($detail -match 'credit balance|too low|billing|purchase credits') {
+            Write-Step "  Add credits: https://console.anthropic.com -> Plans & Billing (`$5 min)" 'Yellow'
+        } elseif ($detail -match 'invalid.*key|authentication|x-api-key') {
+            Write-Step "  Get a fresh key: https://console.anthropic.com -> API Keys" 'Yellow'
+        }
+    }
+
+    if ($Call.HttpStatus -and $Call.HttpStatus -ne 0) {
+        Write-Step "  HTTP status: $($Call.HttpStatus)" 'DarkGray'
+    }
 }
 
 # ==============================================================
@@ -1374,127 +1458,54 @@ Respond ONLY with a valid JSON object -- no markdown, no explanation outside JSO
 
     Write-Step "Prompt size: $($prompt.Length) chars, ~$([math]::Round($prompt.Length / 4)) tokens" 'DarkGray'
 
-    # v1.2.1: Helper to extract the actual error message from API error responses.
-    # PS 5.1's Invoke-RestMethod throws a WebException on non-2xx. The response body
-    # (containing the real error JSON) is buried in the exception's Response stream.
-    function Get-ApiErrorDetail {
-        param($Exception)
-        try {
-            $webEx = $Exception.Exception
-            while ($webEx -and -not ($webEx -is [System.Net.WebException])) {
-                $webEx = $webEx.InnerException
-            }
-            if ($webEx -and $webEx.Response) {
-                $stream = $webEx.Response.GetResponseStream()
-                $reader = [System.IO.StreamReader]::new($stream)
-                $body   = $reader.ReadToEnd()
-                $reader.Close()
-                $stream.Close()
-                if ($body) {
-                    try {
-                        $errObj = $body | ConvertFrom-Json
-                        if ($errObj.error -and $errObj.error.message) {
-                            return $errObj.error.message
-                        }
-                    } catch { }
-                    return $body.Substring(0, [math]::Min($body.Length, 200))
-                }
-            }
-        } catch { }
-        return "$Exception"
+    # Everything that used to live here -- endpoint, headers, the model loop,
+    # per-status error branching, and a private copy of the response-body
+    # parser -- now belongs to FieldOps-AIClient (6.5-R1). Model fallback,
+    # retry with backoff, cost ceilings and audit logging come with it, none of
+    # which this call site had before. What is left is what is genuinely local:
+    # the prompt, the JSON fence strip, and the fallback contract.
+    if (-not $script:AIClientLoaded) {
+        Write-Step "[WARN] AI client module unavailable. Falling back to local rules." 'Yellow'
+        return $null
     }
 
-    # Build the list of models to try: primary first, then fallbacks
-    $modelsToTry = @($AI_MODEL)
-    foreach ($fb in $AI_MODEL_FALLBACKS) {
-        if ($fb -ne $AI_MODEL -and $modelsToTry -notcontains $fb) {
-            $modelsToTry += $fb
-        }
+    Write-Step "Calling AI (Reasoning tier, $([math]::Round($prompt.Length / 1KB, 1)) KB prompt)..." 'Cyan'
+
+    $call = Invoke-FieldOpsAI -Prompt $prompt -TaskTier 'Reasoning' -MaxTokens 4000 `
+                -CallingContext 'ComplianceDiff/Analysis'
+
+    if (-not $call.Success) {
+        Write-AIFailureGuidance -Call $call
+        Write-Step "Falling back to local rule-based classification." 'DarkGray'
+        return $null
     }
 
-    $headers = @{
-        'x-api-key'         = $apiKey
-        'anthropic-version' = $AI_VERSION
-        'content-type'      = 'application/json'
+    $rawText = [string]$call.Response
+    if (-not $rawText) {
+        Write-Step "[WARN] AI returned an empty response. Falling back to local rules." 'Yellow'
+        return $null
     }
 
-    foreach ($tryModel in $modelsToTry) {
-        try {
-            $body = [ordered]@{
-                model      = $tryModel
-                max_tokens = 4000
-                messages   = @(@{
-                    role    = 'user'
-                    content = $prompt
-                })
-            } | ConvertTo-Json -Depth 10
+    # Strip any markdown fence if the model wrapped the JSON.
+    $rawText = $rawText -replace '(?s)^```json\s*',''
+    $rawText = $rawText -replace '```$',''
+    $rawText = $rawText.Trim()
 
-            Write-Step "Calling $tryModel ($([math]::Round($body.Length / 1KB, 1)) KB payload)..." 'Cyan'
-
-            $response = Invoke-RestMethod -Uri $AI_ENDPOINT `
-                            -Method POST `
-                            -Headers $headers `
-                            -Body ([System.Text.Encoding]::UTF8.GetBytes($body)) `
-                            -TimeoutSec 120 `
-                            -ErrorAction Stop
-
-            $rawText = ($response.content | Where-Object { $_.type -eq 'text' } | Select-Object -First 1).text
-            if (-not $rawText) { throw "Empty AI response" }
-
-            # Strip any markdown fence if model wraps it
-            $rawText = $rawText -replace '(?s)^```json\s*',''
-            $rawText = $rawText -replace '```$',''
-            $rawText = $rawText.Trim()
-
-            $aiResult = $rawText | ConvertFrom-Json
-            $script:AI_MODEL = $tryModel
-            Write-Step "AI analysis complete ($tryModel). Assessment: $($aiResult.overallAssessment)" 'Green'
-            return $aiResult
-
-        } catch {
-            $detail = Get-ApiErrorDetail $_
-
-            # Credit balance / billing
-            if ($detail -match 'credit balance|too low|billing|purchase credits') {
-                Write-Step "[WARN] AI: insufficient credits -- $detail" 'Yellow'
-                Write-Step "  Add credits at https://console.anthropic.com -> Plans & Billing" 'Yellow'
-                Write-Step "Falling back to local rule-based classification." 'DarkGray'
-                return $null
-            }
-
-            # 404 / model not found
-            if ($detail -match '404|not_found|model.*not.*found|does not exist') {
-                Write-Step "[INFO] Model $tryModel not available, trying next..." 'DarkGray'
-                continue
-            }
-
-            # 401: bad key
-            if ($detail -match '401|Unauthorized|Non autoris|invalid.*key|authentication') {
-                Write-Step "[WARN] AI: API key rejected -- $detail" 'Yellow'
-                Write-Step "Falling back to local rule-based classification." 'DarkGray'
-                return $null
-            }
-
-            # 429: rate limited
-            if ($detail -match '429|rate|Too Many') {
-                Write-Step "[WARN] AI: rate limited. Retry in 60s." 'Yellow'
-                Write-Step "Falling back to local rule-based classification." 'DarkGray'
-                return $null
-            }
-
-            # 529: overloaded
-            if ($detail -match '529|overloaded') {
-                Write-Step "[INFO] $tryModel overloaded, trying next..." 'DarkGray'
-                continue
-            }
-
-            # Generic error
-            Write-Step "[WARN] AI ($tryModel): $detail" 'Yellow'
-        }
+    try {
+        $aiResult = $rawText | ConvertFrom-Json -ErrorAction Stop
+    } catch {
+        # A model that answers in prose instead of JSON is a bad response, not
+        # a bad run: local rules still produce a complete report.
+        Write-Step "[WARN] AI response was not valid JSON. Falling back to local rules." 'Yellow'
+        return $null
     }
 
-    Write-Step "All AI models unavailable. Falling back to local rules." 'DarkGray'
-    return $null
+    # Report the model that actually answered, which after cross-model fallback
+    # is not necessarily the one requested.
+    $script:AI_MODEL = $call.Model
+    $costNote = "{0:N4} USD" -f [double]$call.CostUSD
+    Write-Step "AI analysis complete ($($call.Model), $costNote). Assessment: $($aiResult.overallAssessment)" 'Green'
+    return $aiResult
 }
 
 # ==============================================================
@@ -2433,95 +2444,59 @@ switch ($effectiveMode) {
             Write-Step "  Get a fresh key at https://console.anthropic.com -> API Keys" 'Yellow'
         }
 
-        # 4. Live API ping with model fallback
+        # 4. Live API ping, through the client
         if ($apiKey -ne '') {
             Write-Host ''
             Write-Step "Live API ping..." 'Cyan'
 
-            $pingModels = @($AI_MODEL)
-            foreach ($fb in $AI_MODEL_FALLBACKS) {
-                if ($fb -ne $AI_MODEL -and $pingModels -notcontains $fb) {
-                    $pingModels += $fb
+            if (-not $script:AIClientLoaded) {
+                Write-Step "  AI client module could not be loaded -- cannot ping." 'Red'
+                Write-Step "  Expected: SCRIPTS\AI\FieldOps-AIClient.psm1" 'Yellow'
+            } else {
+                # Pre-flight first. This names a missing key or an unreadable
+                # pricing config without paying a round trip to discover it.
+                $avail = Test-FieldOpsAIAvailability
+                if (-not $avail.HasPricing) {
+                    Write-Step "  Pricing config unreadable -- all calls would be refused." 'Red'
+                    Write-Step "  Check CONFIG\AIModelPricing.json" 'Yellow'
                 }
-            }
+                if (-not $avail.HasApiKey) {
+                    # Reachable when a key is in a file the client cannot read.
+                    # Before key-resolution convergence this was the silent
+                    # failure mode: banner says enabled, every call says NoApiKey.
+                    Write-Step "  The client cannot resolve a key, though one was loaded above." 'Red'
+                }
 
-            $pingHeaders = @{
-                'x-api-key'         = $apiKey
-                'anthropic-version' = $AI_VERSION
-                'content-type'      = 'application/json'
-            }
+                # Then one real minimal call. Trying each model by hand is no
+                # longer this script's job -- the client walks the fallback
+                # chain itself, so a single call covers what the old per-model
+                # loop did. It is audited like any other call, tagged Diagnose,
+                # which also proves the audit path works on this machine.
+                $ping = Invoke-FieldOpsAI -Prompt 'Reply OK' -TaskTier 'Classification' `
+                            -MaxTokens 5 -CallingContext 'ComplianceDiff/Diagnose'
 
-            $pingSuccess = $false
-            foreach ($pm in $pingModels) {
-                $pingBody = [ordered]@{
-                    model      = $pm
-                    max_tokens = 5
-                    messages   = @(@{ role='user'; content='Reply OK' })
-                } | ConvertTo-Json -Depth 5
-
-                Write-Step "  Testing model: $pm ..." 'DarkGray'
-                try {
-                    $pingResp = Invoke-RestMethod -Uri $AI_ENDPOINT -Method POST `
-                                    -Headers $pingHeaders `
-                                    -Body ([System.Text.Encoding]::UTF8.GetBytes($pingBody)) `
-                                    -TimeoutSec 30 -ErrorAction Stop
-                    Write-Step "  $pm : SUCCESS (id: $($pingResp.id))" 'Green'
-                    Write-Step "  AI analysis is fully operational with $pm" 'Green'
-                    $pingSuccess = $true
-                    break
-                } catch {
-                    # Extract the REAL error from the API response body
-                    $detail = ''
-                    try {
-                        $webEx = $_.Exception
-                        while ($webEx -and -not ($webEx -is [System.Net.WebException])) {
-                            $webEx = $webEx.InnerException
-                        }
-                        if ($webEx -and $webEx.Response) {
-                            $sr = [System.IO.StreamReader]::new($webEx.Response.GetResponseStream())
-                            $body = $sr.ReadToEnd(); $sr.Close()
-                            try {
-                                $eo = $body | ConvertFrom-Json
-                                if ($eo.error.message) { $detail = $eo.error.message }
-                            } catch { $detail = $body.Substring(0, [math]::Min($body.Length, 200)) }
-                        }
-                    } catch { }
-                    if ($detail -eq '') { $detail = "$_" }
-
-                    if ($detail -match 'credit balance|too low|billing|purchase credits') {
-                        Write-Step "  $pm : NO CREDITS" 'Red'
-                        Write-Step "  $detail" 'Yellow'
-                        Write-Step "  Add credits: https://console.anthropic.com -> Plans & Billing" 'Yellow'
-                        break
-                    } elseif ($detail -match '401|Unauthorized|invalid.*key|authentication') {
-                        Write-Step "  $pm : FAILED -- 401 Unauthorized" 'Red'
-                        Write-Step "  $detail" 'Yellow'
-                        break
-                    } elseif ($detail -match '404|not_found|model.*not.*found') {
-                        Write-Step "  $pm : not available on this plan" 'Yellow'
-                        continue
-                    } elseif ($detail -match '429') {
-                        Write-Step "  $pm : rate limited (429) -- key is valid, try again later" 'Yellow'
-                        $pingSuccess = $true
-                        break
-                    } elseif ($detail -match '529|overloaded') {
-                        Write-Step "  $pm : overloaded -- try again later" 'Yellow'
-                        continue
-                    } elseif ($detail -match 'timed out|timeout') {
-                        Write-Step "  $pm : timeout (network issue?)" 'Yellow'
-                        break
-                    } else {
-                        Write-Step "  $pm : FAILED -- $detail" 'Red'
+                if ($ping.Success) {
+                    $pingCost = "{0:N4} USD" -f [double]$ping.CostUSD
+                    Write-Step "  SUCCESS via $($ping.Model) ($pingCost)" 'Green'
+                    Write-Step "  AI analysis is fully operational." 'Green'
+                    if ($ping.AuditRecordPath) {
+                        Write-Step "  Audit record written: $($ping.AuditRecordPath)" 'DarkGray'
                     }
+                } elseif ($ping.HttpStatus -eq 429) {
+                    # Being rate limited proves the key is good, which is what a
+                    # diagnostic is actually asking. Not a configuration fault.
+                    Write-Step "  Rate limited (429) -- the key is VALID. Try again shortly." 'Yellow'
+                } else {
+                    Write-AIFailureGuidance -Call $ping
+                    Write-Host ''
+                    Write-Step "  No working AI model found. Local rules will be used." 'Yellow'
+                    # Escaped: unescaped `$0` and `$5` interpolated as empty
+                    # variables here, so this hint used to print "cause:  credit
+                    # balance" and "credits ( min)".
+                    Write-Step "  Most common cause: `$0 credit balance on Evaluation plan." 'Yellow'
+                    Write-Step "  Fix: https://console.anthropic.com -> Plans & Billing -> Add credits (`$5 min)" 'Yellow'
+                    Write-Step "  Once credits are added, AI analysis activates automatically." 'DarkGray'
                 }
-            }
-
-            if (-not $pingSuccess) {
-                Write-Host ''
-                Write-Step "  No working AI model found. Local rules will be used." 'Yellow'
-                Write-Step "  Most common cause: $0 credit balance on Evaluation plan." 'Yellow'
-                Write-Step "  Fix: https://console.anthropic.com -> Plans & Billing -> Add credits ($5 min)" 'Yellow'
-                Write-Step "  Once credits are added, AI analysis activates automatically." 'DarkGray'
             }
         }
 
