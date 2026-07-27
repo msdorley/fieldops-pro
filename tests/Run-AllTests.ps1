@@ -143,9 +143,21 @@ try {
     exit 2
 }
 
-$pesterModule = Get-Module -Name 'Pester'
+# Select before reporting: Get-Module -Name returns every resident module of
+# that name, and a session carrying a stale Pester 0.0 alongside 5.7.1 renders
+# as "0.0 5.7.1". The old null check also passed a session holding ONLY the
+# stale module, running the full suite on Pester 0.0. See Run-FastTests.ps1.
+$pesterModule = Get-Module -Name 'Pester' |
+    Sort-Object Version -Descending |
+    Select-Object -First 1
+
 if ($null -eq $pesterModule) {
     Write-Fail "Pester not loaded after bootstrap. Cannot continue."
+    exit 2
+}
+if ($pesterModule.Version.Major -lt 5 -or
+    ($pesterModule.Version.Major -eq 5 -and $pesterModule.Version.Minor -lt 7)) {
+    Write-Fail "Pester $($pesterModule.Version) loaded, but 5.7.1+ is required. Bootstrap did not take."
     exit 2
 }
 Write-OK "Pester $($pesterModule.Version) ready."

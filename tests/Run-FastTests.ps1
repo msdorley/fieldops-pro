@@ -132,9 +132,24 @@ try {
     exit 2
 }
 
-$pesterModule = Get-Module -Name 'Pester'
+# Get-Module -Name returns EVERY resident module of that name, so this must
+# select before it reports. A session carrying both a stale Pester (version
+# 0.0, e.g. imported from Pester.psm1 without its manifest) and the good 5.7.1
+# yields an array here; "$($array.Version)" then renders as "0.0 5.7.1".
+#
+# The old null check was also too weak to be a gate: a session with ONLY the
+# stale module passes it, and the whole suite then runs on Pester 0.0.
+$pesterModule = Get-Module -Name 'Pester' |
+    Sort-Object Version -Descending |
+    Select-Object -First 1
+
 if ($null -eq $pesterModule) {
     Write-Fail "Pester not loaded after bootstrap."
+    exit 2
+}
+if ($pesterModule.Version.Major -lt 5 -or
+    ($pesterModule.Version.Major -eq 5 -and $pesterModule.Version.Minor -lt 7)) {
+    Write-Fail "Pester $($pesterModule.Version) loaded, but 5.7.1+ is required. Bootstrap did not take."
     exit 2
 }
 Write-OK "Pester $($pesterModule.Version) ready."
