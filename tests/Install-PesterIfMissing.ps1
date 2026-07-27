@@ -85,6 +85,53 @@ function Test-PesterVersionSatisfied {
     return $true
 }
 
+function Get-UserModulesRoot {
+    <#
+    .SYNOPSIS
+        The WindowsPowerShell user modules directory, honouring folder redirection.
+    .DESCRIPTION
+        $env:USERPROFILE\Documents is WRONG on any machine where the Documents
+        known folder is redirected -- OneDrive Backup does this by default, and
+        it is the norm on a corporate Windows 11 image, which is precisely the
+        environment this toolkit targets.
+
+        On such a machine the literal path either does not exist or is a stub
+        that is NOT on PSModulePath, so a bundle copied there is invisible to
+        module resolution while Install-Module targets the redirected path.
+        The two disagree, and the bootstrap fails in a way that reads like a
+        missing bundle.
+
+        GetFolderPath('MyDocuments') resolves the redirection. The literal path
+        remains as a last-resort fallback for a profile with no Documents
+        folder registered at all.
+    #>
+    $docs = ''
+    try {
+        $docs = [Environment]::GetFolderPath('MyDocuments')
+    } catch {
+        $docs = ''
+    }
+    if (-not $docs) {
+        $docs = Join-Path $env:USERPROFILE 'Documents'
+    }
+    return (Join-Path $docs 'WindowsPowerShell\Modules')
+}
+
+function Test-ModuleDirUsable {
+    <#
+    .SYNOPSIS
+        True only if the directory holds an actual importable manifest.
+    .DESCRIPTION
+        A bare Test-Path on the directory is not enough: a previous run that
+        created the folder and then failed the copy leaves an empty directory
+        behind, which would make the bootstrap skip the copy and then import
+        nothing.
+    #>
+    param([string]$Dir, [string]$ModuleName)
+    if (-not (Test-Path -LiteralPath $Dir)) { return $false }
+    return (Test-Path -LiteralPath (Join-Path $Dir "$ModuleName.psd1"))
+}
+
 # ---------------------------------------------------------------------------
 # Step 1: Session-loaded module (fast exit)
 # ---------------------------------------------------------------------------
@@ -113,7 +160,9 @@ if ($null -ne $installedModules) {
 
     if ($null -ne $best) {
         Write-OK "Found installed Pester $($best.Version) at: $($best.ModuleBase)"
-        Import-Module -Name $best.ModuleBase -RequiredVersion $best.Version -Force:$Force -ErrorAction Stop
+        # -Force unconditionally: see the note at Step 3. Reaching this line at
+        # all means the session module (if any) was unsatisfactory.
+        Import-Module -Name $best.ModuleBase -RequiredVersion $best.Version -Force -ErrorAction Stop
         Write-OK "Pester $($best.Version) imported."
         return
     }
@@ -139,10 +188,10 @@ if (Test-Path $bundleManifest) {
     Write-Step "Offline bundle found at: $bundlePath"
 
     # Copy to user modules so the session is not USB-dependent
-    $userModulesRoot = Join-Path $env:USERPROFILE "Documents\WindowsPowerShell\Modules"
+    $userModulesRoot = Get-UserModulesRoot
     $targetDir       = Join-Path $userModulesRoot "$MODULE_NAME\$REQUIRED_VERSION"
 
-    if (-not (Test-Path $targetDir)) {
+    if (-not (Test-ModuleDirUsable -Dir $targetDir -ModuleName $MODULE_NAME)) {
         Write-Step "Copying bundle to user modules: $targetDir"
         try {
             $null = New-Item -ItemType Directory -Path $targetDir -Force -ErrorAction Stop
@@ -156,15 +205,40 @@ if (Test-Path $bundleManifest) {
         Write-Info "Bundle already at user modules path. Skipping copy."
     }
 
+    # Importing from the USB directly is a legitimate outcome, not a failure:
+    # the toolkit is designed to run off the stick. The copy is a convenience.
+    if (-not (Test-ModuleDirUsable -Dir $targetDir -ModuleName $MODULE_NAME)) {
+        Write-Warn "Copy target unusable. Importing directly from the bundle."
+        $targetDir = $bundlePath
+    }
+
     $targetManifest = Join-Path $targetDir "$MODULE_NAME.psd1"
     try {
-        Import-Module -Name $targetManifest -Force:$Force -ErrorAction Stop
-        $importedVer = (Get-Module -Name $MODULE_NAME).Version
+        # -Force is REQUIRED here, and must not be gated on the -Force parameter.
+        #
+        # Import-Module is a no-op when a module of the same name is already
+        # loaded, whatever its version. Step 1 only warns about an unsatisfactory
+        # session module and falls through -- so by the time control reaches this
+        # line, a stale Pester (e.g. version 0.0 from a .psm1 imported without
+        # its manifest) may still be resident. Without -Force the import silently
+        # does nothing, the version probe below reads the STALE module, and the
+        # bootstrap reports "bundle loaded but version 0.0" while having loaded
+        # nothing at all -- then burns the PSGallery fallback on a problem that
+        # was never about the bundle.
+        #
+        # The -Force PARAMETER means "re-import even when already satisfied".
+        # It must not gate the corrective re-import of an unsatisfactory one.
+        $imported = Import-Module -Name $targetManifest -Force -PassThru -ErrorAction Stop
+
+        # -PassThru gives the module actually imported. Get-Module -Name can
+        # return several entries when more than one Pester is resident, and
+        # .Version on that array is not a version.
+        $importedVer = $imported.Version
         if (Test-PesterVersionSatisfied -Candidate $importedVer) {
-            Write-OK "Pester $importedVer imported from offline bundle."
+            Write-OK "Pester $importedVer imported from offline bundle: $($imported.Path)"
             return
         }
-        Write-Warn "Bundle loaded but version $importedVer does not satisfy $REQUIRED_VERSION."
+        Write-Warn "Bundle at $targetManifest reports version $importedVer, which does not satisfy $REQUIRED_VERSION."
     } catch {
         Write-Warn "Offline bundle import failed: $_"
     }
@@ -221,5 +295,5 @@ if ($null -eq $installed) {
     throw "Pester $REQUIRED_VERSION installed but not found via Get-Module. Check PSModulePath."
 }
 
-Import-Module -Name $installed.ModuleBase -RequiredVersion $installed.Version -Force:$Force -ErrorAction Stop
+Import-Module -Name $installed.ModuleBase -RequiredVersion $installed.Version -Force -ErrorAction Stop
 Write-OK "Pester $($installed.Version) imported from PSGallery install."
