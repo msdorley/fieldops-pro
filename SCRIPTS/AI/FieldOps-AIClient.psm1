@@ -43,6 +43,24 @@ NEVER THROWS
     (6.5-R10); an exception escaping this module would break that contract and
     take down a diagnostic run over an optional narration.
 
+FAILURE REASON vs FAILURE DETAIL
+
+    .FailureReason is a closed vocabulary (see $script:FailureReasons) and is
+    the ONLY field a caller may branch on. It is deliberately coarse.
+
+    .FailureDetail is the provider's own explanation, read off the non-2xx
+    response body and redacted -- "your credit balance is too low", "invalid
+    x-api-key". .HttpStatus is the status code, or 0 when the failure never
+    reached the network (ceiling refusal, missing key, unknown tier).
+
+    Both exist so a call site can tell an operator what to actually DO. Before
+    they existed, PowerShell 5.1's generic WebException message ("The remote
+    server returned an error: (400) Bad Request.") was all that survived the
+    transport, and Invoke-ComplianceDiff kept its own body parser to recover
+    the reason -- which is precisely the duplication the 6.5 reroute removes.
+    Neither field is a contract for branching: the provider may reword them at
+    any time. Display them; do not match on them.
+
 TESTABILITY
 
     All network access goes through the single internal function
@@ -343,37 +361,109 @@ function Get-AIRetryDelaySeconds {
 # API key discovery (6.5-R12: never returned, never logged)
 # ------------------------------------------------------------------------------
 
+# Config filenames tried in order of preference. This list, its order, and the
+# recursive alias search below deliberately mirror Invoke-ComplianceDiff.ps1:
+# before the 6.5 reroute the two resolved keys independently, and a key that
+# lived anywhere but a top-level property of technician.json was found by the
+# script and missed by this module. The banner would then report AI as enabled
+# while every call returned NoApiKey -- a silent downgrade to local rules.
+# One resolver, one answer.
+function Get-AIConfigCandidatePath {
+    param([string]$ConfigDir = '')
+    $dir = Resolve-AIConfigRoot -ConfigDir $ConfigDir
+    if (-not $dir) { return @() }
+    return @(
+        (Join-Path $dir 'technician.json'),
+        (Join-Path $dir 'FieldOps.config.json'),
+        (Join-Path $dir 'fieldops.json'),
+        (Join-Path $dir 'config.json')
+    )
+}
+
+function Find-AIConfigValue {
+    <#
+    .SYNOPSIS
+        First non-empty scalar whose property name matches an alias, searched
+        recursively. Handles flat ({"ApiKey":"..."}) and nested
+        ({"anthropic":{"ApiKey":"..."}}) schemas alike.
+    #>
+    param($Obj, [string[]]$Aliases, [int]$Depth = 0)
+    if ($null -eq $Obj -or $Depth -gt 5) { return $null }
+
+    $props = @()
+    if ($Obj -is [System.Collections.IDictionary]) {
+        $props = @($Obj.Keys | ForEach-Object { [PSCustomObject]@{ Name = $_; Value = $Obj[$_] } })
+    } elseif ($Obj.PSObject -and $Obj.PSObject.Properties) {
+        $props = @($Obj.PSObject.Properties | ForEach-Object { [PSCustomObject]@{ Name = $_.Name; Value = $_.Value } })
+    } else {
+        return $null
+    }
+
+    # Scalars at this level first, so {"technician":{"name":"Bob"}} does not
+    # match the outer key and return a stringified object.
+    foreach ($p in $props) {
+        foreach ($alias in $Aliases) {
+            if ($p.Name -and ($p.Name -ieq $alias)) {
+                $v = $p.Value
+                if ($null -eq $v) { continue }
+                if ($v -is [string]) {
+                    if ($v.Trim() -ne '') { return $v.Trim() }
+                } elseif ($v -is [ValueType]) {
+                    $s = "$v".Trim()
+                    if ($s -ne '') { return $s }
+                }
+            }
+        }
+    }
+
+    foreach ($p in $props) {
+        $v = $p.Value
+        if ($null -eq $v) { continue }
+        if ($v -is [string] -or $v -is [ValueType]) { continue }
+        if ($v -is [System.Collections.IList]) { continue }
+        $sub = Find-AIConfigValue -Obj $v -Aliases $Aliases -Depth ($Depth + 1)
+        if ($null -ne $sub) { return $sub }
+    }
+    return $null
+}
+
 function Get-AIApiKey {
     <#
     .SYNOPSIS
-        Locate the Anthropic API key. Environment first, then technician.json.
+        Locate the Anthropic API key. Environment first, then the config
+        candidate files in preference order.
     .DESCRIPTION
-        Alias list matches the discovery already implemented in
-        Invoke-ComplianceDiff.ps1 so a working field configuration keeps
-        working. The key is never placed in a result object or log record.
+        PRECEDENCE. ANTHROPIC_API_KEY wins over any config file. This is the
+        standard Anthropic convention and lets a technician override a stale
+        provisioned key without editing files on the USB. It is also a change
+        from Invoke-ComplianceDiff's former config-first order, which only
+        differs when both are set to DIFFERENT keys -- in that case the
+        environment now wins.
+
+        SEARCH. Each candidate file is tried in order; the first file that
+        parses AND yields a key wins. A file that exists but has no key does
+        not stop the search: a stub technician.json must not mask a real key
+        in FieldOps.config.json.
+
+        The key is never placed in a result object or log record (6.5-R12).
     #>
     param([string]$ConfigDir = '')
 
     if ($env:ANTHROPIC_API_KEY) { return $env:ANTHROPIC_API_KEY }
 
-    $dir = Resolve-AIConfigRoot -ConfigDir $ConfigDir
-    if (-not $dir) { return '' }
-    $path = Join-Path $dir 'technician.json'
-    if (-not (Test-Path -LiteralPath $path)) { return '' }
-
-    try {
-        $cfg = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
-    } catch {
-        return ''
-    }
-
     $aliases = @('AnthropicApiKey','AnthropicKey','ApiKey','AiKey','ClaudeApiKey','ClaudeKey','Key')
-    $names = @($cfg.PSObject.Properties.Name)
-    foreach ($a in $aliases) {
-        if ($names -contains $a) {
-            $v = [string]$cfg.$a
-            if ($v) { return $v }
+
+    foreach ($path in (Get-AIConfigCandidatePath -ConfigDir $ConfigDir)) {
+        if (-not (Test-Path -LiteralPath $path)) { continue }
+        try {
+            $cfg = Get-Content -LiteralPath $path -Raw -Encoding UTF8 | ConvertFrom-Json
+        } catch {
+            # Malformed file: skip it and keep looking rather than failing the
+            # whole resolution on one bad JSON blob.
+            continue
         }
+        $v = Find-AIConfigValue -Obj $cfg -Aliases $aliases
+        if ($v) { return [string]$v }
     }
     return ''
 }
@@ -383,13 +473,97 @@ function Get-AIApiKey {
 # Tests mock this function; everything above and below it is verifiable offline.
 # ------------------------------------------------------------------------------
 
+function Get-AIRedactedText {
+    <#
+    .SYNOPSIS
+        Strip anything key-shaped from a string before it can be surfaced or
+        logged (6.5-R12).
+    .DESCRIPTION
+        The API never echoes the key, so in practice this is belt-and-braces.
+        It exists because FailureDetail is the first field on the result object
+        sourced from an external response body rather than from our own code,
+        and a redaction applied unconditionally cannot be forgotten at a call
+        site later.
+    #>
+    param([string]$Text)
+    if (-not $Text) { return '' }
+    # Anthropic keys, and any sk-* bearer-style token, whatever the suffix.
+    $out = $Text -replace 'sk-[A-Za-z0-9_\-]{8,}', 'sk-***REDACTED***'
+    return $out
+}
+
+function ConvertFrom-AIErrorBody {
+    <#
+    .SYNOPSIS
+        Turn a raw non-2xx response body into a redacted, bounded reason string.
+    .DESCRIPTION
+        Pure: string in, string out, no I/O. All the judgement lives here --
+        which JSON shape carries the message, what to do when the body is not
+        JSON, how much to keep, what to redact -- so it is fully unit-testable
+        offline, in keeping with this module's transport-boundary posture. The
+        stream plumbing in Read-AIErrorDetail stays deliberately trivial.
+
+        Returns '' when nothing useful can be recovered.
+    #>
+    param([string]$Body)
+
+    if (-not $Body) { return '' }
+
+    try {
+        $errObj = $Body | ConvertFrom-Json -ErrorAction Stop
+        if ($errObj -and $errObj.error -and $errObj.error.message) {
+            return (Get-AIRedactedText -Text ([string]$errObj.error.message))
+        }
+    } catch { }
+
+    # Not JSON, or not the shape we expect: a bounded slice of the raw body
+    # beats discarding the only evidence there is.
+    $slice = $Body.Substring(0, [math]::Min($Body.Length, 300))
+    return (Get-AIRedactedText -Text $slice.Trim())
+}
+
+function Read-AIErrorDetail {
+    <#
+    .SYNOPSIS
+        Extract the human-readable reason from a non-2xx Anthropic response.
+    .DESCRIPTION
+        PowerShell 5.1's Invoke-RestMethod throws a WebException on non-2xx and
+        its .Message is generic ("The remote server returned an error: (400)
+        Bad Request."). The reason an operator can act on -- "your credit
+        balance is too low", "invalid x-api-key" -- is in the response body,
+        which is discarded unless it is read off the exception stream here.
+
+        Stream plumbing only; the parsing rules are in ConvertFrom-AIErrorBody.
+        Returns '' when no detail can be recovered; callers treat that as
+        "status code only" rather than as an error.
+    #>
+    param($ErrorRecord)
+    try {
+        $webEx = $ErrorRecord.Exception
+        while ($webEx -and -not ($webEx -is [System.Net.WebException])) {
+            $webEx = $webEx.InnerException
+        }
+        if (-not ($webEx -and $webEx.Response)) { return '' }
+
+        $stream = $webEx.Response.GetResponseStream()
+        $reader = [System.IO.StreamReader]::new($stream)
+        $body   = $reader.ReadToEnd()
+        $reader.Close()
+        $stream.Close()
+
+        return (ConvertFrom-AIErrorBody -Body $body)
+    } catch {
+        return ''
+    }
+}
+
 function Invoke-AIHttpRequest {
     <#
     .SYNOPSIS
         Issue one POST to the Anthropic messages endpoint.
     .OUTPUTS
-        PSCustomObject with Success, StatusCode, Body (parsed), ErrorMessage.
-        Never throws: transport failures are reported, not raised.
+        PSCustomObject with Success, StatusCode, Body (parsed), ErrorMessage,
+        ErrorDetail. Never throws: transport failures are reported, not raised.
     #>
     [CmdletBinding()]
     param(
@@ -424,6 +598,7 @@ function Invoke-AIHttpRequest {
             StatusCode   = 200
             Body         = $resp
             ErrorMessage = ''
+            ErrorDetail  = ''
         }
     } catch {
         $status = 0
@@ -440,6 +615,8 @@ function Invoke-AIHttpRequest {
             # Deliberately does not include request headers: the API key must
             # never reach an error string (6.5-R12).
             ErrorMessage = $_.Exception.Message
+            # The actionable reason, read off the response body. Redacted.
+            ErrorDetail  = (Read-AIErrorDetail -ErrorRecord $_)
         }
     }
 }
@@ -500,7 +677,9 @@ function New-AIResult {
         [int]$InputTokens = 0,
         [int]$OutputTokens = 0,
         [int]$DurationMs = 0,
-        [int]$RetryCount = 0
+        [int]$RetryCount = 0,
+        [int]$HttpStatus = 0,
+        [string]$FailureDetail = ''
     )
     return [PSCustomObject]@{
         Success           = $Success
@@ -515,6 +694,12 @@ function New-AIResult {
         DurationMs        = $DurationMs
         RetryCount        = $RetryCount
         SessionCostUSD    = $script:SessionCostUSD
+        # HttpStatus is 0 for failures that never reached the network (ceiling
+        # refusal, no key, unknown tier). FailureDetail is the provider's own
+        # words, redacted, and is '' whenever none could be recovered. Callers
+        # must treat both as advisory: branch on FailureReason, display these.
+        HttpStatus        = $HttpStatus
+        FailureDetail     = (Get-AIRedactedText -Text $FailureDetail)
         # Populated by later PRs; present now so the contract is stable.
         Severity          = $null
         NeedsHumanReview  = $null
@@ -700,6 +885,10 @@ function Invoke-FieldOpsAICall {
         $retryCount = 0
         $lastReason = $script:FailureReasons.NonTransient
         $modelUnavailable = $false
+        # Carried out of the retry loop so a retries-exhausted return can still
+        # report what the provider actually said on the final attempt.
+        $lastStatus = 0
+        $lastDetail = ''
 
         while ($attempt -lt $script:MaxAttempts) {
             $attempt++
@@ -712,6 +901,9 @@ function Invoke-FieldOpsAICall {
             $http = Invoke-AIHttpRequest -ApiKey $apiKey -Model $candidate `
                         -SystemPrompt $SystemPrompt -Prompt $Prompt -MaxTokens $MaxTokens
 
+            $lastStatus = $http.StatusCode
+            $lastDetail = $http.ErrorDetail
+
             if ($http.Success) {
                 $parsed = ConvertFrom-AIResponseBody -Body $http.Body
                 if (-not $parsed.Ok) {
@@ -719,7 +911,8 @@ function Invoke-FieldOpsAICall {
                                 -Model $candidate -TaskTier $TaskTier `
                                 -EstimatedCostUSD $estimate.TotalCostUSD `
                                 -InputTokens $inputTokens -RetryCount $retryCount `
-                                -DurationMs $sw.ElapsedMilliseconds
+                                -DurationMs $sw.ElapsedMilliseconds `
+                                -HttpStatus $http.StatusCode
                 }
 
                 $actualCost = Get-AIActualCost -Pricing $pricing -Model $candidate `
@@ -736,7 +929,8 @@ function Invoke-FieldOpsAICall {
                             -Model $candidate -TaskTier $TaskTier `
                             -CostUSD $actualCost -EstimatedCostUSD $estimate.TotalCostUSD `
                             -InputTokens $parsed.InputTokens -OutputTokens $parsed.OutputTokens `
-                            -RetryCount $retryCount -DurationMs $sw.ElapsedMilliseconds
+                            -RetryCount $retryCount -DurationMs $sw.ElapsedMilliseconds `
+                            -HttpStatus 200
             }
 
             # 404 = model unavailable on this plan: stop retrying this model and
@@ -754,7 +948,8 @@ function Invoke-FieldOpsAICall {
                             -Model $candidate -TaskTier $TaskTier `
                             -EstimatedCostUSD $estimate.TotalCostUSD `
                             -InputTokens $inputTokens -RetryCount $retryCount `
-                            -DurationMs $sw.ElapsedMilliseconds
+                            -DurationMs $sw.ElapsedMilliseconds `
+                            -HttpStatus $http.StatusCode -FailureDetail $http.ErrorDetail
             }
             $lastReason = $script:FailureReasons.RetriesExhausted
         }
@@ -765,7 +960,8 @@ function Invoke-FieldOpsAICall {
                         -Model $candidate -TaskTier $TaskTier `
                         -EstimatedCostUSD $estimate.TotalCostUSD `
                         -InputTokens $inputTokens -RetryCount $retryCount `
-                        -DurationMs $sw.ElapsedMilliseconds
+                        -DurationMs $sw.ElapsedMilliseconds `
+                        -HttpStatus $lastStatus -FailureDetail $lastDetail
             continue
         }
 
@@ -775,7 +971,8 @@ function Invoke-FieldOpsAICall {
                     -Model $candidate -TaskTier $TaskTier `
                     -EstimatedCostUSD $estimate.TotalCostUSD `
                     -InputTokens $inputTokens -RetryCount $retryCount `
-                    -DurationMs $sw.ElapsedMilliseconds
+                    -DurationMs $sw.ElapsedMilliseconds `
+                    -HttpStatus $lastStatus -FailureDetail $lastDetail
     }
 
     # Chain exhausted. Return the last recorded failure (ceiling or the final
