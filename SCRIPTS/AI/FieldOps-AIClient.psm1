@@ -1,4 +1,6 @@
 #Requires -Version 5.1
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 ================================================================================
 FieldOps-AIClient.psm1 -- FieldOps Pro Phase 6, Stream 6.5 (D1)

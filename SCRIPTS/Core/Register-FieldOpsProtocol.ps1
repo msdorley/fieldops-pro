@@ -1,5 +1,7 @@
 #Requires -Version 5.1
 #Requires -RunAsAdministrator
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 .SYNOPSIS
     FieldOps Pro -- Register fieldops:// protocol handler

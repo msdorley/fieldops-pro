@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 .SYNOPSIS
     FieldOps Pro - AI-Powered Master Command Center v2.0

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 .SYNOPSIS
     FieldOps Pro - ANSSI Hygiene Diagnostic Report Builder v0.4
