@@ -31,68 +31,35 @@ BeforeAll {
     $script:ModulePath = Join-Path $script:RepoRoot 'SCRIPTS\AI\FieldOps-AIClient.psm1'
     Import-Module $script:ModulePath -Force -DisableNameChecking
 
-    $script:Fixtures = @(
-        # ---- CRITICAL ----
-        @{ lang='en'; expect='CRITICAL'
-           text='This workstation exposes an unauthenticated remote code execution path via the legacy SMBv1 service. Immediate action is required before the machine is returned to the network.'
-           note='multi-signal critical' }
+    # Fixtures are DATA, not code (6.5-D16). They live under
+    # tests/fixtures/ai/severity-labeled/ so the evidence behind SC-5 can be
+    # reviewed, challenged or extended by someone who does not read PowerShell.
+    # That matters here specifically: roughly half the cases are French-language
+    # classification, and the person best placed to judge those is not
+    # necessarily the person maintaining this harness.
+    #
+    # Every *.json in the directory is loaded, so adding a file adds cases
+    # without touching this test.
+    $script:FixtureDir = Join-Path $script:TestsRoot 'fixtures\ai\severity-labeled'
 
-        @{ lang='fr'; expect='CRITICAL'
-           text='Le poste presente une execution de code a distance sans authentification via SMBv1. Une action immediate est requise.'
-           note='FR multi-signal critical' }
-
-        @{ lang='en'; expect='CRITICAL'
-           text='Credential theft is possible: WDigest is storing plaintext passwords in memory, and domain admin tokens are present on this shared workstation.'
-           note='critical via credential theft + domain admin, no CVE' }
-
-        @{ lang='fr'; expect='CRITICAL'
-           text='Vol d''identifiant possible : les mots de passe sont stockes en clair et un administrateur de domaine est connecte sur ce poste partage.'
-           note='FR credential theft critical' }
-
-        # ---- ACTION_REQUIRED ----
-        @{ lang='en'; expect='ACTION_REQUIRED'
-           text='BitLocker is disabled on the system drive. This is a known misconfiguration that must be remediated to meet the baseline, though no active exploitation is indicated.'
-           note='must be remediated + misconfiguration, explicitly not critical' }
-
-        @{ lang='fr'; expect='ACTION_REQUIRED'
-           text='Le chiffrement du disque est desactive. Cette mauvaise configuration doit etre corrigee pour respecter le referentiel.'
-           note='FR action required' }
-
-        @{ lang='en'; expect='ACTION_REQUIRED'
-           text='The installed OpenSSL build is outdated and unpatched. It is a known vulnerability but is not currently exposed to the network.'
-           note='outdated/unpatched/known vulnerability, contained' }
-
-        # ---- ADVISORY ----
-        @{ lang='en'; expect='ADVISORY'
-           text='It is recommended to review the local firewall profile and consider enabling additional hardening on outbound rules as a best practice.'
-           note='recommended/consider/best practice' }
-
-        @{ lang='fr'; expect='ADVISORY'
-           text='Il est recommande d''examiner le profil du pare-feu local et d''envisager un durcissement complementaire.'
-           note='FR advisory' }
-
-        @{ lang='en'; expect='ADVISORY'
-           text='The audit policy could be strengthened. Consider enabling command-line process auditing to improve visibility; monitor the change over the next review cycle.'
-           note='hard: security vocabulary but only advisory signal' }
-
-        # ---- INFORMATIONAL ----
-        @{ lang='en'; expect='INFORMATIONAL'
-           text='The system is compliant with the checked baseline items. No action required. All controls verified successfully.'
-           note='compliant + no action required + verified' }
-
-        @{ lang='fr'; expect='INFORMATIONAL'
-           text='Le systeme est conforme aux points verifies. Aucune action requise. Controle effectue.'
-           note='FR informational' }
-
-        # ---- HARD CASES ----
-        @{ lang='en'; expect='CRITICAL'
-           text="Severity: CRITICAL`nThe finding text is deliberately mild, but the model stated its own severity and the structural signal must win."
-           note='structural override beats mild wording' }
-
-        @{ lang='en'; expect='ACTION_REQUIRED'
-           text='The remote access configuration is exposed to the internet and must be remediated. See related advisory CVE-2026-0001 for background.'
-           note='action_required with a CVE present; distress marker must not downgrade' }
-    )
+    $script:Fixtures = @()
+    $script:FixtureFiles = @(Get-ChildItem -Path $script:FixtureDir -Filter '*.json' -File -ErrorAction SilentlyContinue)
+    foreach ($file in $script:FixtureFiles) {
+        try {
+            $loaded = Get-Content -LiteralPath $file.FullName -Raw -Encoding UTF8 | ConvertFrom-Json
+        } catch {
+            throw "Severity fixture file '$($file.Name)' is not valid JSON: $_"
+        }
+        foreach ($rec in @($loaded)) {
+            $script:Fixtures += @{
+                lang   = [string]$rec.lang
+                expect = [string]$rec.expect
+                text   = [string]$rec.text
+                note   = [string]$rec.note
+                source = $file.Name
+            }
+        }
+    }
 
     function Test-FixtureSet {
         param($Fixtures)
@@ -117,8 +84,28 @@ AfterAll {
 
 Describe 'Severity classifier accuracy on labeled fixtures (6.5-SC-5)' -Tag 'Fast' {
 
+    It 'loads fixtures from disk rather than from this file' {
+        # Guards the D16 externalisation. If the directory vanishes or the glob
+        # stops matching, the accuracy assertions below would pass vacuously on
+        # an empty set -- a green suite proving nothing.
+        Test-Path $script:FixtureDir      | Should -BeTrue
+        @($script:FixtureFiles).Count     | Should -BeGreaterThan 0
+    }
+
     It 'has at least 10 labeled fixtures' {
         @($script:Fixtures).Count | Should -BeGreaterOrEqual 10
+    }
+
+    It 'every fixture record is complete and well-formed' {
+        # A record missing 'expect' would be silently counted as a pass by the
+        # comparison below, quietly inflating the accuracy figure.
+        $levels = @('INFORMATIONAL','ADVISORY','ACTION_REQUIRED','CRITICAL')
+        foreach ($f in $script:Fixtures) {
+            $f.text   | Should -Not -BeNullOrEmpty -Because "a fixture in $($f.source) has no text"
+            $f.note   | Should -Not -BeNullOrEmpty -Because "a fixture in $($f.source) has no note explaining why it exists"
+            $f.lang   | Should -BeIn @('en','fr')  -Because "a fixture in $($f.source) has lang '$($f.lang)'"
+            $levels   | Should -Contain $f.expect  -Because "a fixture in $($f.source) expects '$($f.expect)'"
+        }
     }
 
     It 'covers all four severity levels' {

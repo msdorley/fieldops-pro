@@ -1,0 +1,26 @@
+[
+  {
+    "lang": "en",
+    "expect": "CRITICAL",
+    "text": "This workstation exposes an unauthenticated remote code execution path via the legacy SMBv1 service. Immediate action is required before the machine is returned to the network.",
+    "note": "multi-signal critical: unauthenticated RCE plus immediate action"
+  },
+  {
+    "lang": "fr",
+    "expect": "CRITICAL",
+    "text": "Le poste presente une execution de code a distance sans authentification via SMBv1. Une action immediate est requise.",
+    "note": "FR multi-signal critical, mirrors the EN case above"
+  },
+  {
+    "lang": "en",
+    "expect": "CRITICAL",
+    "text": "Credential theft is possible: WDigest is storing plaintext passwords in memory, and domain admin tokens are present on this shared workstation.",
+    "note": "critical via credential theft plus domain admin exposure, with no CVE present"
+  },
+  {
+    "lang": "fr",
+    "expect": "CRITICAL",
+    "text": "Vol d'identifiant possible : les mots de passe sont stockes en clair et un administrateur de domaine est connecte sur ce poste partage.",
+    "note": "FR credential theft critical"
+  }
+]

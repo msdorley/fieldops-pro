@@ -1,0 +1,14 @@
+[
+  {
+    "lang": "en",
+    "expect": "CRITICAL",
+    "text": "Severity: CRITICAL\nThe finding text is deliberately mild, but the model stated its own severity and the structural signal must win.",
+    "note": "structural override beats mild wording: a stated severity outranks keyword counting"
+  },
+  {
+    "lang": "en",
+    "expect": "ACTION_REQUIRED",
+    "text": "The remote access configuration is exposed to the internet and must be remediated. See related advisory CVE-2026-0001 for background.",
+    "note": "a CVE reference must not inflate severity; security vocabulary is not severity"
+  }
+]
