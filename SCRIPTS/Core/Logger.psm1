@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 # Logger.psm1 - GDPR-compliant structured logging (WinPE compatible)
 # GDPR rule: log only technical data. No usernames, passwords, or personal data.
 

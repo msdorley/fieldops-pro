@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 ================================================================================
 Resolve-LocaleTokens.ps1 -- FieldOps Pro Phase 5.2, refactored in Phase 6.1-R4b

@@ -1,0 +1,43 @@
+FieldOps Pro
+Copyright 2026 Ousman Dorley
+
+This product is licensed under the Apache License, Version 2.0.
+You may obtain a copy of the License in the LICENSE file at the root of this
+repository, or at http://www.apache.org/licenses/LICENSE-2.0
+
+------------------------------------------------------------------------------
+ATTRIBUTION
+------------------------------------------------------------------------------
+
+FieldOps Pro evaluates Windows endpoints against the 42 rules of the ANSSI
+Guide d'hygiene informatique, published by the Agence nationale de la securite
+des systemes d'information (ANSSI), Republique francaise.
+
+The rule numbering and rule titles are ANSSI's. FieldOps Pro is an independent
+implementation and is not endorsed by, affiliated with, or certified by ANSSI.
+Compliance findings produced by this software represent the assessment of this
+software alone.
+
+------------------------------------------------------------------------------
+BUNDLED COMPONENTS
+------------------------------------------------------------------------------
+
+Pester
+  Location: TOOLS/PowerShellModules/Pester/
+  Licence:  Apache License 2.0
+  Source:   https://github.com/pester/Pester
+  Bundled to allow the test suite to run air-gapped, without network access.
+
+------------------------------------------------------------------------------
+THIRD-PARTY SERVICES
+------------------------------------------------------------------------------
+
+FieldOps Pro can optionally call the Anthropic API for narration, severity
+classification and remediation guidance. That capability is off unless an API
+key is configured, and no feature depends on it: every AI-using script has a
+deterministic local path. See DOCS/AI-INTEGRATION.md.
+
+Use of the Anthropic API is governed by Anthropic's own terms, not by this
+licence. FieldOps Pro transmits diagnostic findings to that service when the
+capability is enabled; operators are responsible for determining whether that
+is appropriate for their data.

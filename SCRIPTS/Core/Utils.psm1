@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 # Utils.psm1 - Shared utility functions (WinPE compatible)
 # All function names use PowerShell approved verbs to suppress warnings
 

@@ -1,4 +1,6 @@
 #Requires -Version 5.1
+# SPDX-License-Identifier: Apache-2.0
+# Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 .SYNOPSIS
     FieldOps Pro -- Fleet Intelligence Dashboard v2.0
