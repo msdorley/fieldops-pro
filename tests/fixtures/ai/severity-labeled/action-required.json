@@ -1,0 +1,20 @@
+[
+  {
+    "lang": "en",
+    "expect": "ACTION_REQUIRED",
+    "text": "BitLocker is disabled on the system drive. This is a known misconfiguration that must be remediated to meet the baseline, though no active exploitation is indicated.",
+    "note": "must be remediated plus misconfiguration, explicitly not critical"
+  },
+  {
+    "lang": "fr",
+    "expect": "ACTION_REQUIRED",
+    "text": "Le chiffrement du disque est desactive. Cette mauvaise configuration doit etre corrigee pour respecter le referentiel.",
+    "note": "FR action required"
+  },
+  {
+    "lang": "en",
+    "expect": "ACTION_REQUIRED",
+    "text": "The installed OpenSSL build is outdated and unpatched. It is a known vulnerability but is not currently exposed to the network.",
+    "note": "outdated, unpatched, known vulnerability, but contained: not critical"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "lang": "en",
+    "expect": "INFORMATIONAL",
+    "text": "The system is compliant with the checked baseline items. No action required. All controls verified successfully.",
+    "note": "compliant plus no action required plus verified"
+  },
+  {
+    "lang": "fr",
+    "expect": "INFORMATIONAL",
+    "text": "Le systeme est conforme aux points verifies. Aucune action requise. Controle effectue.",
+    "note": "FR informational"
+  }
+]

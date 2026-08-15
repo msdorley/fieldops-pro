@@ -1,0 +1,20 @@
+[
+  {
+    "lang": "en",
+    "expect": "ADVISORY",
+    "text": "It is recommended to review the local firewall profile and consider enabling additional hardening on outbound rules as a best practice.",
+    "note": "recommended, consider, best practice: the advisory vocabulary"
+  },
+  {
+    "lang": "fr",
+    "expect": "ADVISORY",
+    "text": "Il est recommande d'examiner le profil du pare-feu local et d'envisager un durcissement complementaire.",
+    "note": "FR advisory"
+  },
+  {
+    "lang": "en",
+    "expect": "ADVISORY",
+    "text": "The audit policy could be strengthened. Consider enabling command-line process auditing to improve visibility; monitor the change over the next review cycle.",
+    "note": "hard: dense security vocabulary carrying only an advisory signal"
+  }
+]
