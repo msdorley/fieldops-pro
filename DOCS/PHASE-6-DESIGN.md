@@ -973,7 +973,12 @@ schemaVersion: "1.0"
 ---
 ```
 
-Initial Phase 6.5 set: 20 playbooks covering highest-frequency remediations.
+Initial Phase 6.5 set: **10 playbooks** covering highest-frequency remediations
+-- BitLocker (3), firewall (2), credentials (2), Windows Update (2),
+anti-malware (1). Reduced from the originally specified 20 under Risk-8, in
+favour of depth per playbook; see the amendment note under 6.5.5. Categories were
+chosen on observed endpoint frequency rather than derived from the ANSSI rule
+list, so the set is weighted toward what recurs in the field.
 
 ### 6.5.4.8 Retry Policy
 
@@ -1012,19 +1017,55 @@ Rotation at 10 MB or monthly, whichever first. Online retention 12 months, archi
 | 6.5-D2 | Audit record JSON Schema | `schemas/ai-audit-record.json` |
 | 6.5-D3 | Severity keywords config | `CONFIG/AISeverityKeywords.json` |
 | 6.5-D4 | Model pricing config | `CONFIG/AIModelPricing.json` |
-| 6.5-D5 | Playbook schema | `PLAYBOOKS/SCHEMA.md` + `schemas/playbook-frontmatter.json` |
-| 6.5-D6 | Initial playbook set (~20) | `PLAYBOOKS/RB-*.md` |
-| 6.5-D7 | Refactored Invoke-ComplianceDiff | `SCRIPTS/Compliance/Invoke-ComplianceDiff.ps1` |
-| 6.5-D8 | Refactored Invoke-AutoFix | `SCRIPTS/Self-Healing/Invoke-AutoFix.ps1` |
+| 6.5-D5 | Playbook schema | `PLAYBOOKS/remediation/SCHEMA.md` + `schemas/playbook-frontmatter.json` |
+| 6.5-D6 | Initial playbook set (10) | `PLAYBOOKS/remediation/RB-*.md` |
+| 6.5-D7 | Refactored Invoke-ComplianceDiff | `SCRIPTS/Core/Invoke-ComplianceDiff.ps1` |
+| 6.5-D8 | Refactored Invoke-AutoFix | *(satisfied -- see note below)* |
 | 6.5-D9 | AI client unit tests | `tests/unit/AI/FieldOps-AIClient.Tests.ps1` |
-| 6.5-D10 | Severity classifier tests | `tests/unit/AI/SeverityClassifier.Tests.ps1` |
-| 6.5-D11 | Cost ceiling tests | `tests/unit/AI/CostCeilingEnforcement.Tests.ps1` |
+| 6.5-D10 | Severity classifier tests | `tests/unit/AI/AISeverity.Tests.ps1` |
+| 6.5-D11 | Cost ceiling tests | `tests/unit/AI/FieldOps-AIClient.Tests.ps1` |
 | 6.5-D12 | Audit-NoDirectAnthropicCalls | `tests/audit/Audit-NoDirectAnthropicCalls.Tests.ps1` |
 | 6.5-D13 | Audit-NoApiKeyInLogs | `tests/audit/Audit-NoApiKeyInLogs.Tests.ps1` |
-| 6.5-D14 | AI pricing freshness test | `tests/audit/Test-AIModelPricingFreshness.Tests.ps1` |
+| 6.5-D14 | AI pricing freshness test | `tests/audit/AIModelPricing.Audit.Tests.ps1` |
 | 6.5-D15 | Mocked API fixtures | `tests/fixtures/ai/` |
 | 6.5-D16 | Labeled severity fixtures | `tests/fixtures/ai/severity-labeled/` |
-| 6.5-D17 | AI integration guide | `docs/AI-INTEGRATION.md` |
+| 6.5-D17 | AI integration guide | `DOCS/AI-INTEGRATION.md` |
+
+### Amendments applied during execution
+
+This table was reconciled against the delivered tree on 3 August 2026. A
+specification that no longer describes what was built stops being authoritative,
+and the RB-AUDIT contradiction corrected in PR6a showed what that costs. The
+changes:
+
+- **D5 / D6 paths.** Remediation playbooks live at `PLAYBOOKS/remediation/`, not
+  `PLAYBOOKS/` directly. The parent belongs to `Invoke-Playbook.ps1`, which
+  enumerates multi-engine workflow JSON there and rewrites those files on first
+  run; mixing two unrelated concepts in one listing forces every reader to be
+  told which is which.
+
+- **D6 count, and SC-7.** Ten playbooks, not twenty. Risk-8 anticipated this and
+  permits the reduction; it was taken in favour of depth per playbook -- each
+  carries a "when NOT to use this" section and a root-cause section for when the
+  fix does not hold, which is what separates a playbook from a snippet. SC-7
+  amended from `>= 20` to `>= 10` to match. Further playbooks are additive and
+  need no further amendment.
+
+- **D7 path.** `Invoke-ComplianceDiff.ps1` is in `SCRIPTS/Core/`, not
+  `SCRIPTS/Compliance/`.
+
+- **D8 satisfied as written is not achievable.** `Invoke-AutoFix.ps1` contains no
+  Anthropic call sites -- there is nothing to reroute through the client. The
+  deliverable's intent, that no deployed script bypasses the AI client, is
+  discharged by D12's audit test, which asserts exactly one file in the tree owns
+  the transport. Marked satisfied rather than inventing work to justify a row.
+
+- **D10, D11, D14 paths.** Test filenames differ from the specification.
+  Cost-ceiling tests (D11) live inside `FieldOps-AIClient.Tests.ps1` under a
+  `[D11]` describe block rather than a standalone file; splitting them would move
+  code without adding coverage.
+
+- **D17 path case.** `DOCS/`, matching the repository convention.
 
 ## 6.5.6 Risks
 
@@ -1037,7 +1078,7 @@ Rotation at 10 MB or monthly, whichever first. Online retention 12 months, archi
 | 6.5-Risk-5 | Playbook drift from real remediation reality | Medium | Update process documented |
 | 6.5-Risk-6 | API key exposure in logs/errors | Critical | Audit test scans for `sk-ant-`; multiple defense layers |
 | 6.5-Risk-7 | Opus 4.7 tokenizer migration cost surprise | Medium | `tokenizerVariant` field; benchmark before migration |
-| 6.5-Risk-8 | 20 playbooks exceeds estimate | Medium | Reduce to 10 if 6.5 trends to overrun |
+| 6.5-Risk-8 | 20 playbooks exceeds estimate | Medium | **Realised.** Reduced to 10; SC-7 amended to match |
 | 6.5-Risk-9 | Graceful degradation untested across call sites | Medium | Refactor explicitly includes fallback paths |
 
 ## 6.5.7 Dependencies
@@ -1055,7 +1096,7 @@ Rotation at 10 MB or monthly, whichever first. Online retention 12 months, archi
 | 6.5-SC-4 | Audit record schema validates | JSON Schema validation |
 | 6.5-SC-5 | Severity classifier accurate on >= 10 labeled fixtures, <= 10% misclassification | Labeled fixture test |
 | 6.5-SC-6 | `Audit-NoApiKeyInLogs` passes (zero `sk-ant-` in any log) | Audit test pass |
-| 6.5-SC-7 | >= 20 playbooks, each schema-conformant | Playbook validator |
+| 6.5-SC-7 | >= 10 playbooks, each schema-conformant | Playbook validator |
 | 6.5-SC-8 | Graceful degradation: with API key removed, every AI-using script still completes | Manual scenario test |
 | 6.5-SC-9 | Tiered model selection produces measurable cost difference vs uniform-Opus | Cost calculation test |
 | 6.5-SC-10 | Pricing freshness test passes (snapshot < 90 days) | Audit test pass |
@@ -1074,7 +1115,7 @@ Rotation at 10 MB or monthly, whichever first. Online retention 12 months, archi
 | Model pricing config + freshness test + tokenizer-variant handling | 1 |
 | Refactor Invoke-ComplianceDiff | 2 |
 | Refactor Invoke-AutoFix | 2 |
-| 20 playbooks (drafting + mapping + validation) | 5 |
+| 10 playbooks (drafting + mapping + validation) | 5 |
 | Unit tests for AI client (mocked) | 3 |
 | Severity classifier tests with labeled fixtures | 2 |
 | Prompt caching integration | 1 |
@@ -2581,7 +2622,7 @@ Deferrable if overrun: ARCHITECTURE.md (brief overview, expand Phase 7); externa
 | 6.5-Risk-5 | 6.5 | Playbook drift from reality | Medium | Update process documented |
 | 6.5-Risk-6 | 6.5 | API key leak | Critical | Audit-NoApiKeyInLogs test, code review |
 | 6.5-Risk-7 | 6.5 | Opus 4.7 tokenizer migration cost surprise | Medium | tokenizerVariant field, benchmark before migration |
-| 6.5-Risk-8 | 6.5 | 20 playbooks effort exceeds estimate | Medium | Reduce to 10 if 6.5 trends overrun |
+| 6.5-Risk-8 | 6.5 | 20 playbooks effort exceeds estimate | Medium | **Realised.** Reduced to 10; SC-7 amended |
 | 6.5-Risk-9 | 6.5 | Graceful degradation untested across call sites | Medium | Refactor explicitly includes fallback paths |
 | 6.2-Risk-1 | 6.2 | Framework interpretation requires legal expertise | High | Confidence rating field, primary-authority citations |
 | 6.2-Risk-2 | 6.2 | Framework versions drift | Medium | Version pinning, Phase 7 tracking |
