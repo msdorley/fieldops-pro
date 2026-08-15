@@ -1,8 +1,16 @@
 # Remediation Playbook Schema
 
-Authoring contract for `PLAYBOOKS/RB-*.md`. The machine-readable version is
-[`schemas/playbook-frontmatter.json`](../schemas/playbook-frontmatter.json);
+Authoring contract for `PLAYBOOKS/remediation/RB-*.md`. The machine-readable
+version is [`schemas/playbook-frontmatter.json`](../../schemas/playbook-frontmatter.json);
 this document explains the reasoning the schema cannot carry.
+
+> **Why `remediation/` and not `PLAYBOOKS/` directly.** The parent directory
+> belongs to `Invoke-Playbook.ps1`, which enumerates `*.json` multi-engine
+> workflows there and rewrites them on first run. Those are a different concept
+> with a different consumer. They do not collide functionally -- one glob is
+> `*.json`, the other `*.md` -- but a directory listing that mixes them forces
+> every reader to be told which is which, and the design doc path was amended
+> to match.
 
 FieldOps Pro - Phase 6, Stream 6.5 (6.5-D5, 6.5-R8)
 

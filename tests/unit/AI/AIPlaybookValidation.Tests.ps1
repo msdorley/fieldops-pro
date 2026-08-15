@@ -197,7 +197,7 @@ Describe 'Front matter parsing is fail-closed' -Tag 'Fast' {
 Describe 'Conformance checks' -Tag 'Fast' {
 
     It 'accepts the reference playbook shipped in the repo' {
-        $dir = Join-Path $script:RepoRoot 'PLAYBOOKS'
+        $dir = Join-Path $script:RepoRoot 'PLAYBOOKS\remediation'
         $r = InModuleScope 'FieldOps-AIClient' -Parameters @{ D = $dir } {
             param($D)
             Test-AIPlaybookReference -PlaybookId 'RB-AV-001' -PlaybookDir $D
@@ -284,6 +284,77 @@ Describe 'Conformance checks' -Tag 'Fast' {
 }
 
 # ==============================================================================
+Describe 'Every shipped playbook conforms (6.5-D6, 6.5-SC-7)' -Tag 'Fast' {
+
+    BeforeAll {
+        $script:PbRoot = Join-Path $script:RepoRoot 'PLAYBOOKS\remediation'
+        $script:PbFiles = @(Get-ChildItem -Path $script:PbRoot -Filter 'RB-*.md' -File -ErrorAction SilentlyContinue)
+    }
+
+    It 'ships the agreed initial set' {
+        # Design Risk-8 permits reducing the specified 20 to 10; 10 was chosen,
+        # in favour of depth per playbook. SC-7 amended to match.
+        $script:PbFiles.Count | Should -BeGreaterOrEqual 10
+    }
+
+    It 'every playbook in the tree resolves and conforms' {
+        # This is the test that matters operationally. Without it, validation is
+        # only ever exercised against the one example playbook, and a malformed
+        # file added later fails silently in front of a technician instead of
+        # loudly in CI.
+        $failures = @()
+        foreach ($f in $script:PbFiles) {
+            $id = $f.BaseName
+            $r = InModuleScope 'FieldOps-AIClient' -Parameters @{ I = $id; D = $script:PbRoot } {
+                param($I, $D)
+                Test-AIPlaybookReference -PlaybookId $I -PlaybookDir $D
+            }
+            if (-not $r.Valid) { $failures += "$($f.Name): $($r.Reason)" }
+        }
+        if ($failures.Count -gt 0) {
+            Write-Host "  Non-conformant playbooks:"
+            $failures | ForEach-Object { Write-Host "    $_" }
+        }
+        $failures.Count | Should -Be 0
+    }
+
+    It 'every filename stem is a well-formed playbook id' {
+        $pattern = InModuleScope 'FieldOps-AIClient' { $script:PlaybookIdPattern }
+        foreach ($f in $script:PbFiles) {
+            $f.BaseName | Should -Match $pattern -Because "$($f.Name) must be named for its id"
+        }
+    }
+
+    It 'allocates no duplicate ids' {
+        # Ids are permanent and referenced by audit records indefinitely, so a
+        # collision would make historical records ambiguous.
+        $ids = @($script:PbFiles | ForEach-Object { $_.BaseName })
+        ($ids | Sort-Object -Unique).Count | Should -Be $ids.Count
+    }
+
+    It 'declares only categories the schema permits' {
+        $cats = InModuleScope 'FieldOps-AIClient' { $script:PlaybookCategories }
+        foreach ($f in $script:PbFiles) {
+            $seg = ($f.BaseName -split '-')[1]
+            $cats | Should -Contain $seg -Because "$($f.Name) uses category segment '$seg'"
+        }
+    }
+
+    It 'keeps the authoring guide beside the playbooks it governs' {
+        Test-Path (Join-Path $script:PbRoot 'SCHEMA.md') | Should -BeTrue
+    }
+
+    It 'does not sit in the directory owned by Invoke-Playbook' {
+        # PLAYBOOKS\ belongs to the *.json multi-engine workflows, which
+        # Invoke-Playbook.ps1 enumerates and rewrites on first run. Remediation
+        # playbooks living there would share a listing with unrelated files.
+        $parent = Join-Path $script:RepoRoot 'PLAYBOOKS'
+        @(Get-ChildItem -Path $parent -Filter 'RB-*.md' -File -ErrorAction SilentlyContinue).Count |
+            Should -Be 0
+    }
+}
+
+# ==============================================================================
 Describe 'Schema and validator cannot drift apart' -Tag 'Fast' {
 
     It 'enforces exactly the required set published in the JSON Schema' {
@@ -325,7 +396,7 @@ Describe 'Schema and validator cannot drift apart' -Tag 'Fast' {
 Describe 'PlaybookValid is three-state on the result object (6.5-R8)' -Tag 'Fast' {
 
     BeforeAll {
-        $script:PbDir = Join-Path $script:RepoRoot 'PLAYBOOKS'
+        $script:PbDir = Join-Path $script:RepoRoot 'PLAYBOOKS\remediation'
     }
 
     It 'leaves PlaybookRef and PlaybookValid null when the caller does not ask' {

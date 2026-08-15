@@ -1244,7 +1244,12 @@ function Resolve-AIPlaybookRoot {
     if (-not $PSScriptRoot) { return '' }
     # SCRIPTS\AI -> SCRIPTS -> repo root
     $repoRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-    return (Join-Path $repoRoot 'PLAYBOOKS')
+    # PLAYBOOKS\remediation, not PLAYBOOKS\. The parent directory is owned by
+    # Invoke-Playbook.ps1, which enumerates *.json workflows there and rewrites
+    # them on first run. Remediation playbooks are a different concept with a
+    # different consumer, so they get their own subtree rather than sharing a
+    # listing with files that happen to sit beside them.
+    return (Join-Path $repoRoot 'PLAYBOOKS\remediation')
 }
 
 function Get-AIPlaybookReference {
