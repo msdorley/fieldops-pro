@@ -24,7 +24,7 @@ Phase 6. Four streams: test infrastructure, localisation completion, AI
 integration, and licensing and documentation. The release turns a working
 toolkit into a product that can be handed to someone else.
 
-650 tests, no network, no API key.
+661 tests, no network, no API key.
 
 ### Added
 
