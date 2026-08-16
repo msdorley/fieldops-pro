@@ -1,123 +1,203 @@
-﻿# FieldOps Pro - ANSSI Pipeline v0.2 (Phase 1+2+3)
+# FieldOps Pro
 
-**Date** : 13 mai 2026
-**Status** : End-to-end pipeline drafted, Python-tested, awaiting Windows deployment.
+A portable Windows diagnostic and ANSSI compliance toolkit that runs from a USB
+stick. Nothing is installed on the machine being examined.
+
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![PowerShell](https://img.shields.io/badge/PowerShell-5.1-blue.svg)](#requirements)
+[![Tests](https://img.shields.io/badge/tests-650%20passing-brightgreen.svg)](DOCS/TESTING.md)
+
+FieldOps Pro evaluates a Windows machine against the **42 rules of the ANSSI
+*Guide d'hygiene informatique*** and produces a signed, bilingual report that
+distinguishes what was verified from what could not be.
+
+It runs air-gapped, installs nothing, and works on any hardware.
 
 ---
 
-## What's new vs v0.1
+## The part that matters
 
-The POC could render a PDF from hand-curated JSON. This version adds the two
-pieces that produce that JSON automatically:
+Most compliance tools report pass or fail. FieldOps Pro reports three outcomes,
+and the third one is the reason to use it.
 
-1. **`Apply-JsonSidecarPatch.ps1`** - patches SecurityScan and NetRepair so they
-   emit JSON to `LOGS\` alongside their HTML reports (PCHealth already does).
-2. **`Build-ANSSIData.ps1`** - reads the four engine JSONs from `LOGS\` and
-   produces `report-data.json` mapping observed facts to all 42 ANSSI rules.
+| Status | Meaning |
+|--------|---------|
+| **cv** -- *conforme verifie* | The control is in place and the toolkit observed it directly |
+| **pv** -- *partiellement verifie* | Evidence is incomplete: the probe could not run, the hardware is absent, or the rule needs human judgement |
+| **hp** -- *hors perimetre* | Outside what an endpoint scan can assess -- staff training, HR procedure, physical security |
 
-Plus the original POC renderer (`Invoke-ANSSIDiagnostic-POC.ps1`) is unchanged
-and reads the production-shaped JSON without modification.
+A machine with no TPM **cannot** demonstrate hardware-backed authentication.
+Reporting that as a pass is false. Reporting it as a failure implies a defect
+that is not there.
 
-## Deployment - 5 steps on your Windows machine
+An auditor needs to know which rules were actually verified and which were not.
+A report that cannot make that distinction is not evidence, and the toolkit
+never reports a control as satisfied on the basis that its probe returned
+nothing.
 
-```powershell
-# 1. Unzip into your dev tree
-Expand-Archive -Path C:\Users\<you>\Desktop\fieldops-anssi-v02.zip `
-               -DestinationPath C:\Dev\fieldops-pro -Force
+---
 
-# 2. Patch the two engines (idempotent - safe to re-run)
-cd C:\Dev\fieldops-pro
-.\Apply-JsonSidecarPatch.ps1
-
-# 3. Run each engine once to generate fresh JSON in LOGS\
-.\SCRIPTS\Security\Invoke-SecurityScan.ps1
-.\SCRIPTS\Health\Invoke-PCHealth.ps1
-.\SCRIPTS\Network\Invoke-NetRepair.ps1
-
-# 4. Collect engine data into ANSSI-shaped JSON
-.\SCRIPTS\Compliance\Build-ANSSIData.ps1
-
-# 5. Render the PDF
-.\SCRIPTS\Compliance\Invoke-ANSSIDiagnostic-POC.ps1 -OpenAfter `
-   -DataFile C:\Dev\fieldops-pro\REPORTS\report-data.json
-```
-
-## Files in this package
-
-```
-Apply-JsonSidecarPatch.ps1              <- run once to patch engines
-SCRIPTS\Compliance\
-  Build-ANSSIData.ps1                   <- the collector (42 rule evaluators)
-  Invoke-ANSSIDiagnostic-POC.ps1        <- the renderer (unchanged from POC)
-  report-data.sample.json               <- hand-curated sample (fallback)
-SCRIPTS\Templates\
-  anssi-diagnostic.html                 <- the HTML template
-README.md                               <- this file
-```
-
-The patches create `.jsonpatch.bak` files alongside the engines for rollback.
-
-## What the collector decides (mapping philosophy)
-
-Pragmatic philosophy: **CV requires full Standard-level evidence**, PV means
-partial coverage with caveats, HP means literally not observable from this
-position. The collector reports actual machine state, not max-possible coverage.
-
-Expected counts on a typical machine: **CV=12-13, PV=13-14, HP=16**.
-
-The actual number floats with machine state - if BitLocker is partial, R31
-correctly drops from CV to PV. This is desirable behaviour, not a bug. The
-verdict on the cover page reflects the truth, not a target.
-
-## Validated in sandbox before shipping
-
-Python equivalent of the entire pipeline was run against synthetic engine
-JSONs simulating a sample workstation:
-
-- Engine JSON read: OK
-- All 42 rules evaluated: OK
-- Output shape matches sample JSON: OK
-- Final counts: CV=12 PV=14 HP=16 (1 less CV than max because the test machine
-  has 2 unencrypted volumes - R31 conservative drop)
-- Top findings: R31 (1/3 volumes), R34 (3 update failures), R35 (2 obsolete
-  drivers) - all concrete numeric problems, no generic PV fallbacks needed
-
-## What's still expected to surface on first Windows run
-
-Realistic expectations - the first end-to-end on your real machine will
-probably trip on 3-5 small issues. Most likely candidates:
-
-1. **PCHealth category names** - the collector assumes 'System', 'Security',
-   'Storage', 'Drivers', 'Updates'. If PCHealth uses different category
-   strings, some rules will return PV when they should be CV.
-2. **SecurityScan category names** - I assumed 'Identity', 'NetSec',
-   'Defender', 'Encryption', 'WinSec', 'PSSecurity', 'Surface', 'PrivEsc',
-   'Firmware'.
-3. **NetRepair category names** - 'Firewall', 'WiFi', 'VPN', 'Proxy'.
-4. **Edge headless path** - the renderer auto-detects but if Edge is in an
-   unusual location it falls back to wkhtmltopdf (also auto-detected).
-
-Send any error output and we patch quickly. The collector is error-tolerant -
-missing data shows up as PV with explanatory text, not a crash.
-
-## What's intentionally NOT done yet
-
-- **No launcher menu entry** - production wiring (the `[A] Diagnostic ANSSI`
-  menu item, post-op prompt flow) comes after the first successful real-data run.
-- **No EN locale** - FR only.
-- **No customer branding parameters** - logo, MSP name, contact info still
-  hardcoded placeholders.
-- **No real PDF signing** - SHA-256 hash only.
-- **7 known gaps still open** (G1-G7) - closing G1 (local password policy) and
-  G2 (autorun detection) would push R10 and R14 from PV/limited-CV to full CV.
-  ~6h of work, parked until after the first real PDF prints correctly.
-
-## Rollback
+## Quick start
 
 ```powershell
-# To undo the engine patches:
-Copy-Item C:\Dev\fieldops-pro\SCRIPTS\Security\Invoke-SecurityScan.ps1.jsonpatch.bak `
-          C:\Dev\fieldops-pro\SCRIPTS\Security\Invoke-SecurityScan.ps1 -Force
-Copy-Item C:\Dev\fieldops-pro\SCRIPTS\Network\Invoke-NetRepair.ps1.jsonpatch.bak `
-          C:\Dev\fieldops-pro\SCRIPTS\Network\Invoke-NetRepair.ps1 -Force
+# 1. Extract the release to a USB stick
+Expand-Archive .\fieldops-pro-v0.6.0.zip -DestinationPath E:\ -Force
+
+# 2. Verify the deployment before trusting it in the field
+E:\SCRIPTS\Core\Test-Installation.ps1
+
+# 3. Run
+powershell.exe -ExecutionPolicy Bypass -File E:\SCRIPTS\FieldOps-Launcher.ps1
 ```
+
+`Test-Installation.ps1` reports **READY** or names exactly what is wrong. Run it
+on any stick that was copied from another stick -- see
+[why](DOCS/INSTALL.md#9-when-something-does-not-work).
+
+Full instructions: **[DOCS/INSTALL.md](DOCS/INSTALL.md)**
+
+---
+
+## What it does
+
+**Compliance reporting.** The 42 ANSSI rules, evaluated from observed system
+state, rendered to a signed HTML report in French or English. Each report embeds
+a SHA-256 of its own delivered bytes.
+
+**Snapshot and diff.** Capture the machine before your work and after, across 16
+categories -- services, registry, scheduled tasks, firewall, users, software,
+listening ports, certificates, startup items, SMB shares, BitLocker, Defender,
+WMI persistence, hosts file, environment, drivers. Changes are classified,
+mapped to MITRE ATT&CK techniques where they match a known pattern, and a
+rollback script is generated.
+
+*This is the tool that proves an intervention did what it claimed -- and, more
+usefully, that it did nothing else.*
+
+**Diagnostics.** PC health, network, security posture, disk and SMART. Each
+writes a report for a human and a JSON sidecar the compliance engine consumes.
+
+**Remediation.** Guided fixes with confirmation at every step, plus a
+plan-before-execute mode that produces a risk analysis first and records the
+decision trail -- for a machine you do not own, or one you will need to explain
+afterwards.
+
+**Fleet reporting.** Rolls up 90 days across every machine on the stick, which
+is how a recurring fault becomes visible when each machine looked unremarkable.
+
+Full tour: **[DOCS/USING.md](DOCS/USING.md)**
+
+---
+
+## Requirements
+
+| | |
+|---|---|
+| **OS** | Windows 10 or 11, any edition |
+| **PowerShell** | 5.1 -- ships with Windows. **PowerShell 7 is not required and not used** |
+| **Rights** | Administrator for most diagnostics |
+| **Network** | **Not required.** Every core function works air-gapped |
+| **Hardware** | Any Windows PC. Probes that cannot answer degrade rather than guess |
+
+Nothing to install. No .NET, no Python, no runtime, no agent, no service.
+
+---
+
+## Optional: AI assistance
+
+With an API key configured, findings are narrated, ranked by severity, and
+matched to remediation procedures.
+
+**No feature requires it.** Every AI call site has a deterministic local path and
+takes it on any failure -- no key, refused on cost, rate limited, malformed
+response.
+
+**The AI never decides compliance.** All 42 evaluations are computed from
+observed state by deterministic code. The model describes and prioritises; it
+does not score.
+
+Cost ceilings are enforced before the network is touched, and every call is
+recorded to an audit log an auditor can verify independently.
+
+Details, including what is transmitted and what is not:
+**[DOCS/AI-INTEGRATION.md](DOCS/AI-INTEGRATION.md)**
+
+---
+
+## Quality
+
+650 tests, no network, no API key, roughly a minute.
+
+- **Branch coverage** over every decision path in the computed evaluators
+- **Property tests** throwing 200 randomised adversarial inputs at each evaluator, asserting it never throws, always returns a valid status, and is deterministic
+- **Repository audits** enforcing ASCII source, no BOM, exactly 42 evaluators, no hardcoded machine paths, licence headers, no direct provider calls, no API key in any log
+- **Locale parity** -- neither language may have a key the other lacks
+
+Several tests exist specifically to stop a green suite from proving nothing. A
+fixture set that fails to load makes every assertion over it pass vacuously, so
+the suites assert their own inputs are non-empty before checking them. That
+guard has caught a real failure.
+
+**[DOCS/TESTING.md](DOCS/TESTING.md)**
+
+---
+
+## Documentation
+
+| Document | For |
+|----------|-----|
+| [INSTALL.md](DOCS/INSTALL.md) | Deploying and configuring a stick |
+| [USING.md](DOCS/USING.md) | What each tool does and when to use it |
+| [ARCHITECTURE.md](DOCS/ARCHITECTURE.md) | How it fits together, and why |
+| [EXTENDING.md](DOCS/EXTENDING.md) | Adding engines, rules, playbooks, languages |
+| [AI-INTEGRATION.md](DOCS/AI-INTEGRATION.md) | The AI contract in detail |
+| [TESTING.md](DOCS/TESTING.md) | Test suite reference |
+| [CHANGELOG.md](CHANGELOG.md) | What changed, including what broke |
+| [VERSIONING.md](VERSIONING.md) | What the version number covers |
+
+---
+
+## What is deliberately absent
+
+**No database.** State is files a technician can read, diff and email.
+
+**No agent or service.** Nothing persists on the target machine.
+
+**No telemetry.** Nothing is transmitted anywhere unless AI is explicitly
+enabled, and that path is documented and audited.
+
+**No auto-remediation without confirmation.** Every change asks.
+
+---
+
+## What this is not
+
+**Not ANSSI certified or endorsed.** FieldOps Pro implements an assessment
+against a published ANSSI guide. It is not affiliated with or approved by ANSSI
+-- see [NOTICE](NOTICE).
+
+**It does not guarantee compliance.** It evaluates and reports. Compliance
+remains the operator's, and depends on rules no endpoint scan can assess.
+
+**The report signature is not tamper-proofing.** It is a correspondence check
+between a report and its content. Someone who regenerates the report regenerates
+the hash.
+
+---
+
+## Licence
+
+Apache License 2.0 -- see [LICENSE](LICENSE) and [NOTICE](NOTICE).
+
+Apache 2.0 carries an express patent grant and a trademark reservation. The code
+may be used and forked; the name may not be reused to present a fork as this
+product.
+
+---
+
+## Status
+
+**v0.6.0**, pre-1.0. The schemas, status vocabulary, script parameters and
+directory layout are treated as a public contract and versioned accordingly,
+even though `0.x` under SemVer would permit otherwise -- see
+[VERSIONING.md](VERSIONING.md).
