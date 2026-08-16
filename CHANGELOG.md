@@ -12,11 +12,19 @@ only lists additions is a marketing document.
 
 ---
 
-## [Unreleased] - v0.6.0
+## [Unreleased]
+
+Nothing yet.
+
+---
+
+## [0.6.0] - 2026-08-16
 
 Phase 6. Four streams: test infrastructure, localisation completion, AI
 integration, and licensing and documentation. The release turns a working
 toolkit into a product that can be handed to someone else.
+
+650 tests, no network, no API key.
 
 ### Added
 
@@ -78,6 +86,14 @@ toolkit into a product that can be handed to someone else.
 - `SCRIPTS/Core/Test-Installation.ps1` -- verifies a deployed stick before it is
   trusted in the field (#36)
 - `DOCS/ARCHITECTURE.md` and `DOCS/EXTENDING.md` (#37)
+- `CHANGELOG.md`, `VERSIONING.md`, `RELEASE.md` and `BRAND.md` (#38)
+- `TOOLS/New-DemoFleet.ps1` -- six synthetic machines for demos and screenshots,
+  reproducible from a fixed seed, with an audit asserting no real hostname,
+  username or serial reaches an artifact (#39)
+- `README.md`, rewritten from scratch. The previous one predated Phase 6 and
+  documented a workflow that no longer existed (#40)
+- `COMMERCIAL-LICENSING.md` -- a brief for counsel and the open-core boundary,
+  deliberately not a licence (#41)
 
 ### Changed
 
@@ -111,6 +127,10 @@ toolkit into a product that can be handed to someone else.
 - Pre-commit hook wrote its own file with a BOM, tripping the audit it was meant
   to enforce (#7)
 - Test scoping leaked state between files (#6)
+- **The shipped report sample named a real person as the technician** who ran a
+  compliance scan, in a file that deploys to the stick and that a customer
+  reads. A deliberate anonymisation pass in May had missed it; the audit added
+  alongside the demo fleet caught it (#39)
 
 ### Security
 
@@ -171,6 +191,7 @@ Initial release.
 
 ---
 
-[Unreleased]: https://github.com/msdorley/fieldops-pro/compare/v0.5.2...HEAD
+[Unreleased]: https://github.com/msdorley/fieldops-pro/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/msdorley/fieldops-pro/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/msdorley/fieldops-pro/releases/tag/v0.5.2
 [0.4.1]: https://github.com/msdorley/fieldops-pro/releases/tag/v0.4.1
