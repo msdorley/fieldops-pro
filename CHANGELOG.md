@@ -131,6 +131,16 @@ toolkit into a product that can be handed to someone else.
   compliance scan, in a file that deploys to the stick and that a customer
   reads. A deliberate anonymisation pass in May had missed it; the audit added
   alongside the demo fleet caught it (#39)
+- **The installation self-test reported a correct, freshly extracted release as
+  "usable, with caveats"** because `technician.json` was absent -- which
+  `INSTALL.md` documents as optional and supported. Every customer's first run
+  would have shown a warning on a perfectly good stick. Caught by verifying the
+  built artifact rather than the working tree, which is why `RELEASE.md`
+  requires it
+- The self-test's AI configuration line was reported only when a config file
+  existed, so a stick without one printed nothing about AI at all -- even with
+  `ANTHROPIC_API_KEY` set, which the config file does not govern. A check that
+  silently does not run is worse than one that reports the wrong thing
 
 ### Security
 

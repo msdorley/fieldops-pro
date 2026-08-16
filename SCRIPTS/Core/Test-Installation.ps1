@@ -243,29 +243,41 @@ foreach ($name in $cfgCandidates) {
     if (Test-Path -LiteralPath $p) { $cfgFound = $p; break }
 }
 
+$hasKey = $false
+
 if (-not $cfgFound) {
-    Add-Check 'Configuration' 'WARN' 'no technician.json found' `
-              'Reports will use defaults and the current Windows username. See DOCS/INSTALL.md.'
+    # Absent is a supported state, not a caveat. INSTALL.md says configuration
+    # is optional and the toolkit falls back to defaults, so warning here would
+    # downgrade every freshly extracted release to "usable, with caveats" --
+    # the same warning-fatigue defect that the tiered directory check exists to
+    # avoid. A warning every customer sees on a healthy stick teaches them to
+    # ignore warnings, and then they miss a real one.
+    Add-Check 'Configuration' 'OK' 'no technician.json; reports will use defaults'
 } else {
     try {
         $cfg = Get-Content -LiteralPath $cfgFound -Raw -Encoding UTF8 | ConvertFrom-Json
         Add-Check 'Configuration' 'OK' ("{0} parses" -f (Split-Path $cfgFound -Leaf))
 
         $names = @($cfg.PSObject.Properties.Name)
-        $hasKey = $false
         foreach ($a in @('AnthropicApiKey','AnthropicKey','ApiKey','ClaudeApiKey')) {
             if ($names -contains $a -and $cfg.$a) { $hasKey = $true; break }
-        }
-        if ($hasKey -or $env:ANTHROPIC_API_KEY) {
-            # Deliberately does not print, log or validate the key itself.
-            Add-Check 'AI configuration' 'OK' 'API key present; AI features available'
-        } else {
-            Add-Check 'AI configuration' 'OK' 'no API key; AI features off, local paths used'
         }
     } catch {
         Add-Check 'Configuration' 'FAIL' ("{0} does not parse as JSON" -f (Split-Path $cfgFound -Leaf)) `
                   'Fix the syntax, or delete the file to fall back to defaults.'
     }
+}
+
+# Reported unconditionally. This check previously sat inside the else branch,
+# so a stick with no config file printed no AI line at all -- even with
+# ANTHROPIC_API_KEY set, which is an independent source the file does not
+# govern. A check that silently does not run is worse than one that reports
+# the wrong thing, because nothing on screen says it was skipped.
+if ($hasKey -or $env:ANTHROPIC_API_KEY) {
+    # Deliberately does not print, log or validate the key itself.
+    Add-Check 'AI configuration' 'OK' 'API key present; AI features available'
+} else {
+    Add-Check 'AI configuration' 'OK' 'no API key; AI features off, local paths used'
 }
 
 # --------------------------------------------------------------------------
