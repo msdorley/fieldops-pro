@@ -10,6 +10,12 @@ No clause text appears here deliberately. A file that looks contract-shaped
 tends to reach a customer during a fast-moving deal, and a banner is a weak
 defence against that. Nothing in this repository should be signable.
 
+**This file is public on purpose.** It is a working brief and an unsettled
+position, and it stays visible for the same reason the report distinguishes
+`pv` from `cv`: a supplier who has not yet worked out where their liability
+sits should say so, rather than let a customer find out during a contract
+review.
+
 ---
 
 ## 1. Read this part first
