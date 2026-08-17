@@ -118,7 +118,7 @@ $selectedEngines = @($engineDefs | Where-Object { $_.Name -in $selectedNames })
 $bw = 64
 Write-Host ''
 Write-Host ('=' * $bw) -ForegroundColor White
-Write-Host '  FIELDOPS PRO -- AI-POWERED MASTER COMMAND CENTER v2.0' -ForegroundColor White
+Write-Host '  FIELDOPS PRO -- AI-POWERED MASTER COMMAND CENTER' -ForegroundColor White
 Write-Host ('=' * $bw) -ForegroundColor White
 Write-Host ''
 Write-Host "  Technician : $script:TechName$(if($script:TechId){" | $script:TechId"})" -ForegroundColor Cyan
@@ -457,7 +457,7 @@ Log-Action 'DONE' "$unifiedGrade ($adjustedPct%) | Risk: $riskLevel | Chains: $(
 # ============================================================
 Write-Host ''
 Write-Host ('=' * $bw) -ForegroundColor White
-Write-Host '  FIELDOPS PRO -- MASTER ASSESSMENT v2.0' -ForegroundColor White
+Write-Host '  FIELDOPS PRO -- MASTER ASSESSMENT' -ForegroundColor White
 Write-Host ('=' * $bw) -ForegroundColor White
 Write-Host ''
 Write-Host "  UNIFIED GRADE : $unifiedGrade ($adjustedPct%)$(if($chainPenalty -gt 0){" [raw ${unifiedPct}% - ${chainPenalty}pt penalty]"})" -ForegroundColor $(if($adjustedPct -ge 80){'Green'}elseif($adjustedPct -ge 60){'Yellow'}else{'Red'})

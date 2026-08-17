@@ -84,7 +84,7 @@ $DateHuman = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
 
 Write-Host ''
 Write-Host '============================================================' -ForegroundColor Magenta
-Write-Host '  FieldOps Pro - Enterprise Security Posture Engine v1.0' -ForegroundColor Magenta
+Write-Host '  FieldOps Pro - Enterprise Security Posture Engine' -ForegroundColor Magenta
 Write-Host "  Host: $Hostname | $DateHuman" -ForegroundColor Gray
 if (-not $script:IsAdmin) { Write-Host '  WARNING: Not running as Administrator. Some checks limited.' -ForegroundColor Yellow }
 Write-Host '============================================================' -ForegroundColor Magenta

@@ -300,7 +300,7 @@
                 },
     "launcher":  {
                      "banner":  {
-                                    "title":  "FIELDOPS PRO  v2.1    BOITE A OUTILS IT DE TERRAIN    DEPLOIEMENT EU"
+                                    "title":  "FIELDOPS PRO  {version}    BOITE A OUTILS IT DE TERRAIN    DEPLOIEMENT EU"
                                 },
                      "bar":  {
                                  "host":  "HOTE",
@@ -399,7 +399,7 @@
                  },
     "autofixplan":  {
                         "banner":  {
-                                       "title":  "FIELDOPS PRO  --  AUTOFIX  PLAN AVANT EXECUTION  v1.0"
+                                       "title":  "FIELDOPS PRO  --  AUTOFIX  PLAN AVANT EXECUTION"
                                    },
                         "bar":  {
                                     "host":  "Hote",

@@ -123,7 +123,7 @@ function Invoke-PCHealth {
     Clear-Host; nl
     cn '  +============================================================================+' Cyan
     cn '  |                                                                            |' Cyan
-    cn '  |     FIELDOPS PRO -- HARDWARE DIAGNOSTIC SUITE (PCHealth) v1.1              |' Cyan
+    cn '  |            FIELDOPS PRO -- HARDWARE DIAGNOSTIC SUITE (PCHealth)            |' Cyan
     cn '  |                                                                            |' Cyan
     cn '  +============================================================================+' Cyan
     nl

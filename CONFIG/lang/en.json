@@ -300,7 +300,7 @@
                 },
     "launcher":  {
                      "banner":  {
-                                    "title":  "FIELDOPS PRO  v2.1    ENTERPRISE FIELD IT TOOLKIT    EU DEPLOYMENT"
+                                    "title":  "FIELDOPS PRO  {version}    ENTERPRISE FIELD IT TOOLKIT    EU DEPLOYMENT"
                                 },
                      "bar":  {
                                  "host":  "HOST",
@@ -399,7 +399,7 @@
                  },
     "autofixplan":  {
                         "banner":  {
-                                       "title":  "FIELDOPS PRO  --  AUTOFIX  PLAN-BEFORE-EXECUTE  v1.0"
+                                       "title":  "FIELDOPS PRO  --  AUTOFIX  PLAN-BEFORE-EXECUTE"
                                    },
                         "bar":  {
                                     "host":  "Host",

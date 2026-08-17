@@ -551,7 +551,7 @@ $ModuleMeta = @(
 # ===========================================================================
 Write-Host ''
 Write-Host '  +----------------------------------------------------------------+' -ForegroundColor White
-Write-Host '  |  FIELDOPS PRO - ANSSI Data Collector v0.4                      |' -ForegroundColor White
+Write-Host '  |              FIELDOPS PRO - ANSSI Data Collector               |' -ForegroundColor White
 Write-Host '  +----------------------------------------------------------------+' -ForegroundColor White
 Write-Host ''
 Write-Step "LOGS dir   : $LogsDir"

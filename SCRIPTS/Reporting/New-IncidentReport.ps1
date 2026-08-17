@@ -103,7 +103,7 @@ try {
 # ============================================================
 Write-Host ''
 Write-Host '============================================================' -ForegroundColor White
-Write-Host '  FieldOps Pro - Incident Report Generator v1.0' -ForegroundColor White
+Write-Host '  FieldOps Pro - Incident Report Generator' -ForegroundColor White
 Write-Host '============================================================' -ForegroundColor White
 Write-Host ''
 Write-Host "  Technician : $($tech.Name)$(if($tech.EmployeeId){" | $($tech.EmployeeId)"})" -ForegroundColor Cyan

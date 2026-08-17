@@ -176,7 +176,7 @@ function _Banner {
     # Top rule
     Write-Host ('  +' + ('-' * $W) + '+') -ForegroundColor Cyan
     # Title
-    $title = (L 'autofixplan.banner.title' 'FIELDOPS PRO  --  AUTOFIX  PLAN-BEFORE-EXECUTE  v1.0')
+    $title = (L 'autofixplan.banner.title' 'FIELDOPS PRO  --  AUTOFIX  PLAN-BEFORE-EXECUTE')
     if ($title.Length -gt $W) { $title = $title.Substring(0, $W - 1) + '~' }
     Write-Host ('  |' + $title.PadRight($W) + '|') -ForegroundColor Cyan
     Write-Host ('  +' + ('-' * $W) + '+') -ForegroundColor Cyan

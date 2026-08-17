@@ -137,7 +137,7 @@ $DateHuman = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
 
 Write-Host ''
 Write-Host '============================================================' -ForegroundColor Cyan
-Write-Host '  FieldOps Pro - Disk Analysis Engine v3.0' -ForegroundColor Cyan
+Write-Host '  FieldOps Pro - Disk Analysis Engine' -ForegroundColor Cyan
 Write-Host "  Host: $Hostname | $DateHuman" -ForegroundColor Gray
 Write-Host '============================================================' -ForegroundColor Cyan
 Write-Host ''

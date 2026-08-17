@@ -243,7 +243,7 @@ $script:FixRules = @(
 # ============================================================
 Write-Host ''
 Write-Host ('=' * 64) -ForegroundColor Green
-Write-Host '  FIELDOPS PRO -- UNIVERSAL SELF-HEALING ENGINE v2.0' -ForegroundColor Green
+Write-Host '  FIELDOPS PRO -- UNIVERSAL SELF-HEALING ENGINE' -ForegroundColor Green
 Write-Host ('=' * 64) -ForegroundColor Green
 Write-Host ''
 Write-Host "  Host     : $Hostname | Tech: $script:TechName" -ForegroundColor Gray
