@@ -111,8 +111,9 @@ git clone --depth 1 --branch $ver . $stage
 Remove-Item "$stage\.git" -Recurse -Force
 
 # The stick does not need the test suite or the developer tooling.
-Remove-Item "$stage\tests"   -Recurse -Force -ErrorAction SilentlyContinue
-Remove-Item "$stage\schemas" -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "$stage\tests"           -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "$stage\schemas"         -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item "$stage\SCRIPTS\Archive" -Recurse -Force -ErrorAction SilentlyContinue
 
 Compress-Archive -Path "$stage\*" -DestinationPath ".\fieldops-pro-$ver.zip" -Force
 ```
@@ -120,6 +121,16 @@ Compress-Archive -Path "$stage\*" -DestinationPath ".\fieldops-pro-$ver.zip" -Fo
 Note that `TOOLS\PowerShellModules\` stays. It carries the offline Pester bundle,
 which is what makes the suite runnable air-gapped by anyone who later clones the
 repository.
+
+**`SCRIPTS\Archive\` must be stripped here, and this is not cosmetic.** The A5
+machine-path audit excludes the `Archive\` tree and any `Patch-`/`Debug-`/`Apply-`
+utility, and justifies that exclusion in its own printed scope by stating they are
+never part of the deployed set. If the build does not remove them, that statement
+is false and A5 passes over code that reaches customers.
+
+The two exclusion lists -- what A5 declines to audit, and what this build removes
+-- must stay identical. `Audit.Repo.Tests.ps1` asserts exactly that, so the pair
+cannot drift apart silently.
 
 ### Verify the artifact
 

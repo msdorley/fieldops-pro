@@ -11,9 +11,19 @@
 
     Two tiers, by deliberate design:
 
-      UNIVERSAL LAWS - apply to every .ps1/.psm1 under SCRIPTS\, archive and
-      one-off utilities included. A script that exists in the repo ships
-      somewhere eventually; there are no files that "don't count".
+      UNIVERSAL LAWS - apply to every .ps1/.psm1 under SCRIPTS\ that ships.
+      A1 and A2 admit no exclusions at all. A5 skips the Archive\ tree, on the
+      single condition that Archive\ does not reach a customer.
+
+      That condition was false until v0.6.1. The build stripped tests\ and
+      schemas\ but not SCRIPTS\Archive\, so 1352 lines of superseded code
+      shipped on the stick carrying E:\ path literals in executable statements
+      -- inside the only files A5 declines to read. The exclusion did not
+      create the defect; the exclusion made it invisible.
+
+      A7 now binds the two together: everything A5 skips must live under
+      Archive\, and RELEASE.md must strip Archive\. Either half alone can
+      drift; the pair cannot.
         A1  ASCII-only       : zero bytes > 127 in any source file
         A2  No BOM           : no file begins with EF BB BF
         A5  No hardcoded paths in CODE : no drive-letter path literal
@@ -62,8 +72,10 @@ BeforeAll {
         'StrictMode (A3) is an opt-in allowlist; production scripts are NOT',
         'forced to declare Set-StrictMode merely for existing. A script joins',
         'the allowlist when built/verified under StrictMode.',
-        'Archive\ tree and Patch-/Debug-/Apply- one-off utilities are dev',
-        'tooling and are never part of the deployed production set.'
+        'A5 skips the Archive\ tree and Patch-/Debug-/Apply- utilities. That',
+        'is conditional, not free: A7 asserts every skipped file sits under',
+        'Archive\ and that RELEASE.md strips Archive\ from the release zip.',
+        'Until v0.6.1 the build did not strip it, so the skipped files shipped.'
     )
 
     Add-Type -AssemblyName System.Management.Automation -ErrorAction SilentlyContinue
@@ -202,6 +214,55 @@ Describe 'A5 - no developer/USB-specific paths in production code (universal law
                    "`n`n  (Code must resolve paths via `$PSScriptRoot, never a machine-specific literal.)")
         }
         $violations.Count | Should -Be 0
+    }
+}
+
+Describe 'A7 - what A5 skips must not ship (universal law)' -Tag 'Slow' {
+
+    # A5 excludes files from the machine-path audit. That is only defensible
+    # while the excluded files never reach a customer. This test asserts the
+    # condition rather than trusting the comment that asserts it.
+
+    It 'every file A5 skips lives under SCRIPTS\Archive\' {
+        $skipped = @(
+            $script:AllSource |
+                Where-Object { & $script:TestIsExcludedUtility $_.FullName } |
+                ForEach-Object { & $script:GetRelPath $_.FullName }
+        )
+
+        # A Patch-/Debug-/Apply- utility outside Archive\ is skipped by A5 and
+        # shipped by the build at the same time. That is the exact gap that let
+        # 'E:\SCRIPTS\Diagnostics\Invoke-PCHealth.ps1' reach v0.6.0 unaudited.
+        $stray = @($skipped | Where-Object { $_ -notmatch '(?i)^Archive\\' })
+
+        if ($stray.Count -gt 0) {
+            throw ("Excluded from A5 but not under Archive\, so it ships unaudited:`n  " +
+                   ($stray -join "`n  ") +
+                   "`n`n  Move it to SCRIPTS\Archive\, or drop the exclusion and fix its paths.")
+        }
+        $stray.Count | Should -Be 0
+    }
+
+    It 'the release build strips SCRIPTS\Archive\' {
+        # The other half of the contract. If this line leaves RELEASE.md, the
+        # exclusion above silently becomes a hole again.
+        $release = Join-Path $script:RepoRoot 'RELEASE.md'
+        Test-Path -LiteralPath $release | Should -BeTrue
+
+        $text = Get-Content -LiteralPath $release -Raw
+        $text | Should -Match 'Remove-Item\s+"\$stage\\SCRIPTS\\Archive"'
+    }
+
+    It 'Archive\ is the only excluded tree, so the contract stays checkable' {
+        # Guards against a second exclusion directory appearing later and being
+        # exempted from the A7 check by construction.
+        $excludedDirs = @(
+            $script:AllSource |
+                Where-Object { & $script:TestIsExcludedUtility $_.FullName } |
+                ForEach-Object { (& $script:GetRelPath $_.FullName) -split '\\' | Select-Object -First 1 } |
+                Sort-Object -Unique
+        )
+        foreach ($d in $excludedDirs) { $d | Should -Be 'Archive' }
     }
 }
 
