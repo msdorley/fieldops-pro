@@ -33,6 +33,26 @@ either made true or withdrawn. Stream 7.0 of the Phase 7 design.
   superseded code plus three utilities from `SCRIPTS\Core`, carrying `E:\` path
   literals in executable statements. The exclusion did not create the defect; it
   made it invisible. Audit A7 now binds the two exclusion lists together
+- **`DOCS/INSTALL.md` documented a configuration shape the toolkit does not
+  read.** It showed a flat `TechnicianName` / `OrgName` / `Language` object; the
+  shipped template has been the nested schema 2.0 form since before v0.6.0. A
+  customer following the install guide produced a file the tools ignore
+- **`technician.template.json` described software that is not there.** It stated
+  the API key lives in Windows Credential Manager. The AI client -- the single
+  transport boundary every call now routes through -- reads `ANTHROPIC_API_KEY`
+  then the config files, and has no Credential Manager path at all. The risk
+  planner does still check Credential Manager first, so there are two resolvers
+  with different orders; the template now says so plainly rather than describing
+  one of them as if it were both
+- **The compliance-diff banner named a model it would never use, and printed
+  part of the API key.** `$AI_MODEL` at banner time is the compiled-in default,
+  a model marked `legacy` in the pricing config that the tier mapping will never
+  select; the client resolves the model at call time and the report was always
+  correct. The banner now says `model resolved at call time`. Two places also
+  printed the first fourteen characters of the key while `Test-Installation`
+  deliberately printed nothing key-shaped -- an audit now asserts no deployed
+  script slices a key variable for display, and it found the second occurrence
+  itself
 - **The self-test grew quieter as the deployment grew more complete.** Three of
   the four layout loops reported only the absent branch, so `TOOLS`, `PLAYBOOKS`,
   `DRIVERS`, `ISOs`, `REPORTS` and `LOGS` were silent when present. A correct

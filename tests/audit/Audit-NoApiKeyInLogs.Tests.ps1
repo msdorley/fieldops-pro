@@ -33,6 +33,48 @@ BeforeAll {
     $script:KeyPrefix = 'sk' + '-' + 'ant' + '-'
 }
 
+Describe 'No deployed script displays part of the key (7.0-D5)' -Tag 'Slow' {
+
+    # Test-Installation deliberately prints nothing key-shaped. Invoke-Compliance
+    # Diff printed the first fourteen characters in its startup banner. The
+    # prefix is public rather than secret, so neither choice was a breach -- but
+    # one policy applied in one place and not the other is how a habit erodes,
+    # and the next person to add a banner copies whichever they happened to read.
+
+    It 'no deployed script takes a substring of an api-key variable' {
+        $scripts = @(
+            Get-ChildItem (Join-Path $script:RepoRoot 'SCRIPTS') -Recurse -Include *.ps1,*.psm1 |
+                Where-Object { $_.FullName -notmatch '\\Archive\\' }
+        )
+        $scripts.Count | Should -BeGreaterThan 0
+
+        # The pattern requires 'api' adjacent to 'key', so it matches $apiKey,
+        # $ApiKey and $api_key but not a bare $key.
+        #
+        # The first version of this test omitted that and matched any variable
+        # containing 'key' -- PowerShell's -match is case-insensitive, so it
+        # flagged Invoke-DiskAnalysis truncating a FILE HASH for a duplicate
+        # table. A credential audit that reports file hashes is one somebody
+        # switches off, and then it catches nothing at all.
+        $offenders = @()
+        foreach ($f in $scripts) {
+            $n = 0
+            foreach ($line in (Get-Content -LiteralPath $f.FullName)) {
+                $n++
+                if ($line -match '\$\w*api_?key\w*\s*\.\s*Substring\s*\(') {
+                    $offenders += ("{0}:{1}" -f $f.Name, $n)
+                }
+            }
+        }
+        if ($offenders.Count -gt 0) {
+            throw ("Script(s) slicing an api-key variable for display:`n  " + ($offenders -join "`n  ") +
+                   "`n`n  The key prefix is public, not secret -- but Test-Installation prints" +
+                   "`n  nothing key-shaped, and both places follow one policy or neither does.")
+        }
+        $offenders.Count | Should -Be 0
+    }
+}
+
 Describe 'API key prefix is absent from audit-writing code (6.5-D13, static)' -Tag 'Slow' {
 
     It 'the module source does not contain a hardcoded key of the live format' {

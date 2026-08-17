@@ -83,21 +83,43 @@ what they need.
 
 ## 4. Configuration
 
-Create `CONFIG\technician.json`:
+Copy `CONFIG\technician.template.json` to `CONFIG\technician.json` and edit it.
+Copying the template is better than typing this out: it carries a `$schema`
+reference your editor can validate against.
 
 ```json
 {
-  "TechnicianName": "A. Technician",
-  "OrgName": "Contoso IT",
-  "Language": "fr"
+  "$schema": "../DOCS/schemas/technician.schema.json",
+  "schemaVersion": "2.0",
+  "operator": {
+    "name": "A. Technician",
+    "email": "a.technician@contoso.example",
+    "employeeId": "",
+    "team": "",
+    "company": "Contoso IT"
+  },
+  "deployment": {
+    "region": "EU",
+    "role": "field-engineer"
+  },
+  "ui": {
+    "locale": "fr",
+    "brandColor": "#6C3FC5"
+  },
+  "version": "2.0"
 }
 ```
 
 | Field | Effect |
 |-------|--------|
-| `TechnicianName` | Appears on reports. Also hashed into the AI audit log as a pseudonymous id |
-| `OrgName` | Appears on reports |
-| `Language` | `fr` or `en`. Sets report and interface language |
+| `operator.name` | Appears on reports. Also hashed into the AI audit log as a pseudonymous id |
+| `operator.company` | Appears on reports |
+| `ui.locale` | `fr` or `en`. Sets report and interface language |
+| `deployment.region`, `deployment.role` | Recorded on the report for fleet context |
+
+Earlier versions of this document showed a flat shape -- `TechnicianName`,
+`OrgName`, `Language`. That is not what the shipped template has been since
+schema 2.0, and the toolkit does not read those keys.
 
 **Everything is optional.** With no configuration file the toolkit runs with
 defaults and the current Windows username.
