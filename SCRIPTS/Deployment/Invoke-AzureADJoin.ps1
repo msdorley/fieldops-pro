@@ -165,7 +165,7 @@ $UserName  = "$env:USERDOMAIN\$env:USERNAME"
 
 Write-Host ''
 Write-Host '============================================================' -ForegroundColor DarkCyan
-Write-Host '  FieldOps Pro - Azure AD Enrollment Engine v2.0' -ForegroundColor DarkCyan
+Write-Host '  FieldOps Pro - Azure AD Enrollment Engine' -ForegroundColor DarkCyan
 Write-Host "  Host: $Hostname | User: $UserName" -ForegroundColor Gray
 Write-Host "  $DateHuman$(if($TenantHint){" | Tenant: $TenantHint"})" -ForegroundColor Gray
 if (-not $script:IsAdmin) { Write-Host '  WARNING: Not admin. Enrollment actions limited.' -ForegroundColor Yellow }

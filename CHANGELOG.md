@@ -12,9 +12,29 @@ only lists additions is a marketing document.
 
 ---
 
-## [Unreleased]
+## [0.6.1] - unreleased
 
-Nothing yet.
+Truth. Nothing new is added; things the product claimed and did not do are
+either made true or withdrawn. Stream 7.0 of the Phase 7 design.
+
+### Fixed
+
+- **The product displayed fifteen different version numbers.** Ten scripts and
+  both locale bundles each carried their own -- v3.2, v2.1, v2.0, v1.2.1, v1.1,
+  v1.0, v0.4 -- and none of them was the release version. A technician reading a
+  screenshot could not tell which build produced it. `CONFIG/version.json` is now
+  the single source; the launcher displays it and nothing else does, because a
+  subcommand banner has no business stamping a version. Audit A8 asserts the
+  declared version matches the newest heading in this file
+- **The release build shipped code the machine-path audit refuses to read.**
+  A5 skips the `Archive\` tree and `Patch-`/`Debug-`/`Apply-` utilities on the
+  stated grounds that they never reach a customer. `RELEASE.md` stripped `tests`
+  and `schemas` but not `SCRIPTS\Archive`, so v0.6.0 shipped 1352 lines of
+  superseded code plus three utilities from `SCRIPTS\Core`, carrying `E:\` path
+  literals in executable statements. The exclusion did not create the defect; it
+  made it invisible. Audit A7 now binds the two exclusion lists together
+- Three console boxes rendered crooked, their text one to five characters
+  narrower than the rule above them
 
 ---
 
@@ -201,7 +221,7 @@ Initial release.
 
 ---
 
-[Unreleased]: https://github.com/msdorley/fieldops-pro/compare/v0.6.0...HEAD
+[0.6.1]: https://github.com/msdorley/fieldops-pro/compare/v0.6.0...HEAD
 [0.6.0]: https://github.com/msdorley/fieldops-pro/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/msdorley/fieldops-pro/releases/tag/v0.5.2
 [0.4.1]: https://github.com/msdorley/fieldops-pro/releases/tag/v0.4.1

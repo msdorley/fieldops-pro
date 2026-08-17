@@ -672,7 +672,7 @@ function Show-PreFlight {
     param([PSCustomObject]$sysEnv)
     Clear-Host; nl
     cn '  +--------------------------------------------------------------------------+' Cyan
-    cn '  |   FIELDOPS PRO -- SOFTWARE DEPLOYMENT ENGINE v4.0                       |' Cyan
+    cn '  |                FIELDOPS PRO -- SOFTWARE DEPLOYMENT ENGINE                |' Cyan
     cn '  +--------------------------------------------------------------------------+' Cyan
 
     $at  = if ($sysEnv.IsAdmin)       { 'Administrator [OK]' }          else { 'NOT ADMIN -- installs may fail' }

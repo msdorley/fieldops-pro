@@ -1,0 +1,5 @@
+{
+  "_comment": "Single source of the product version. The launcher reads this and substitutes it into the banner and the window title. No other script displays a version -- see DOCS/PHASE-7-DESIGN.md 7.0-D2. Stored without a leading 'v' so it compares directly against the newest CHANGELOG.md heading, which a test asserts. Add the 'v' at display time, not here.",
+  "schemaVersion": "1.0",
+  "product": "0.6.1"
+}

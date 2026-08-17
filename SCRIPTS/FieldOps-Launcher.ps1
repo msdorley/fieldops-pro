@@ -58,6 +58,23 @@ $usbRoot     = Split-Path -Parent $scriptsRoot
 $coreDir     = Join-Path $scriptsRoot 'Core'
 $configDir   = Join-Path $usbRoot     'CONFIG'
 
+# ------------------------------------------------------------------ version
+# CONFIG\version.json is the single source. The launcher is the only thing in
+# the product that displays a version; every other banner shows none, because
+# ten independently-maintained numbers is what this replaced.
+#
+# Degrades to empty rather than throwing, matching the contract every other
+# optional dependency in this tree follows: a missing or malformed config file
+# costs a cosmetic detail, never the run.
+$productVersion = ''
+try {
+    $verFile = Join-Path $configDir 'version.json'
+    if (Test-Path -LiteralPath $verFile) {
+        $v = (Get-Content -LiteralPath $verFile -Raw -ErrorAction Stop | ConvertFrom-Json).product
+        if ($v -and "$v".Trim() -ne '') { $productVersion = 'v' + "$v".Trim() }
+    }
+} catch { $productVersion = '' }
+
 if ($OutputRoot -and $OutputRoot.Trim() -ne '') {
     $outRoot = $OutputRoot.TrimEnd('\','/')
 } else {
@@ -99,10 +116,21 @@ if (Test-Path $_utilsMod)  { Import-Module $_utilsMod  -Force -DisableNameChecki
 function L {
     param(
         [Parameter(Mandatory)] [string]$Key,
-        [Parameter(Mandatory)] [string]$Default
+        [Parameter(Mandatory)] [string]$Default,
+        [hashtable]$Vars
     )
-    if (-not $localeAvailable) { return $Default }
-    try { return (Get-LocaleString $Key) } catch { return $Default }
+    # -Vars carries {token} substitutions through to the bundle. The version is
+    # the first user: it lives in CONFIG\version.json, not in the locale files,
+    # so that bumping a release does not mean editing translated strings.
+    if (-not $localeAvailable) {
+        $out = $Default
+        if ($Vars) { foreach ($k in $Vars.Keys) { $out = $out.Replace("{$k}", [string]$Vars[$k]) } }
+        return $out
+    }
+    try {
+        if ($Vars) { return (Get-LocaleString -Key $Key -Vars $Vars) }
+        return (Get-LocaleString $Key)
+    } catch { return $Default }
 }
 
 # ==============================================================================
@@ -118,7 +146,11 @@ try {
 
 $HOST.UI.RawUI.BackgroundColor = 'Black'
 $HOST.UI.RawUI.ForegroundColor = 'White'
-try { $HOST.UI.RawUI.WindowTitle = 'FIELDOPS PRO v2.1 - Enterprise Field IT Toolkit' } catch {}
+try {
+    # Built rather than literal so a release bump touches CONFIG\version.json only.
+    # -replace collapses the double space left behind when the version is absent.
+    $HOST.UI.RawUI.WindowTitle = ("FIELDOPS PRO $productVersion - Enterprise Field IT Toolkit" -replace '\s{2,}', ' ')
+} catch {}
 try {
     $sz = $HOST.UI.RawUI.BufferSize; $sz.Width = ($W + 4); $HOST.UI.RawUI.BufferSize = $sz
     $wn = $HOST.UI.RawUI.WindowSize; $wn.Width = ($W + 4); $HOST.UI.RawUI.WindowSize = $wn
@@ -339,7 +371,7 @@ function Draw-Header {
     Hr
 
     # --- Line 1: logo + version + role (centered-ish)
-    $logoText = (L 'launcher.banner.title' 'FIELDOPS PRO  v2.1    ENTERPRISE FIELD IT TOOLKIT    EU DEPLOYMENT')
+    $logoText = (L 'launcher.banner.title' 'FIELDOPS PRO  {version}    ENTERPRISE FIELD IT TOOLKIT    EU DEPLOYMENT' @{ version = $productVersion })
     Row $logoText 'Cyan'
 
     # --- Separator

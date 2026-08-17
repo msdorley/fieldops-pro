@@ -300,7 +300,7 @@ function ConvertTo-PdfWithWkhtmltopdf {
 # ===========================================================================
 Write-Host ''
 Write-Host '  +----------------------------------------------------------------+' -ForegroundColor White
-Write-Host '  |  FIELDOPS PRO - ANSSI Diagnostic Report Builder v0.4           |' -ForegroundColor White
+Write-Host '  |         FIELDOPS PRO - ANSSI Diagnostic Report Builder         |' -ForegroundColor White
 Write-Host '  +----------------------------------------------------------------+' -ForegroundColor White
 Write-Host ''
 Write-Step "Data    : $DataFile"

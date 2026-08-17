@@ -731,7 +731,7 @@ function Show-ToolsMenu {
         Clear-Host
         nl
         cn '  +------------------------------------------------------------------+' Magenta
-        cn '  |            FIELDOPS PRO -- PORTABLE TOOLS MENU v3.2             |' Magenta
+        cn '  |               FIELDOPS PRO -- PORTABLE TOOLS MENU                |' Magenta
         cn '  +------------------------------------------------------------------+' Magenta
         nl
 

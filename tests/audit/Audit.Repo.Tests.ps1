@@ -266,6 +266,93 @@ Describe 'A7 - what A5 skips must not ship (universal law)' -Tag 'Slow' {
     }
 }
 
+Describe 'A8 - one product version, displayed once (7.0-D2)' -Tag 'Slow' {
+
+    # v0.6.0 displayed fifteen different version numbers across ten scripts and
+    # both locale bundles -- v3.2, v2.1, v2.0, v1.2.1, v1.1, v1.0, v0.4 -- none
+    # of which was the release version. A technician reading a screenshot could
+    # not tell which build produced it.
+    #
+    # The fix is not "propagate one constant to fifteen banners". It is that a
+    # subcommand has no business stamping a version at all. The launcher shows
+    # it once, from CONFIG\version.json. These tests hold that line.
+
+    BeforeAll {
+        $script:VersionFile = Join-Path $script:RepoRoot 'CONFIG\version.json'
+        $script:Changelog   = Join-Path $script:RepoRoot 'CHANGELOG.md'
+        $script:Launcher    = Join-Path $script:ScriptsRoot 'FieldOps-Launcher.ps1'
+    }
+
+    It 'CONFIG\version.json exists and declares a semver product version' {
+        Test-Path -LiteralPath $script:VersionFile | Should -BeTrue
+        $v = (Get-Content -LiteralPath $script:VersionFile -Raw | ConvertFrom-Json).product
+        $v | Should -Not -BeNullOrEmpty
+        $v | Should -Match '^\d+\.\d+(\.\d+)?$'
+        # Stored bare. The 'v' is presentation and belongs at the display site.
+        $v | Should -Not -Match '^v'
+    }
+
+    It 'the declared version matches the newest CHANGELOG heading' {
+        # The check that makes a release bump impossible to half-do: shipping a
+        # version the changelog does not describe is the defect, not the typo.
+        $v = (Get-Content -LiteralPath $script:VersionFile -Raw | ConvertFrom-Json).product
+
+        $newest = ''
+        foreach ($line in (Get-Content -LiteralPath $script:Changelog)) {
+            if ($line -match '^##\s*\[(?<ver>\d+\.\d+(\.\d+)?)\]') { $newest = $Matches['ver']; break }
+        }
+        $newest | Should -Not -BeNullOrEmpty
+        $v | Should -Be $newest
+    }
+
+    It 'the launcher is the only deployed script that displays a version' {
+        $offenders = @()
+        foreach ($f in $script:AllSource) {
+            if (& $script:TestIsExcludedUtility $f.FullName) { continue }
+            if ($f.FullName -eq $script:Launcher) { continue }
+
+            $n = 0
+            foreach ($line in (Get-Content -LiteralPath $f.FullName)) {
+                $n++
+                if ($line -notmatch "Write-Host|WindowTitle|^\s*cn\s+'|\`$title\s*=") { continue }
+                # A version-shaped literal inside a displayed string.
+                if ($line -match "['`"][^'`"]*\bv\d+\.\d+") {
+                    $offenders += ("{0}:{1}" -f (& $script:GetRelPath $f.FullName), $n)
+                }
+            }
+        }
+        if ($offenders.Count -gt 0) {
+            throw ("Script(s) displaying their own version:`n  " + ($offenders -join "`n  ") +
+                   "`n`n  The launcher shows the product version, read from CONFIG\version.json." +
+                   "`n  A subcommand banner should carry no version at all.")
+        }
+        $offenders.Count | Should -Be 0
+    }
+
+    It 'neither locale bundle hardcodes a version' {
+        # The launcher banner lives in the bundle. If the version goes back in
+        # here, a release bump silently becomes a translation edit in two files.
+        foreach ($loc in @('fr', 'en')) {
+            $p = Join-Path $script:RepoRoot ("CONFIG\lang\{0}.json" -f $loc)
+            $raw = Get-Content -LiteralPath $p -Raw
+            if ($raw -match '"[^"]*\bv\d+\.\d+[^"]*"') {
+                throw ("{0}.json hardcodes a version: {1}" -f $loc, $Matches[0])
+            }
+        }
+    }
+
+    It 'the launcher banner key carries the {version} substitution token' {
+        # Proves the version reaches the screen through substitution rather than
+        # having simply been deleted from the banner.
+        foreach ($loc in @('fr', 'en')) {
+            $p = Join-Path $script:RepoRoot ("CONFIG\lang\{0}.json" -f $loc)
+            $bundle = Get-Content -LiteralPath $p -Raw | ConvertFrom-Json
+            $bundle.launcher.banner.title | Should -Match '\{version\}'
+        }
+        (Get-Content -LiteralPath $script:Launcher -Raw) | Should -Match 'version\.json'
+    }
+}
+
 Describe 'A3 - StrictMode contract (production allowlist)' -Tag 'Slow' {
     It '<File> declares Set-StrictMode -Version 1.0' -ForEach @(
         @{ File = 'Compliance\Build-ANSSIData.ps1' }
