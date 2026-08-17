@@ -246,8 +246,19 @@ function Write-Banner {
     } elseif ($apiKey -eq '') {
         'LOCAL RULES (no API key found)'
     } else {
-        $keyPrefix = if ($apiKey.Length -ge 14) { $apiKey.Substring(0,14) + '...' } else { '(short key)' }
-        "$AI_MODEL (key: $keyPrefix)"
+        # Two things this line used to claim and could not know.
+        #
+        # It printed $AI_MODEL, which at this point is still the compiled-in
+        # default -- a model marked legacy in the pricing config and one the
+        # tier mapping will never select. The client resolves the model at call
+        # time and $AI_MODEL is corrected afterwards from $call.Model, so the
+        # report was right and only this pre-call banner misinformed.
+        #
+        # It also printed the first fourteen characters of the key. The prefix
+        # is public rather than secret, but Test-Installation deliberately
+        # prints nothing key-shaped, and one policy applied in one place and not
+        # the other is how a habit erodes. Neither line prints it now.
+        'ENABLED (model resolved at call time)'
     }
     Write-Host "  AI Engine  : $aiLine"
     Write-Host ('=' * $W) -ForegroundColor Cyan
@@ -2425,9 +2436,12 @@ switch ($effectiveMode) {
         Write-Host "    Technician  : $techName"
         Write-Host "    Organization: $orgName"
         if ($apiKey -ne '') {
-            $kp = if ($apiKey.Length -ge 14) { $apiKey.Substring(0,14) + '...' } else { '(too short)' }
-            $kl = $apiKey.Length
-            Write-Host "    API Key     : $kp ($kl chars)"
+            # Length is the diagnostic that matters here -- it tells a technician
+            # whether the value was truncated on paste. The prefix tells them
+            # nothing they cannot get from the config file they just edited, and
+            # printing it in a diagnostic dump is exactly where it gets pasted
+            # into a support thread.
+            Write-Host ("    API Key     : present ({0} chars)" -f $apiKey.Length)
         } else {
             Write-Host "    API Key     : (not set)"
         }

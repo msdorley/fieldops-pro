@@ -86,4 +86,49 @@ function Invoke-WithRetry {
     return $false
 }
 
-Export-ModuleMember -Function Test-AdminPrivilege, Assert-Admin, Get-SystemSummary, Wait-UserInput, Pause-Script, Get-RecentEvents, Test-WinPE, Get-USBBase, Invoke-WithRetry
+function Get-FieldOpsVersion {
+    <#
+    .SYNOPSIS
+        The product version, from CONFIG\version.json. Never throws.
+
+    .DESCRIPTION
+        One number for the whole product. Reports name the build that produced
+        them -- an auditor holding a compliance report needs to know which
+        version's rules were applied -- so the value belongs in the HTML, but
+        it must never come from a literal typed into eight separate templates.
+        That is what produced fifteen disagreeing numbers in v0.6.0.
+
+        Walks up from the calling script to find CONFIG\version.json, so it
+        works from any depth under the deployment root and from a copy of the
+        tree in a temp directory.
+
+        Returns '' when the file is missing or malformed. Every caller renders
+        a version-less banner rather than failing, matching the contract every
+        other optional dependency in this tree follows.
+
+    .PARAMETER From
+        Directory to start walking up from. Defaults to this module's location.
+
+    .EXAMPLE
+        $VERSION = Get-FieldOpsVersion -From $PSScriptRoot
+    #>
+    param([string]$From = $PSScriptRoot)
+
+    try {
+        $dir = $From
+        for ($i = 0; $i -lt 6 -and $dir; $i++) {
+            $candidate = Join-Path $dir 'CONFIG\version.json'
+            if (Test-Path -LiteralPath $candidate) {
+                $v = (Get-Content -LiteralPath $candidate -Raw -ErrorAction Stop | ConvertFrom-Json).product
+                if ($v -and "$v".Trim() -ne '') { return "$v".Trim() }
+                return ''
+            }
+            $parent = Split-Path -Parent $dir
+            if ($parent -eq $dir) { break }
+            $dir = $parent
+        }
+    } catch { }
+    return ''
+}
+
+Export-ModuleMember -Function Test-AdminPrivilege, Assert-Admin, Get-SystemSummary, Wait-UserInput, Pause-Script, Get-RecentEvents, Test-WinPE, Get-USBBase, Invoke-WithRetry, Get-FieldOpsVersion
