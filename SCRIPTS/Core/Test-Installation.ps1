@@ -158,8 +158,20 @@ foreach ($d in $required) {
     }
 }
 
+# Every tier below reports BOTH branches. They previously reported only the
+# absent one, which meant the self-test grew quieter as the deployment got more
+# complete: a correct stick with DRIVERS, REPORTS and LOGS in place printed
+# three fewer lines than a bare one, and TOOLS and PLAYBOOKS -- the two whose
+# absence is a warning -- were never confirmed present at all.
+#
+# An operator reading sixteen OKs has no way to know whether the seventeenth
+# check passed or never ran. The roster must be fixed at nine layout lines so
+# that a missing line is visible as a missing line.
+
 foreach ($d in $featured) {
-    if (-not (Test-Path -LiteralPath (Join-Path $Root $d))) {
+    if (Test-Path -LiteralPath (Join-Path $Root $d)) {
+        Add-Check 'Layout' 'OK' ("{0}\ present" -f $d)
+    } else {
         $why = if ($d -eq 'TOOLS') { 'The portable tools menu will be empty.' }
                else                { 'Workflow and remediation playbooks will be unavailable.' }
         Add-Check 'Layout' 'WARN' ("{0}\ absent" -f $d) $why
@@ -167,13 +179,17 @@ foreach ($d in $featured) {
 }
 
 foreach ($d in $payload) {
-    if (-not (Test-Path -LiteralPath (Join-Path $Root $d))) {
+    if (Test-Path -LiteralPath (Join-Path $Root $d)) {
+        Add-Check 'Layout' 'OK' ("{0}\ present; optional payload" -f $d)
+    } else {
         Add-Check 'Layout' 'OK' ("{0}\ absent; optional payload, not required" -f $d)
     }
 }
 
 foreach ($d in $onDemand) {
-    if (-not (Test-Path -LiteralPath (Join-Path $Root $d))) {
+    if (Test-Path -LiteralPath (Join-Path $Root $d)) {
+        Add-Check 'Layout' 'OK' ("{0}\ present" -f $d)
+    } else {
         Add-Check 'Layout' 'OK' ("{0}\ absent; created on first run" -f $d)
     }
 }
@@ -286,22 +302,52 @@ if ($hasKey -or $env:ANTHROPIC_API_KEY) {
 # Windows marks files that came from the internet, and the mark survives a copy
 # to USB. A stick full of blocked scripts fails with an error that names the
 # execution policy, sending the technician down the wrong path entirely.
-$blocked = 0
+# The mark is an NTFS alternate data stream. exFAT and FAT32 -- the formats a
+# technician's stick is most likely to be -- cannot carry one, so the check is
+# not merely inapplicable there, it is unnecessary: a file on exFAT can never
+# be blocked in the first place.
+#
+# This previously reported nothing at all on those filesystems. The catch set
+# $blocked to -1 and no branch handled -1, so the line vanished. A check that
+# silently does not run is worse than one that reports the wrong thing: the
+# operator reads twenty lines, counts twenty OKs, and never learns that the
+# twenty-first was skipped. Same defect class as the AI configuration line
+# fixed in PR #43.
+$fsFormat = ''
 try {
-    $sample = @(Get-ChildItem -LiteralPath (Join-Path $Root 'SCRIPTS') -Recurse -File -ErrorAction SilentlyContinue |
-                Where-Object { $_.Extension -eq '.ps1' -or $_.Extension -eq '.psm1' })
-    foreach ($f in $sample) {
-        if (Get-Item -LiteralPath $f.FullName -Stream 'Zone.Identifier' -ErrorAction SilentlyContinue) {
-            $blocked++
-        }
+    $qualifier = Split-Path -Qualifier $Root -ErrorAction SilentlyContinue
+    if ($qualifier) {
+        $fsFormat = (New-Object System.IO.DriveInfo($qualifier + '\')).DriveFormat
     }
-} catch { $blocked = -1 }
+} catch { $fsFormat = '' }
 
-if ($blocked -gt 0) {
-    Add-Check 'File blocking' 'FAIL' ("{0} script(s) marked blocked by Windows" -f $blocked) `
-              ("Run: Get-ChildItem -Path '{0}\SCRIPTS' -Recurse | Unblock-File" -f $Root)
-} elseif ($blocked -eq 0) {
-    Add-Check 'File blocking' 'OK' 'no blocked scripts'
+$supportsStreams = ($fsFormat -eq 'NTFS' -or $fsFormat -eq 'ReFS')
+
+if ($fsFormat -and -not $supportsStreams) {
+    Add-Check 'File blocking' 'OK' ("not applicable on {0}; this filesystem cannot mark a file blocked" -f $fsFormat)
+} else {
+    $blocked = 0
+    try {
+        $sample = @(Get-ChildItem -LiteralPath (Join-Path $Root 'SCRIPTS') -Recurse -File -ErrorAction SilentlyContinue |
+                    Where-Object { $_.Extension -eq '.ps1' -or $_.Extension -eq '.psm1' })
+        foreach ($f in $sample) {
+            if (Get-Item -LiteralPath $f.FullName -Stream 'Zone.Identifier' -ErrorAction SilentlyContinue) {
+                $blocked++
+            }
+        }
+    } catch { $blocked = -1 }
+
+    if ($blocked -gt 0) {
+        Add-Check 'File blocking' 'FAIL' ("{0} script(s) marked blocked by Windows" -f $blocked) `
+                  ("Run: Get-ChildItem -Path '{0}\SCRIPTS' -Recurse | Unblock-File" -f $Root)
+    } elseif ($blocked -eq 0) {
+        Add-Check 'File blocking' 'OK' 'no blocked scripts'
+    } else {
+        # Reached only when enumeration itself failed. Report the gap rather
+        # than leaving the roster one line short.
+        Add-Check 'File blocking' 'WARN' 'could not be determined on this filesystem' `
+                  ("Check manually: Get-ChildItem -Path '{0}\SCRIPTS' -Recurse | Unblock-File" -f $Root)
+    }
 }
 
 # --------------------------------------------------------------------------

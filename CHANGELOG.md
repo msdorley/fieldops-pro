@@ -33,6 +33,23 @@ either made true or withdrawn. Stream 7.0 of the Phase 7 design.
   superseded code plus three utilities from `SCRIPTS\Core`, carrying `E:\` path
   literals in executable statements. The exclusion did not create the defect; it
   made it invisible. Audit A7 now binds the two exclusion lists together
+- **The self-test grew quieter as the deployment grew more complete.** Three of
+  the four layout loops reported only the absent branch, so `TOOLS`, `PLAYBOOKS`,
+  `DRIVERS`, `ISOs`, `REPORTS` and `LOGS` were silent when present. A correct
+  stick with all of them in place printed fewer lines than a bare one, and the
+  two directories whose absence raises a warning were never confirmed present at
+  all. Found by comparing a real exFAT stick against the NTFS fixture line by
+  line: of four missing lines, only one was the filesystem. The roster is now
+  fixed at nine layout lines and a test asserts the count is identical on a
+  sparse and a complete deployment
+- **The self-test's file-blocking check printed nothing on exFAT and FAT32.**
+  `Zone.Identifier` is an NTFS alternate data stream; on other filesystems the
+  probe yielded nothing, the catch set the count to `-1`, and no branch handled
+  `-1`. The operator saw a clean run and counted the OKs, with nothing to say a
+  check had been skipped. It now reports `not applicable on exFAT` -- a file on
+  exFAT cannot be marked blocked in the first place -- and the branch that
+  actually failed reports a warning rather than falling through silently. Same
+  defect class as the AI configuration line fixed in #43
 - Three console boxes rendered crooked, their text one to five characters
   narrower than the rule above them
 
