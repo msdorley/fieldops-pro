@@ -1,22 +1,35 @@
 # ============================================================================
-# FieldOps Pro ??? .gitattributes
+# FieldOps Pro -- .gitattributes
 # ----------------------------------------------------------------------------
-# Enforces consistent line endings and encoding across contributors regardless
-# of OS or Git config. Critical for PS 5.1 + French strings in JSON.
+# Enforces consistent line endings across contributors regardless of OS or Git
+# config.
+#
+# NOTE: git attributes control line endings only. They do NOT add or remove a
+# byte-order mark. The BOM policy is enforced by the A1 and A2 audits and is
+# documented in DOCS/EXTENDING.md; the rules are restated below so this file
+# cannot drift away from them silently again.
 # ============================================================================
 
 # Default: Git decides. Most files behave normally.
 * text=auto
 
 # ---- PowerShell -------------------------------------------------------------
-# PS 5.1 requires UTF-8 BOM to correctly read non-ASCII characters (French,
-# accented chars). CRLF is the Windows-shell convention.
+# CRLF is the Windows-shell convention.
+#
+# Encoding (audit A1/A2, not enforced by this file): ASCII only, NO BOM.
+# Deployed scripts carry no accented characters at all -- French text lives in
+# CONFIG/lang/*.json, never in source. That is what makes the ASCII rule
+# enforceable.
 *.ps1   text eol=crlf
 *.psm1  text eol=crlf
 *.psd1  text eol=crlf
 
 # ---- JSON / locale data -----------------------------------------------------
-# JSON is parsed by .NET ??? UTF-8 without BOM, LF endings.
+# LF endings.
+#
+# Encoding (audit A1/A2, not enforced by this file): CONFIG/lang/*.json is
+# UTF-8 WITH BOM and carries literal accented characters. PowerShell 5.1's
+# ConvertFrom-Json needs the BOM to read them correctly.
 *.json  text eol=lf
 
 # ---- Markdown / docs --------------------------------------------------------
