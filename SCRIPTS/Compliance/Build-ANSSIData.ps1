@@ -193,10 +193,24 @@ function Test-Status {
     return ((Get-DictValue $Check 'Status') -eq 'Pass')
 }
 
-# A check whose value indicates it could not be read is NOT observed evidence.
+# A check that could not be read is NOT observed evidence.
+#
+# Twenty-two of the 42 rules call this, so what it decides here decides whether
+# those rules report cv or pv. Until 7.2 it decided by pattern-matching the
+# free-text Value that the engines write, which made 22 compliance verdicts
+# depend on another script's error prose staying worded a particular way. A
+# catch block reworded from 'Cannot query' to 'Unable to query' would have
+# flipped them to "verified" -- silently, and in the direction that claims more
+# than was checked.
+#
+# The engines now say so in the Status. The prose match stays underneath it,
+# because reports and snapshots written before 7.2 are on technicians' sticks
+# and carry the old shape; dropping it would change the verdict on data already
+# delivered to a client.
 function Test-Observed {
     param($Check)
     if (-not $Check) { return $false }
+    if ((Get-DictValue $Check 'Status') -eq 'Undetermined') { return $false }
     $val = "$(Get-CheckValue $Check)"
     if (-not $val) { return $false }
     if ($val -match 'Cannot query|cannot read|non disponible|unavailable|^N/?A$|inconnu') { return $false }
