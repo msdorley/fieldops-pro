@@ -300,13 +300,22 @@ Describe 'Verdict and evidence do not contradict each other (6.4-D15)' {
                     $was = $original[$rule.Id]
                     if (-not $was) { continue }
 
+                    # Since 7.1 Meta carries both languages as { fr, en }.
+                    # Should -Be compares two PSCustomObjects by reference, so
+                    # identical content compared unequal and the failure printed
+                    # the same string twice. Flatten to text and compare that.
+                    $metaNow = "$($rule.Meta)"
+                    $metaWas = "$($was.Meta)"
+                    if ($rule.Meta -isnot [string]) { $metaNow = "$($rule.Meta.fr)||$($rule.Meta.en)" }
+                    if ($was.Meta  -isnot [string]) { $metaWas = "$($was.Meta.fr)||$($was.Meta.en)" }
+
                     if ($rule.Status -ne $was.Status) {
-                        $rule.Meta | Should -Match 'de demonstration|demonstration machine' -Because `
+                        $metaNow | Should -Match 'de demonstration|demonstration machine' -Because `
                             ("{0} rule {1} moved {2}->{3} but kept the skeleton's evidence" -f `
                                 $file.Name, $rule.Id, $was.Status, $rule.Status)
                     }
                     else {
-                        $rule.Meta | Should -Be $was.Meta -Because `
+                        $metaNow | Should -Be $metaWas -Because `
                             ("{0} rule {1} kept its verdict but lost its evidence" -f $file.Name, $rule.Id)
                     }
                 }
