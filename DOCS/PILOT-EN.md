@@ -1,6 +1,6 @@
 # FieldOps Pro Pilot
 
-**IT hygiene diagnostic — ANSSI framework, 42 rules**
+**Portable Windows field toolkit for work on the machine in front of you**
 
 Product version: see `CONFIG/version.json` · Licence: Apache 2.0
 Companion document in French: `DOCS/PILOT-FR.md`
@@ -9,42 +9,59 @@ Companion document in French: `DOCS/PILOT-FR.md`
 
 ## 1. What this is
 
-FieldOps Pro is a portable diagnostic tool. It assesses a Windows workstation
-against the 42 rules of ANSSI's *Guide d'hygiène informatique*, then produces a
-paginated, signable A4 report intended to be handed to a client.
+FieldOps Pro runs from a USB stick and puts sixteen tools in the hands of the
+technician standing at a machine: hardware and disk diagnostics, network repair,
+security posture, software deployment, directory enrolment, VPN setup, fleet
+reporting, incident reports, remediation playbooks, guided self-healing,
+configuration diff, and ANSSI compliance assessment.
 
-It runs from a USB stick. **Nothing is installed on the machine being examined.**
+**Nothing is installed on the machine being examined.** Everything works offline.
 
-What sets it apart comes down to a single decision: the report carries **three**
-verdicts, not two.
+### What sets it apart
+
+Field tools answer *pass* or *fail*. When a probe cannot run, when the hardware
+is absent, or when the answer needs human judgement, they pick one anyway and
+move on.
+
+FieldOps Pro has a third verdict, and it is the reason to use it.
 
 | Verdict | Meaning |
 |---------|---------|
-| **Verified compliant** | The control was observed in place. |
-| **Partially verified** | Evidence is incomplete: probe unavailable, hardware absent, or human judgement required. |
-| **Out of technical scope** | The rule is not something an endpoint audit can establish. |
+| **Verified** | The control was observed directly. |
+| **Could not determine** | Evidence is incomplete: probe unavailable, hardware absent, or human judgement required. |
+| **Out of scope** | Not something an endpoint examination can establish. |
 
-A machine with no TPM cannot demonstrate hardware-backed authentication.
-Calling that a pass is false; calling it a failure implies a defect that is not
-there. An auditor needs to know **which rules were actually verified** — which is
-exactly what most compliance dashboards destroy by showing only green and red.
+A machine with no TPM cannot demonstrate hardware-backed authentication. Calling
+that a pass is false; calling it a failure implies a defect that is not there.
 
-That is the product. Everything else supports it.
+### Where that discipline stands today
+
+Let us be precise, because this is exactly what a pilot should test.
+
+The compliance module applies it in full, across all 42 rules. **The other
+engines do not yet**: they do detect what they could not establish, then discard
+it before display. Bringing them under the same contract is the next piece of
+work, starting with the security engine.
+
+Put plainly: the promise holds over part of the product, and your feedback
+decides the order in which it reaches the rest.
 
 ---
 
 ## 2. What the pilot asks of you
 
-- **Twenty workstations, minimum.** Below that the spread of configurations is
-  too narrow for the results to teach you anything.
-- **Show at least one report to a real client.** This is the one thing our tests
-  cannot establish: a report that satisfies its author and a report that survives
-  a client's scrutiny are different objects.
+- **Twenty workstations, minimum**, on your real jobs. Below that the spread of
+  configurations is too narrow to learn anything.
+- **Use the tools that serve you**, not the ones we put forward. If you never
+  open the compliance module, that is a result, not a failed pilot.
+- **If compliance is relevant to you: show at least one report to a client.**
+  This is the one thing our tests cannot establish — a report that satisfies its
+  author and a report that survives a client's scrutiny are different objects.
 - **Written feedback within six weeks.** The questions are in section 6. One page
   is enough.
 
-No exclusivity is asked, no commitment to continue, no public reference. You can
-stop the pilot without giving a reason.
+No exclusivity, no commitment to continue, no public reference. You can stop the
+pilot without giving a reason.
 
 ---
 
@@ -62,23 +79,25 @@ stop the pilot without giving a reason.
 
 ## 4. Protocol
 
-1. **Extract** the release archive onto a USB stick. No installation.
+1. **Extract** the archive onto a USB stick. No installation.
 2. **Launch** `FieldOps-Launcher.ps1` and run the self-test. It must report
    **READY**. If it reports caveats, send us that output before going further —
    that is already a pilot result.
-3. **Collect** on each workstation: SecurityScan, PCHealth, NetRepair.
-4. **Produce** the ANSSI diagnostic report. It opens as HTML and converts to PDF.
-5. **Complete** the attestation page: your name, your company, place and date.
-   Twelve fields, the only writable elements in the document.
-6. **Hand a report to a client**, under the conditions in which you normally
-   would.
+3. **Carry the stick on your jobs** for six weeks and use it wherever it earns
+   its place. We are not prescribing an order: what you reach for unprompted
+   tells us more than a guided tour would.
+4. **If compliance is relevant to you**: collect with SecurityScan, PCHealth and
+   NetRepair, produce the ANSSI report, complete the attestation page (twelve
+   fields, the only writable elements in the document), and hand it to a client
+   under your normal conditions.
 
-Allow roughly ten minutes per workstation, most of it automatic collection.
+Allow roughly ten minutes per workstation for the full compliance chain, most of
+it automatic collection. The other tools stand alone and are used as needed.
 
 ### Data confidentiality
 
-The diagnostic and the report are **entirely local**. No data leaves the machine
-being examined.
+Diagnostics and reports are **entirely local**. No data leaves the machine being
+examined.
 
 The tool does also carry AI-assisted analysis features, which transmit a
 configuration summary to an external provider. **They activate only if you
@@ -87,26 +106,29 @@ recommend not configuring one.
 
 ---
 
-## 5. What the report does not establish
+## 5. What the product does not establish
 
 This section matters as much as the ones before it. A pilot that discovers these
 limits in front of a client is a failed pilot.
 
-- **This is neither an ANSSI certification nor a qualification.** ANSSI alone is
-  empowered to issue those. The document says so on its cover and in its
-  conclusion.
+- **The third verdict does not yet cover the whole product.** It is complete in
+  the compliance module and absent from the other engines, which still show a
+  binary result. That is the principal limitation, and it is being worked on.
+- **The compliance report is neither an ANSSI certification nor a
+  qualification.** ANSSI alone is empowered to issue those. The document says so
+  on its cover and in its conclusion.
 - **The project has no affiliation with ANSSI**, no accreditation, no
   partnership, no approval. The *Guide d'hygiène informatique* is a public
-  document; we reference it, nothing more.
+  document; we reference it, nothing more. The rest of the toolkit depends on no
+  framework and no country.
 - **Sixteen of the forty-two rules are out of scope by design**: training, HR
   procedures, network architecture, governance. No tool running on an isolated
-  workstation can attest to them. They appear in the report so the framework
-  stays complete, in an annex and without a verdict.
-- **The report describes one machine at one moment.** Any later configuration
+  workstation can attest to them.
+- **A report describes one machine at one moment.** Any later configuration
   change invalidates the finding. The report timestamps each of its sources and
   flags any collection older than thirty days.
-- **The tool's console remains very largely French.** The report, by contrast, is
-  fully bilingual and verified as such by the test suite.
+- **The console remains very largely French.** The compliance report, by
+  contrast, is fully bilingual and verified as such by the test suite.
 
 ---
 
@@ -114,15 +136,16 @@ limits in front of a client is a failed pilot.
 
 Six questions. Answer briefly; short and blunt beats an evaluation report.
 
-1. **Did you show it to a client? What did they say?**
-   *The question that matters. The other five are secondary.*
-2. Was "partially verified" understood, or did you have to explain it? If so, how
-   did you put it?
-3. What did you look for in the report and fail to find?
-4. What did you find in it that was useless, or wrong?
-5. Out of twenty workstations, how many reports would you have handed over as
-   they were, with no edit?
-6. Would you charge for it? How much, and to which client?
+1. **Which tools did you actually use, and which did you never open?**
+   *The question that matters. A tool nobody opens does not exist.*
+2. Was there a moment when the tool told you it could not reach a conclusion?
+   Did that help, or irritate?
+3. What did you have to do with another tool because this one did not do it, or
+   did it badly?
+4. If you handed a compliance report to a client: what did they say?
+5. Across twenty jobs, how many times would you have picked the stick up again
+   if it had not been provided?
+6. Would you charge for it? How much, for which part, and to which client?
 
 Any format: email, document, or a twenty-minute call if you prefer.
 

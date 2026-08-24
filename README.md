@@ -1,15 +1,16 @@
 # FieldOps Pro
 
-A portable Windows diagnostic and ANSSI compliance toolkit that runs from a USB
-stick. Nothing is installed on the machine being examined.
+A portable Windows field toolkit that runs from a USB stick. Nothing is installed
+on the machine being examined.
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1-blue.svg)](#requirements)
-[![Tests](https://img.shields.io/badge/tests-650%20passing-brightgreen.svg)](DOCS/TESTING.md)
+[![Tests](https://img.shields.io/badge/tests-679%20passing-brightgreen.svg)](DOCS/TESTING.md)
 
-FieldOps Pro evaluates a Windows machine against the **42 rules of the ANSSI
-*Guide d'hygiene informatique*** and produces a signed, bilingual report that
-distinguishes what was verified from what could not be.
+Sixteen tools for the technician standing in front of a broken machine: hardware
+and disk diagnostics, network repair, security posture, software deployment,
+directory enrolment, VPN setup, fleet reporting, incident reports, remediation
+playbooks, guided self-healing, and compliance assessment.
 
 It runs air-gapped, installs nothing, and works on any hardware.
 
@@ -17,23 +18,44 @@ It runs air-gapped, installs nothing, and works on any hardware.
 
 ## The part that matters
 
-Most compliance tools report pass or fail. FieldOps Pro reports three outcomes,
-and the third one is the reason to use it.
+Field tools report pass or fail. When a probe cannot run, or the hardware is not
+there, or the answer needs a human, they pick one of the two and move on.
+
+FieldOps Pro has a third verdict, and it is the reason to use it.
 
 | Status | Meaning |
 |--------|---------|
-| **cv** -- *conforme verifie* | The control is in place and the toolkit observed it directly |
-| **pv** -- *partiellement verifie* | Evidence is incomplete: the probe could not run, the hardware is absent, or the rule needs human judgement |
-| **hp** -- *hors perimetre* | Outside what an endpoint scan can assess -- staff training, HR procedure, physical security |
+| **Verified** | The control is in place and the toolkit observed it directly |
+| **Could not determine** | Evidence is incomplete: the probe could not run, the hardware is absent, or the question needs human judgement |
+| **Out of scope** | Outside what an endpoint scan can assess -- staff training, HR procedure, physical security |
 
 A machine with no TPM **cannot** demonstrate hardware-backed authentication.
 Reporting that as a pass is false. Reporting it as a failure implies a defect
 that is not there.
 
-An auditor needs to know which rules were actually verified and which were not.
-A report that cannot make that distinction is not evidence, and the toolkit
+Whoever reads the output needs to know what was actually checked and what was
+not. A report that cannot make that distinction is not evidence, and the toolkit
 never reports a control as satisfied on the basis that its probe returned
 nothing.
+
+**Where this stands today:** the discipline is complete in the compliance module,
+which carries it across all 42 rules as `cv` / `pv` / `hp`. The other engines
+already detect what they could not determine -- and currently discard it before
+display. Lifting the same contract into them is the next work, beginning with
+SecurityScan, which supplies the evidence behind 30 of those 42 rules.
+
+---
+
+## Compliance is a module, not the product
+
+The compliance engine assesses a machine against the **42 rules of the ANSSI
+*Guide d'hygiene informatique*** and produces a signed, bilingual, paginated
+report intended to be handed to a client.
+
+ANSSI is the first rule set, not the identity. Evaluators are pure functions over
+parsed JSON, so CIS Benchmarks, Cyber Essentials, BSI Grundschutz and NIST
+800-171 are the same shape. The rest of the toolkit is not specific to any
+country or framework.
 
 ---
 
@@ -126,7 +148,8 @@ Details, including what is transmitted and what is not:
 
 ## Quality
 
-650 tests, no network, no API key, roughly a minute.
+679 tests, no network, no API key. The full suite runs in about seven minutes;
+the 535-test subset the pre-commit hook runs takes under one.
 
 - **Branch coverage** over every decision path in the computed evaluators
 - **Property tests** throwing 200 randomised adversarial inputs at each evaluator, asserting it never throws, always returns a valid status, and is deterministic
