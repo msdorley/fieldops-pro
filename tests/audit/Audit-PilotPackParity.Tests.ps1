@@ -94,7 +94,7 @@ BeforeAll {
     $script:En = Get-PackText -Path $script:EnPath
 }
 
-Describe 'The pilot packs are present and correctly encoded' {
+Describe 'The pilot packs are present and correctly encoded' -Tag 'Slow' {
 
     It 'ships a French pack' {
         Test-Path -LiteralPath $script:FrPath | Should -BeTrue
@@ -122,7 +122,7 @@ Describe 'The pilot packs are present and correctly encoded' {
     }
 }
 
-Describe 'The two packs stay structurally parallel' {
+Describe 'The two packs stay structurally parallel' -Tag 'Slow' {
 
     It 'uses the same heading levels in the same order' {
         $fr = Get-HeadingLevels -Text $script:Fr
@@ -187,7 +187,7 @@ Describe 'The two packs stay structurally parallel' {
     }
 }
 
-Describe 'The packs do not restate what other files own' {
+Describe 'The packs do not restate what other files own' -Tag 'Slow' {
 
     It 'points at CONFIG\version.json rather than naming a version' {
         $declared = (Get-Content -LiteralPath (Join-Path $script:RepoRoot 'CONFIG\version.json') -Raw |
