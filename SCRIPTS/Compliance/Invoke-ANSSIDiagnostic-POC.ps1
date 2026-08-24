@@ -2,7 +2,7 @@
 # Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 .SYNOPSIS
-    FieldOps Pro - ANSSI Hygiene Diagnostic Report Builder v0.4
+    FieldOps Pro - ANSSI Hygiene Diagnostic Report Builder
 .DESCRIPTION
     Reads report-data.json and the premium HTML template, generates the
     compliance spectrum, module bars, module detail pages and findings,
@@ -11,7 +11,11 @@
 
     Opens the resulting PDF by default. -NoOpen for batch runs.
 
-    v0.4 changes:
+    The product version is CONFIG\version.json and is displayed by the
+    launcher alone. This header carried "v0.4" while that file said 0.6.1,
+    which is the defect audit A8 exists to catch.
+
+    This revision:
       - Block generators emit the markup of the 17/08 A4 prototype
         (REPORTS/FieldOps-Rapport-A4.html): cover, contents, management
         summary, action plan, spectrum, findings, module detail, out of

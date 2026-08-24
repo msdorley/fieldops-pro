@@ -2,13 +2,17 @@
 # Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 .SYNOPSIS
-    FieldOps Pro - ANSSI Hygiene Data Collector v0.4
+    FieldOps Pro - ANSSI Hygiene Data Collector
 .DESCRIPTION
     Reads the JSON output of the FieldOps Pro engines (SecurityScan, PCHealth,
     NetRepair, ComplianceDiff) and produces report-data.json mapping observed
     facts to the 42 ANSSI Hygiene rules.
 
-    v0.4 changes:
+    The product version is CONFIG\version.json and is displayed by the
+    launcher alone. This header carried "v0.4" while that file said 0.6.1,
+    which is the defect audit A8 exists to catch.
+
+    This revision:
       - Schema abstraction: PCHealth uses Item/Detail, SecurityScan and
         NetRepair use Check/Value. Get-CheckName / Get-CheckValue normalise.
       - Machine identity: parsed from PCHealth Identity 'System Identified'
