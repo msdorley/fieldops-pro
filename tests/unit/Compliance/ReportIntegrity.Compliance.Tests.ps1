@@ -166,10 +166,21 @@ Describe 'English report render (6.1-R9)' -Tag 'Slow' {
     }
 
     It 'the English render carries English bundle text' {
+        # Was: 'Verified (CV)', from overview.legendCvLabel. That legend block
+        # belonged to the page the A4 port replaced, so the assertion outlived
+        # the markup it was written against and failed for the wrong reason.
+        #
+        # What it should prove is that the THREE-STATE VOCABULARY -- the thing
+        # this product exists for -- reaches an English reader in English. That
+        # is a stronger claim than the old one, and it is checked in the words
+        # a reader actually sees rather than in a class name.
         $r = Invoke-ReportRender -Language 'en'
         try {
             $r.Content | Should -Match 'IT Hygiene'
-            $r.Content | Should -Match 'Verified \(CV\)'
+            $r.Content | Should -Match 'What was checked, and what was not'
+            $r.Content | Should -Match 'Verified compliant'
+            $r.Content | Should -Match 'Partially verified'
+            $r.Content | Should -Match 'Out of technical scope'
         } finally {
             Remove-Item $r.OutDir -Recurse -Force -ErrorAction SilentlyContinue
         }

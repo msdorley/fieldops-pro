@@ -1,703 +1,267 @@
-﻿<!DOCTYPE html>
-<html lang="{{t:_meta.code}}">
-<head>
-<meta charset="UTF-8">
-<title>{{t:report.anssi.cover.documentTitle}} - {{HOSTNAME}}</title>
+﻿<!doctype html><html lang="{{LANG}}"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{REPORT_ID}} &mdash; {{t:report.anssi.brand.docLine}}</title>
 <style>
-/* ============================================================
-   FIELDOPS PRO - ANSSI Diagnostic Report Template v0.4
-   Premium editorial design.
-   Print-targeted: A4 portrait.
-   ============================================================ */
+{{FONT_FACES}}
+:root{
+ --ink:#141821; --ink2:#3A4250; --ink3:#6E7684; --ink4:#9AA0AA;
+ --pap:#fff; --pap2:#F4F1EA; --hair:#D9D3C6; --hair2:#EAE5D9;
+ --seal:{{BRAND_SEAL}};
+ --cv:#1F4F2F; --cvb:#E2EDE6; --pv:#8A6420; --pvb:#F7EBD6; --hp:#6E6A5E; --hpb:#EAE7DF;
+ --up:#1F4F2F; --dn:#8A2B2B;
+ --ser:'Spectral','EB Garamond',Cambria,Georgia,serif;
+ --sans:'Inter','Segoe UI',system-ui,sans-serif;
+ --mono:'JetBrains Mono',Consolas,monospace;
+ --t0:8.4pt; --t1:9.2pt; --t2:10.5pt; --t3:13.1pt; --t4:16.4pt; --t5:20.5pt; --t6:25.6pt; --t7:32pt; --t8:44pt;
+ --u:4.5mm; --u2:2.25mm; --u4:1.125mm;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#E7E3DA;font:var(--t2)/1.5 var(--sans);color:var(--ink);-webkit-font-smoothing:antialiased;
+ -webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pg{position:relative;width:210mm;min-height:297mm;background:var(--pap);
+ margin:var(--u) auto;padding:20mm 20mm 18mm;box-shadow:0 1px 10px rgba(20,24,33,.16);overflow:hidden}
+.rh{position:absolute;top:11mm;left:20mm;right:20mm;display:flex;justify-content:space-between;
+ align-items:center;font:500 var(--t0)/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+ color:var(--ink4);padding-bottom:var(--u2);border-bottom:.3pt solid var(--hair)}
+.rhl{display:inline-flex;align-items:center;gap:var(--u2)}
+.rhl b{color:var(--ink2);font-weight:600;letter-spacing:.12em}
+.rhl i{font-style:normal;color:var(--ink4);letter-spacing:.08em}
+.fo{position:absolute;bottom:11mm;left:20mm;right:20mm;display:flex;justify-content:space-between;
+ font:500 var(--t0)/1 var(--mono);color:var(--ink4);padding-top:var(--u2);border-top:.3pt solid var(--hair)}
+.bd{padding-top:9mm}
+.pg.first .bd{padding-top:0}
 
-@page {
-  size: A4 portrait;
-  margin: 14mm 14mm 14mm 14mm;
-}
+h1{font:300 var(--t8)/1.04 var(--ser);letter-spacing:-.02em;margin:0}
+h2{font:400 var(--t6)/1.12 var(--ser);letter-spacing:-.012em;margin:0 0 var(--u2)}
+h3{font:600 var(--t0)/1 var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);
+ margin:0 0 var(--u);display:flex;align-items:center;gap:var(--u2)}
+h3:after{content:"";flex:1;height:.3pt;background:var(--hair)}
+h4{font:500 var(--t3)/1.35 var(--ser);margin:0}
+p{margin:0 0 var(--u);max-width:150mm}
+.lead{font:300 var(--t4)/1.5 var(--ser);color:var(--ink2);max-width:140mm}
+.eb{font:600 var(--t0)/1 var(--sans);letter-spacing:.24em;text-transform:uppercase;color:var(--seal);margin:0 0 var(--u)}
+.sm{font-size:var(--t1);color:var(--ink3)}
+.n{font-variant-numeric:tabular-nums}
 
-* { box-sizing: border-box; }
+/* title */
+.tp{display:flex;flex-direction:column;height:257mm}
+.tp .mid{flex:1;display:flex;flex-direction:column;justify-content:center}
+.tpmark{display:flex;align-items:center;gap:var(--u);margin-bottom:calc(var(--u)*5)}
+.tpmark b{font:600 var(--t2)/1 var(--sans);letter-spacing:.14em;text-transform:uppercase}
+.tpmark i{font-style:normal;font:500 var(--t0)/1 var(--sans);letter-spacing:.2em;color:var(--ink3);display:block;margin-top:var(--u4)}
+.tprule{height:.6pt;background:var(--seal);width:28mm;margin:var(--u) 0}
+.tpfoot{display:flex;justify-content:space-between;align-items:flex-end;gap:var(--u)}
+.tpmeta{display:grid;grid-template-columns:32mm 1fr;gap:var(--u4) var(--u);font-size:var(--t1);margin:0}
+.tpmeta dt{color:var(--ink3);font:600 var(--t0)/1.5 var(--sans);letter-spacing:.1em;text-transform:uppercase}
+.tpmeta dd{margin:0;font-family:var(--mono);font-size:var(--t1)}
+.tpfp{flex:none;text-align:right}
+.tpfp .cap{font:500 var(--t0)/1.4 var(--sans);letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);margin-top:var(--u2)}
 
-html, body {
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 9.5pt;
-  line-height: 1.42;
-  color: #1A1F2C;
-  background: #FAFAF6;
-  -webkit-print-color-adjust: exact;
-  print-color-adjust: exact;
-  font-feature-settings: 'tnum' 1, 'lnum' 1;
-}
+/* toc */
+.toc{margin-top:var(--u)}
+.toc a{display:grid;grid-template-columns:1fr auto;gap:var(--u);text-decoration:none;color:var(--ink);
+ padding:var(--u2) 0;border-bottom:.3pt solid var(--hair2);align-items:baseline}
+.toc .tl{display:flex;gap:var(--u2);align-items:baseline}
+.toc .tn{font:600 var(--t0)/1 var(--mono);color:var(--ink4);width:9mm}
+.toc .tt{font:400 var(--t2)/1.3 var(--ser)}
+.toc .tf{font:500 var(--t1)/1 var(--mono);color:var(--ink3)}
+.toc a.sub .tt{font-size:var(--t1);color:var(--ink2)}
+.toc a.sub{padding:var(--u4) 0}
 
-.serif {
-  font-family: 'Cambria', 'Georgia', 'Times New Roman', serif;
-  letter-spacing: -0.005em;
-}
+/* numbers */
+.big{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--u);margin:0 0 var(--u)}
+.big>div{border-top:1.2pt solid var(--hair)}
+.big>div:nth-child(1){border-top-color:var(--cv)}
+.big>div:nth-child(2){border-top-color:var(--pv)}
+.big>div:nth-child(3){border-top-color:var(--hp)}
+.big b{display:block;font:300 var(--t7)/1 var(--ser);padding-top:var(--u2);font-variant-numeric:tabular-nums}
+.big>div:nth-child(1) b{color:var(--cv)}.big>div:nth-child(2) b{color:var(--pv)}.big>div:nth-child(3) b{color:var(--hp)}
+.big span{display:block;font:600 var(--t0)/1.3 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:var(--u2) 0 var(--u4)}
+.big em{font-style:normal;font-size:var(--t1);color:var(--ink2);line-height:1.45;display:block}
+.kf{border-left:1.2pt solid var(--seal);padding:var(--u2) 0 var(--u2) var(--u);margin:0 0 var(--u)}
+.kf p{margin:0}.kf b{color:var(--seal)}
+.tbl{width:100%;border-collapse:collapse;font-size:var(--t1)}
+.tbl th{text-align:left;font:600 var(--t0)/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;
+ color:var(--ink3);padding:0 var(--u2) var(--u4) 0;border-bottom:.5pt solid var(--hair)}
+.tbl td{padding:var(--u2) var(--u2) var(--u2) 0;border-bottom:.3pt solid var(--hair2);vertical-align:top}
+.tbl td.n{font-family:var(--mono);white-space:nowrap}
+.tbl tr.tot td{border-bottom:0;border-top:.5pt solid var(--hair);font-weight:600}
+.tbl.tight td{padding:var(--u4) var(--u2) var(--u4) 0}
 
-/* ---------------------- PAGE STRUCTURE ---------------------- */
-.page {
-  page-break-after: always;
-  position: relative;
-  min-height: 268mm;
-  padding-bottom: 16mm;
-}
-.page:last-child { page-break-after: auto; }
+/* diff */
+.dl{display:flex;gap:var(--u);margin:0 0 var(--u);font-size:var(--t1)}
+.dl span{display:inline-flex;align-items:center;gap:var(--u4)}
+.ar{font-weight:600;font-family:var(--mono)}
+.ar.up{color:var(--up)}.ar.dn{color:var(--dn)}.ar.sa{color:var(--ink4)}
 
-.page-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  font-size: 7.5pt;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #5C5C5C;
-  padding-bottom: 6pt;
-  border-bottom: 0.4pt solid #D9D5C8;
-  margin-bottom: 11pt;
-}
-.page-head .brand-mark {
-  font-weight: 600;
-  color: #1E3A5F;
-  letter-spacing: 0.12em;
-}
-.page-head .brand-mark::before {
-  content: "";
-  display: inline-block;
-  width: 6pt;
-  height: 6pt;
-  background: #1E3A5F;
-  border-radius: 50%;
-  margin-right: 5pt;
-  vertical-align: middle;
-  margin-top: -1pt;
-}
-.page-head .page-num {
-  font-variant-numeric: tabular-nums;
-  color: #8A8676;
-}
+/* spectrum */
+.spr{display:grid;grid-template-columns:9mm 1fr 60mm;gap:var(--u);align-items:center;
+ padding:var(--u2) 0;border-bottom:.3pt solid var(--hair2)}
+.spn{font:600 var(--t1)/1 var(--sans);letter-spacing:.08em;color:var(--ink3)}
+.spq{display:flex;gap:1.4mm}
+.sqw{position:relative;display:block}
+.sq{width:7.2mm;height:7.2mm;border-radius:.7mm;display:block}
+.sq.cv{background:var(--cv)}.sq.pv{background:var(--pv)}.sq.hp{background:#CFC9BB}
+.sqw .d{position:absolute;top:-1.2mm;right:-1.2mm;width:2.6mm;height:2.6mm;border-radius:50%;
+ border:.4pt solid #fff}
+.sqw .d.up{background:var(--up)}.sqw .d.dn{background:var(--dn)}
+.spt{font:400 var(--t2)/1.3 var(--ser)}
+.leg{display:flex;gap:calc(var(--u)*2);margin-top:var(--u);font-size:var(--t1);color:var(--ink2);flex-wrap:wrap}
+.leg span{display:inline-flex;align-items:center;gap:var(--u2)}
+.leg i{width:4.5mm;height:4.5mm;border-radius:.6mm;display:block}
 
-.page-foot {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding-top: 5pt;
-  border-top: 0.4pt solid #D9D5C8;
-  font-size: 7pt;
-  color: #8A8676;
-  display: flex;
-  justify-content: space-between;
-  letter-spacing: 0.04em;
-}
-.page-foot .ref { font-style: italic; }
-.page-foot .rid { font-variant-numeric: tabular-nums; }
+/* findings */
+.fd{border-top:.5pt solid var(--hair);padding:var(--u) 0;page-break-inside:avoid}
+.fd.s3{border-top-color:var(--seal);border-top-width:1.2pt}
+.fdh{display:grid;grid-template-columns:11mm 1fr auto;gap:var(--u);align-items:baseline}
+.fdn{font:300 var(--t5)/1 var(--ser);color:var(--hair)}
+.tags{display:flex;gap:var(--u2);flex-wrap:wrap;align-items:center;margin-top:var(--u4)}
+.rid{font:600 var(--t0)/1 var(--mono);letter-spacing:.06em;color:var(--seal)}
+.sv{font:600 var(--t0)/1 var(--sans);letter-spacing:.1em;text-transform:uppercase;padding:1.1mm 2mm;color:#fff;background:var(--ink3)}
+.sv.s3{background:var(--seal)}
+.pl{display:inline-flex;align-items:center;gap:1.6mm;font:600 var(--t0)/1 var(--sans);letter-spacing:.09em;
+ text-transform:uppercase;padding:1.1mm 2.2mm;white-space:nowrap}
+.pl u{width:2.2mm;height:2.2mm;text-decoration:none;flex:none}
+.pl.cv{background:var(--cvb);color:var(--cv)}.pl.cv u{background:var(--cv)}
+.pl.pv{background:var(--pvb);color:var(--pv)}.pl.pv u{background:var(--pv)}
+.pl.hp{background:var(--hpb);color:var(--hp)}.pl.hp u{background:var(--hp)}
+.mo{font-size:var(--t0);color:var(--ink4);text-transform:uppercase;letter-spacing:.09em}
+.obs{margin:var(--u2) 0 0 15mm;font-size:var(--t1);line-height:1.55;color:var(--ink2);max-width:140mm}
+.ev{margin:var(--u4) 0 0 15mm;font:400 var(--t0)/1.5 var(--mono);color:var(--ink4)}
+.act{margin:var(--u2) 0 0 15mm;border-left:1.2pt solid var(--cv);padding:var(--u2) 0 var(--u2) var(--u);background:#F5F8F5}
+.act .lb{font:600 var(--t0)/1 var(--sans);letter-spacing:.13em;text-transform:uppercase;color:var(--cv);display:block;margin-bottom:var(--u4)}
+.act p{margin:0;font-size:var(--t1);line-height:1.5;color:#1C4029;max-width:130mm}
+.act.none{border-left-color:var(--hair);background:transparent}
+.act.none .lb,.act.none p{color:var(--ink3)}
+.actm{display:flex;gap:var(--u);margin-top:var(--u4);font:500 var(--t0)/1 var(--sans);color:var(--ink3);letter-spacing:.06em;text-transform:uppercase}
+.actm b{color:var(--ink2);font-weight:600}
 
-/* ---------------------- DISCLAIMER ---------------------- */
-.disclaimer {
-  background: #F5E1E5;
-  border-left: 2pt solid #6B2737;
-  color: #4A1B27;
-  padding: 6pt 10pt;
-  font-size: 8pt;
-  line-height: 1.42;
-  margin-bottom: 8pt;
-}
-.disclaimer strong { font-weight: 600; }
+/* plan */
+.pl3{border-top:.5pt solid var(--hair);padding-top:var(--u2);margin-bottom:var(--u)}
+.pl3 h4{font:600 var(--t1)/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--seal);margin-bottom:var(--u2)}
+.tk{display:grid;grid-template-columns:6mm 1fr 22mm 20mm;gap:var(--u2);align-items:start;
+ padding:var(--u2) 0;border-bottom:.3pt solid var(--hair2);font-size:var(--t1)}
+.bx{width:4mm;height:4mm;border:.6pt solid var(--ink3);margin-top:.6mm}
+.tk .t b{font-weight:600}
+.tk .t span{display:block;color:var(--ink3);font-size:var(--t0);margin-top:.6mm}
+.tk .w,.tk .c{font-family:var(--mono);font-size:var(--t0);color:var(--ink2);text-transform:uppercase;letter-spacing:.06em}
 
-/* ---------------------- TITLES ---------------------- */
-.title-h1 {
-  font-family: 'Cambria', 'Georgia', serif;
-  font-size: 23pt;
-  font-weight: 400;
-  line-height: 1.03;
-  letter-spacing: -0.012em;
-  color: #1A1F2C;
-  margin: 0 0 3pt;
-}
-.title-eyebrow {
-  font-size: 8pt;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #1E3A5F;
-  font-weight: 600;
-  margin-bottom: 7pt;
-}
-.title-sub {
-  font-size: 9.5pt;
-  color: #5C5C5C;
-  margin: 3pt 0 0;
-  font-style: italic;
-  font-family: 'Cambria', 'Georgia', serif;
-}
+/* module */
+.mh{border-bottom:.5pt solid var(--hair);padding-bottom:var(--u2);margin-bottom:var(--u4)}
+.mbar{display:flex;gap:.8mm;height:1.6mm;margin:var(--u2) 0 var(--u4)}
+.mbar span:nth-child(1){background:var(--cv)}.mbar span:nth-child(2){background:var(--pv)}.mbar span:nth-child(3){background:#CFC9BB}
+.mct{font-size:var(--t1);color:var(--ink3)}
+.mct b.cv{color:var(--cv)}.mct b.pv{color:var(--pv)}.mct b.hp{color:var(--hp)}
 
-.title-h2 {
-  font-family: 'Cambria', 'Georgia', serif;
-  font-size: 18pt;
-  font-weight: 400;
-  letter-spacing: -0.01em;
-  color: #1A1F2C;
-  margin: 0 0 2pt;
-}
-.title-h2-meta {
-  font-size: 8.5pt;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #1E3A5F;
-  font-weight: 600;
-  margin-bottom: 4pt;
-}
+/* attestation */
+ul.li{margin:0;padding:0;list-style:none}
+ul.li li{position:relative;padding:var(--u2) 0 var(--u2) 6mm;border-bottom:.3pt solid var(--hair2);font-size:var(--t1);line-height:1.5;color:var(--ink2)}
+ul.li li:before{content:"";position:absolute;left:.6mm;top:4.6mm;width:1.6mm;height:1.6mm;background:var(--seal);border-radius:50%}
+.hb{font:400 var(--t0)/1.7 var(--mono);word-break:break-all;background:var(--pap2);border:.3pt solid var(--hair);padding:var(--u2) var(--u2);color:var(--ink2)}
+.fpwrap{display:flex;gap:var(--u);align-items:center;margin-bottom:var(--u)}
+.fpb{border:.3pt solid var(--hair);padding:var(--u2);flex:none;background:#fff}
+.cmd{background:var(--ink);padding:var(--u2);margin-top:var(--u4)}
+.cmd code{font:400 var(--t0)/1.7 var(--mono);color:#BBD5C4;white-space:pre-wrap;display:block}
+.sig{display:grid;grid-template-columns:1fr 1fr;gap:var(--u);margin-top:var(--u)}
+.sgb{border:.3pt solid var(--hair);padding:3.4mm}
+.sgb .l{font:600 var(--t0)/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--seal);margin:0 0 var(--u2)}
+label.fk{font:600 7.6pt/1.25 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);display:block;margin-bottom:var(--u4)}
+.fi{display:block;width:100%;border:0;border-bottom:.5pt solid var(--hair);background:#FBFAF6;
+ font:400 var(--t3)/1.6 var(--ser);color:var(--ink);padding:.7mm 1mm;margin-bottom:var(--u4);outline:none}
+.fi:focus{border-bottom-color:var(--seal);background:#FBF7F6;outline:1.5pt solid rgba(122,43,43,.25);outline-offset:1pt}
+.fi::placeholder{color:#B9B2A2;font-style:italic}
+.colo{margin-top:var(--u);padding-top:var(--u);border-top:.3pt solid var(--hair);font-size:var(--t0);
+ color:var(--ink3);line-height:1.7;display:grid;grid-template-columns:repeat(3,1fr);gap:var(--u)}
+.colo b{color:var(--ink2);font-weight:600;display:block;margin-bottom:var(--u4);letter-spacing:.1em;text-transform:uppercase}
+.tb{position:fixed;right:14px;bottom:14px;display:flex;gap:7px;z-index:9}
+.tb button{font:600 9.5px/1 var(--sans);letter-spacing:.09em;text-transform:uppercase;padding:10px 14px;
+ border:1px solid var(--seal);background:var(--seal);color:#fff;cursor:pointer}
+.tb button.g{background:#fff;color:var(--seal)}
+.tb button:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@page{size:A4;margin:0}
+@media print{body{background:#fff}.pg{margin:0;box-shadow:none;page-break-after:always}
+ .pg:last-child{page-break-after:auto}.tb{display:none}
+ .fi{border-bottom:.5pt solid var(--ink3);background:transparent}}
 
-.section-label {
-  font-size: 7.5pt;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #1E3A5F;
-  font-weight: 600;
-  margin: 8pt 0 4pt;
-}
-.section-label::after {
-  content: "";
-  display: inline-block;
-  width: 14pt;
-  height: 0.5pt;
-  background: #1E3A5F;
-  vertical-align: middle;
-  margin-left: 6pt;
-  opacity: 0.4;
-}
+/* --- ajouts du moteur (le reste de cette feuille vient du prototype A4) --- */
+.title-h1{font:300 var(--t8)/1.04 var(--ser);letter-spacing:-.02em;margin:0}
+.serif{font-family:var(--ser)}
+/* Deux valeurs, deux portees, donc deux classes. Le test d'integrite
+   identifie l'empreinte du DOCUMENT par sa classe ; un nom partage lui
+   faisait prendre l'empreinte des constats, rencontree la premiere. */
+.hash-block,.digest-block{font:400 var(--t0)/1.7 var(--mono);word-break:break-all;background:var(--pap2);
+ border:.3pt solid var(--hair);padding:var(--u2);color:var(--ink2)}
+.none{font-size:var(--t1);color:var(--ink3);font-style:italic}
+.fnm{font:400 var(--t0)/1.4 var(--mono);color:var(--ink4)}
+.hsh{font-size:var(--t0);color:var(--ink3)}
+td.stale{color:var(--dn);font-weight:600}
+.extent{border-left:1.2pt solid var(--seal);padding-left:var(--u2);color:var(--ink2);max-width:150mm}
+.fpwrap{display:flex;gap:var(--u);align-items:flex-start;margin:var(--u2) 0 var(--u2)}
+.fpb{border:.3pt solid var(--hair);padding:var(--u2);flex:none;background:#fff;line-height:0}
+.fpx{flex:1;min-width:0}
+.eb.cont{color:var(--ink3);border-bottom:.3pt solid var(--hair);padding-bottom:var(--u4);margin-bottom:var(--u2)}
+/* signature: ce que signer engage, et ou l'inscriptible s'arrete */
+.sgb .l .rl{display:block;font:400 var(--t0)/1.3 var(--sans);letter-spacing:.04em;
+ text-transform:none;color:var(--ink3);margin-top:.4mm}
+.sgb .pd{display:grid;grid-template-columns:1fr 1fr;gap:var(--u2)}
+.fi.sg{height:9mm;border-bottom:.5pt solid var(--ink3)}
+.kf.stale{border-left-color:var(--dn)}
+.kf.stale b{color:var(--dn)}
+/* diffusion : sur la couverture en clair, sur chaque folio en rappel */
+.clsbar{display:block;margin-top:var(--u);max-width:145mm;font-size:var(--t1);
+ color:var(--ink2);border-left:1.2pt solid var(--seal);padding-left:var(--u2)}
+.clsbar span{display:inline-block;font:600 var(--t0)/1 var(--sans);letter-spacing:.14em;
+ text-transform:uppercase;color:var(--seal);margin-right:var(--u2)}
+.fo .cls{font:600 var(--t0)/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--seal)}
 
-/* ---------------------- COMPLIANCE SPECTRUM (signature element) ---------------------- */
-.spectrum-wrap {
-  margin: 5pt 0 10pt;
-  background: #FFFFFF;
-  border: 0.4pt solid #D9D5C8;
-  border-radius: 2pt;
-  padding: 9pt 12pt 8pt;
-}
-.spectrum-row {
-  display: flex;
-  align-items: center;
-  gap: 7pt;
-  margin-bottom: 2pt;
-}
-.spectrum-row:last-child { margin-bottom: 0; }
-.spectrum-label {
-  flex: 0 0 13pt;
-  font-family: 'Cambria', serif;
-  font-size: 8.5pt;
-  font-style: italic;
-  color: #5C5C5C;
-  text-align: right;
-}
-.spectrum-cells {
-  display: flex;
-  gap: 2.5pt;
-  flex: 1;
-}
-.spectrum-name {
-  font-size: 6.8pt;
-  color: #8A8676;
-  letter-spacing: 0.03em;
-  flex: 0 0 auto;
-  white-space: nowrap;
-  margin-left: 3pt;
-}
-.cell {
-  width: 11pt;
-  height: 11pt;
-  border-radius: 1.5pt;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 6pt;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0;
-}
-.cell.cv { background: #DAEDDE; color: #1F4F2F; border: 0.4pt solid #B8DBC0; }
-.cell.pv { background: #F5E4C9; color: #6B3F12; border: 0.4pt solid #E3CB97; }
-.cell.hp { background: #E8E5DD; color: #5C5C5C; border: 0.4pt solid #D2CDC0; }
 
-.spectrum-legend {
-  display: flex;
-  gap: 14pt;
-  margin-top: 7pt;
-  padding-top: 6pt;
-  border-top: 0.3pt solid #E8E5DD;
-  font-size: 7.5pt;
-  color: #5C5C5C;
-  letter-spacing: 0.04em;
-}
-.spectrum-legend .key {
-  display: inline-flex;
-  align-items: center;
-  gap: 4pt;
-}
-.spectrum-legend .swatch {
-  width: 7pt;
-  height: 7pt;
-  border-radius: 1.5pt;
-}
-.spectrum-legend .swatch.cv { background: #DAEDDE; border: 0.4pt solid #B8DBC0; }
-.spectrum-legend .swatch.pv { background: #F5E4C9; border: 0.4pt solid #E3CB97; }
-.spectrum-legend .swatch.hp { background: #E8E5DD; border: 0.4pt solid #D2CDC0; }
-.spectrum-legend .count { font-weight: 600; color: #1A1F2C; font-variant-numeric: tabular-nums; }
+.fkl{font:600 var(--t0)/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:0 0 var(--u4)}
+.fph{font-size:var(--t0);color:var(--ink4);margin:var(--u4) 0 0;line-height:1.4}
+.fi.mono8{font:600 var(--t1)/1.6 var(--mono);letter-spacing:.12em;text-transform:lowercase}
+.fi.mono8::placeholder{letter-spacing:0;font-family:var(--sans);font-weight:400}
+/* Le placeholder herite l'italique de .fi::placeholder et la graisse 600 de
+   .fi.mono8 : la combinaison Inter 600 italique n'est pas embarquee, et Chrome
+   fabriquait une oblique synthetique -- une fonte Type 3 visible au pdffonts du
+   tirage 14:52. Une indication ne doit de toute facon pas etre plus grasse que
+   la valeur qu'elle attend : 400 est a la fois embarque et mieux compose. */
 
-/* ---------------------- MACHINE BLOCK ---------------------- */
-.machine-card {
-  background: #FFFFFF;
-  border: 0.4pt solid #D9D5C8;
-  border-radius: 2pt;
-  padding: 7pt 13pt;
-  margin: 5pt 0 0;
-}
-.machine-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 1.8pt 0;
-  font-size: 9pt;
-  border-bottom: 0.3pt solid #F0EDE2;
-}
-.machine-row:last-child { border-bottom: none; }
-.machine-key {
-  color: #8A8676;
-  font-size: 7.5pt;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  flex: 0 0 38%;
-}
-.machine-val {
-  font-weight: 500;
-  color: #1A1F2C;
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-/* ---------------------- FINDINGS ---------------------- */
-.findings-list { margin: 3pt 0 0; }
-.finding {
-  display: flex;
-  gap: 10pt;
-  padding: 5pt 0;
-  border-bottom: 0.3pt solid #E8E5DD;
-}
-.finding:last-child { border-bottom: none; }
-.finding-num {
-  flex: 0 0 18pt;
-  font-family: 'Cambria', serif;
-  font-size: 13pt;
-  font-style: italic;
-  color: #1E3A5F;
-  line-height: 0.95;
-  text-align: right;
-  padding-top: 1pt;
-}
-.finding-body { flex: 1; min-width: 0; }
-.finding-title {
-  font-weight: 600;
-  font-size: 10pt;
-  color: #1A1F2C;
-  margin-bottom: 1pt;
-}
-.finding-note {
-  font-size: 8.5pt;
-  color: #5C5C5C;
-  line-height: 1.4;
-}
-.finding-pill { flex: 0 0 auto; align-self: flex-start; padding-top: 1pt; }
-
-/* ---------------------- PILLS ---------------------- */
-.pill {
-  display: inline-block;
-  padding: 1.5pt 7pt 1pt;
-  border-radius: 8pt;
-  font-size: 7pt;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-.pill.cv { background: #DAEDDE; color: #1F4F2F; border: 0.4pt solid #B8DBC0; }
-.pill.pv { background: #F5E4C9; color: #6B3F12; border: 0.4pt solid #E3CB97; }
-.pill.hp { background: #E8E5DD; color: #5C5C5C; border: 0.4pt solid #D2CDC0; }
-
-/* ---------------------- MODULE BARS (page 2) ---------------------- */
-.module-list { margin: 6pt 0; }
-.module-row {
-  display: flex;
-  align-items: center;
-  gap: 10pt;
-  padding: 6.5pt 0;
-  border-bottom: 0.3pt solid #E8E5DD;
-}
-.module-row:last-child { border-bottom: none; }
-.module-roman {
-  flex: 0 0 24pt;
-  font-family: 'Cambria', serif;
-  font-style: italic;
-  font-size: 11pt;
-  color: #1E3A5F;
-  text-align: right;
-}
-.module-info { flex: 1; min-width: 0; }
-.module-title {
-  font-size: 9.5pt;
-  font-weight: 500;
-  color: #1A1F2C;
-  margin-bottom: 3pt;
-}
-.module-bar {
-  height: 5pt;
-  background: #E8E5DD;
-  border-radius: 2.5pt;
-  overflow: hidden;
-  display: flex;
-}
-.module-seg.cv { background: #5A9670; }
-.module-seg.pv { background: #C9923E; }
-.module-seg.hp { background: #B8B3A4; }
-.module-counts {
-  flex: 0 0 auto;
-  font-size: 8pt;
-  color: #5C5C5C;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-  text-align: right;
-  min-width: 88pt;
-}
-.module-counts .c-cv { color: #1F4F2F; font-weight: 600; }
-.module-counts .c-pv { color: #8C5520; font-weight: 600; }
-.module-counts .c-hp { color: #5C5C5C; font-weight: 600; }
-
-/* ---------------------- RULE DETAILS (module pages) ---------------------- */
-.module-overview {
-  display: flex;
-  align-items: baseline;
-  gap: 14pt;
-  margin-bottom: 14pt;
-  padding-bottom: 10pt;
-  border-bottom: 0.4pt solid #D9D5C8;
-}
-.module-overview-numbers {
-  flex: 0 0 auto;
-  display: flex;
-  gap: 10pt;
-}
-.mon-cell {
-  display: flex;
-  align-items: baseline;
-  gap: 4pt;
-}
-.mon-num {
-  font-family: 'Cambria', serif;
-  font-size: 22pt;
-  font-weight: 500;
-  line-height: 1;
-}
-.mon-num.cv { color: #1F4F2F; }
-.mon-num.pv { color: #8C5520; }
-.mon-num.hp { color: #5C5C5C; }
-.mon-lbl {
-  font-size: 7.5pt;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #8A8676;
-}
-.module-overview-bar {
-  flex: 1;
-  height: 6pt;
-  background: #E8E5DD;
-  border-radius: 3pt;
-  overflow: hidden;
-  display: flex;
-  margin-top: 6pt;
-}
-
-.rule {
-  position: relative;
-  padding: 9pt 0 9pt 12pt;
-  border-bottom: 0.3pt solid #E8E5DD;
-}
-.rule:last-child { border-bottom: none; }
-.rule::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 11pt;
-  bottom: 11pt;
-  width: 2.5pt;
-  border-radius: 1.5pt;
-}
-.rule.cv::before { background: #5A9670; }
-.rule.pv::before { background: #C9923E; }
-.rule.hp::before { background: #B8B3A4; }
-
-.rule-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10pt;
-  margin-bottom: 3pt;
-}
-.rule-id {
-  font-family: 'Cambria', serif;
-  font-style: italic;
-  font-size: 10pt;
-  color: #1E3A5F;
-  flex: 0 0 26pt;
-}
-.rule-name {
-  font-size: 10pt;
-  font-weight: 500;
-  color: #1A1F2C;
-  flex: 1;
-  line-height: 1.35;
-}
-.rule-pill { flex: 0 0 auto; }
-
-.rule-meta {
-  font-size: 8.5pt;
-  color: #5C5C5C;
-  line-height: 1.45;
-  margin: 2pt 0;
-  padding-left: 26pt;
-}
-.rule-evidence {
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 7pt;
-  color: #5C5C5C;
-  background: #F2EFE3;
-  padding: 4pt 7pt;
-  border-radius: 2pt;
-  margin: 4pt 0 0 26pt;
-  letter-spacing: -0.005em;
-}
-
-/* ---------------------- SIGNOFF PAGE ---------------------- */
-.synth-intro {
-  font-size: 10pt;
-  line-height: 1.55;
-  color: #1A1F2C;
-  margin: 0 0 14pt;
-  text-align: justify;
-}
-.synth-intro strong {
-  font-weight: 600;
-  color: #1E3A5F;
-}
-
-.limits-list {
-  font-size: 9pt;
-  line-height: 1.5;
-  margin: 0 0 14pt;
-  padding-left: 16pt;
-  color: #1A1F2C;
-}
-.limits-list li {
-  margin-bottom: 3.5pt;
-}
-.limits-list li::marker { color: #1E3A5F; }
-
-.hash-block {
-  font-family: 'Consolas', 'Courier New', monospace;
-  font-size: 7.5pt;
-  color: #1A1F2C;
-  background: #F2EFE3;
-  padding: 8pt 10pt;
-  border: 0.4pt solid #D9D5C8;
-  border-radius: 2pt;
-  word-break: break-all;
-  letter-spacing: 0.01em;
-  line-height: 1.45;
-}
-
-.signature-row {
-  display: flex;
-  gap: 14pt;
-  margin-top: 16pt;
-}
-.signature-cell {
-  flex: 1;
-  border: 0.4pt solid #D9D5C8;
-  border-radius: 2pt;
-  padding: 10pt 14pt;
-  background: #FFFFFF;
-}
-.sig-lbl {
-  font-size: 7pt;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: #1E3A5F;
-  font-weight: 600;
-  margin-bottom: 4pt;
-}
-.sig-name {
-  font-family: 'Cambria', serif;
-  font-size: 11pt;
-  color: #1A1F2C;
-}
-.sig-line {
-  border-bottom: 0.4pt dashed #B8B3A4;
-  height: 22pt;
-  margin: 14pt 0 4pt;
-}
-.sig-sub {
-  font-size: 7pt;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: #8A8676;
-}
-
-/* ---------------------- COVER DECORATIVE FLOURISH ---------------------- */
-.cover-flourish {
-  display: flex;
-  align-items: center;
-  gap: 8pt;
-  margin: 7pt 0 5pt;
-}
-.cover-flourish::before, .cover-flourish::after {
-  content: "";
-  flex: 1;
-  height: 0.4pt;
-  background: #D9D5C8;
-}
-.cover-flourish .ornament {
-  width: 5pt;
-  height: 5pt;
-  background: #1E3A5F;
-  transform: rotate(45deg);
-  flex: 0 0 auto;
-}
-</style>
-</head>
-<body>
-
-<!-- ============== PAGE 1: COVER ============== -->
-<div class="page">
-  <div class="page-head">
-    <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
-    <span class="page-num">Page 1 / {{PAGE_TOTAL}}</span>
-  </div>
-
-  <div class="disclaimer">
-    <strong>{{t:report.anssi.cover.disclaimerLead}}</strong> {{t:report.anssi.cover.disclaimerBody}}
-  </div>
-
-  <div class="title-eyebrow">{{t:report.anssi.cover.documentType}}</div>
-  <h1 class="title-h1 serif">{{t:report.anssi.cover.title}}</h1>
-  <p class="title-sub">{{t:report.anssi.cover.subtitle}}</p>
-
-  <div class="cover-flourish"><span class="ornament"></span></div>
-
-  <div class="section-label">{{t:report.anssi.cover.spectrumLabel}}</div>
-  {{SPECTRUM}}
-
-  <div class="section-label">{{t:report.anssi.cover.machineLabel}}</div>
-  <div class="machine-card">
-    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.hostname}}</span><span class="machine-val">{{HOSTNAME}}</span></div>
-    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.makeModel}}</span><span class="machine-val">{{MAKE_MODEL}}</span></div>
-    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.serial}}</span><span class="machine-val">{{SERIAL}}</span></div>
-    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.os}}</span><span class="machine-val">{{OS}}</span></div>
-    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.directory}}</span><span class="machine-val">{{DIRECTORY}}</span></div>
-    <div class="machine-row"><span class="machine-key">{{t:report.anssi.machineFields.date}}</span><span class="machine-val">{{REPORT_DATE_HUMAN}}</span></div>
-  </div>
-
-  <div class="section-label">{{t:report.anssi.cover.findingsLabel}}</div>
-  <div class="findings-list">
-    {{TOP_FINDINGS}}
-  </div>
-
-  <div class="page-foot">
-    <span class="ref">Technicien &middot; {{TECHNICIAN}}</span>
-    <span class="rid">{{REPORT_ID}}</span>
-  </div>
-</div>
-
-<!-- ============== PAGE 2: COVERAGE BY MODULE ============== -->
-<div class="page">
-  <div class="page-head">
-    <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
-    <span class="page-num">Page 2 / {{PAGE_TOTAL}}</span>
-  </div>
-
-  <div class="title-h2-meta">{{t:report.anssi.overview.sectionTitle}}</div>
-  <h2 class="title-h2 serif">{{t:report.anssi.overview.moduleCoverageTitle}}</h2>
-  <p class="title-sub">{{t:report.anssi.overview.coverageCaption}}</p>
-
-  <div class="cover-flourish"><span class="ornament"></span></div>
-
-  <div class="module-list">
-    {{MODULE_BARS}}
-  </div>
-
-  <div class="section-label">{{t:report.anssi.overview.legendTitle}}</div>
-  <ul class="limits-list">
-    <li><strong>{{t:report.anssi.overview.legendCvLabel}}</strong> &mdash; {{t:report.anssi.overview.legendCvBody}}</li>
-    <li><strong>{{t:report.anssi.overview.legendPvLabel}}</strong> &mdash; {{t:report.anssi.overview.legendPvBody}}</li>
-    <li><strong>{{t:report.anssi.overview.legendHpLabel}}</strong> &mdash; {{t:report.anssi.overview.legendHpBody}}</li>
-  </ul>
-
-  <div class="page-foot">
-    <span class="ref">{{t:report.anssi.overview.footerRef}}</span>
-    <span class="rid">{{REPORT_ID}}</span>
-  </div>
-</div>
-
-<!-- ============== PAGES 3-N: MODULE DETAILS ============== -->
+.tpfp{flex:none;text-align:right}
+</style></head><body>
+<section class="pg first" id="p1"><div class="bd"><div class="tp">
+ <div><div class="tpmark">{{BRAND_MARK_LARGE}}<div><b>{{BRAND_NAME}}</b><i>{{t:report.anssi.brand.tagline}}</i></div></div></div>
+ <div class="mid"><p class="eb">{{t:report.anssi.cover.documentType}}</p>
+  <h1 class="title-h1 serif">{{t:report.anssi.cover.title}}</h1><div class="tprule"></div>
+  <p class="lead">{{t:report.anssi.cover.subtitle}}</p></div>
+ <div><div class="tpfoot"><dl class="tpmeta">
+   {{CLIENT_ROW}}
+   <dt>{{t:report.anssi.cover.machineLabel}}</dt><dd>{{HOSTNAME}}</dd>
+   <dt>{{t:report.anssi.cover.referenceLabel}}</dt><dd>{{REPORT_ID}}</dd>
+   <dt>{{t:report.anssi.cover.issuedLabel}}</dt><dd>{{REPORT_DATE_HUMAN}}</dd>
+   <dt>{{t:report.anssi.machineFields.technician}}</dt><dd>{{TECHNICIAN}}</dd>
+   <dt>{{t:report.anssi.machineFields.makeModel}}</dt><dd>{{MAKE_MODEL}}</dd>
+   <dt>{{t:report.anssi.machineFields.os}}</dt><dd>{{OS}}</dd>
+  </dl><div class="tpfp">{{FINGERPRINT}}<p class="cap">{{t:report.anssi.cover.fingerprintLabel}}</p></div></div>
+  <p class="clsbar"><span>{{CLASSIFICATION}}</span>{{t:report.anssi.classification.coverNote}}</p>
+  <p class="sm" style="margin-top:var(--u2);max-width:145mm"><b>{{t:report.anssi.cover.disclaimerLead}}</b>
+   {{t:report.anssi.cover.disclaimerBody}}</p></div></div></div></section>
+{{TOC_PAGE}}
+{{SUMMARY_PAGE}}
+{{ACTION_PLAN_PAGE}}
+{{SPECTRUM_PAGE}}
+{{TOP_FINDINGS}}
 {{MODULE_DETAILS}}
-
-<!-- ============== PAGE N+1: SIGNOFF ============== -->
-<div class="page">
-  <div class="page-head">
-    <span class="brand-mark">FieldOps Pro &middot; Service Diagnostic</span>
-    <span class="page-num">Page {{PAGE_TOTAL}} / {{PAGE_TOTAL}}</span>
-  </div>
-
-  <div class="title-h2-meta">{{t:report.anssi.conclusion.sectionTitle}}</div>
-  <h2 class="title-h2 serif">{{t:report.anssi.conclusion.synthesisTitle}}</h2>
-
-  <div class="cover-flourish"><span class="ornament"></span></div>
-
-  <div class="section-label">{{t:report.anssi.conclusion.perimeterLabel}}</div>
-  <p class="synth-intro">
-    {{t:report.anssi.conclusion.perimeterBody}}
-  </p>
-
-  <div class="section-label">{{t:report.anssi.conclusion.limitsLabel}}</div>
-  <ul class="limits-list">
-    <li>{{t:report.anssi.conclusion.limit1}}</li>
-    <li>{{t:report.anssi.conclusion.limit2}}</li>
-    <li>{{t:report.anssi.conclusion.limit3}}</li>
-    <li>{{t:report.anssi.conclusion.limit4}}</li>
-    <li>{{t:report.anssi.conclusion.limit5}}</li>
-  </ul>
-
-  <div class="section-label">{{t:report.anssi.conclusion.integrityLabel}}</div>
-  <p style="font-size: 8.5pt; color: #5C5C5C; margin: 0 0 6pt;">{{t:report.anssi.conclusion.integrityBody}}</p>
-  <div class="hash-block">{{REPORT_HASH}}</div>
-
-  <div class="signature-row">
-    <div class="signature-cell">
-      <div class="sig-lbl">{{t:report.anssi.conclusion.technicianLabel}}</div>
-      <div class="sig-name">{{TECHNICIAN}}</div>
-      <div class="sig-line"></div>
-      <div class="sig-sub">{{t:report.anssi.conclusion.signatureLabel}}</div>
-    </div>
-    <div class="signature-cell">
-      <div class="sig-lbl">{{t:report.anssi.conclusion.contactLabel}}</div>
-      <div class="sig-name">{{CUSTOMER_CONTACT}}</div>
-      <div class="sig-line"></div>
-      <div class="sig-sub">{{t:report.anssi.conclusion.signatureLabel}}</div>
-    </div>
-  </div>
-
-  <div class="page-foot">
-    <span class="ref">{{t:report.anssi.conclusion.footerRef}}</span>
-    <span class="rid">{{REPORT_ID}}</span>
-  </div>
-</div>
-
-</body>
-</html>
+{{OUT_OF_SCOPE_PAGE}}
+{{PROVENANCE_PAGE}}
+{{CONCLUSION_SECTION}}
+{{ATTESTATION_PAGE}}
+<div class="tb"><button class="g" id="sv">{{t:report.anssi.ui.saveSigned}}</button><button id="pr">{{t:report.anssi.ui.print}}</button></div>
+<script>var REF="{{REPORT_ID}}";(function(){
+/* Seuls les champs marques data-sig sont serialises. Le reste du document ne
+   peut pas etre ecrit par ce script -- ce qui ne le protege pas d'un editeur
+   de texte : la protection est l'empreinte, pas ce fichier. */
+var p=document.getElementById('pr');if(p)p.onclick=function(){print();};
+var s=document.getElementById('sv');if(s)s.onclick=function(){
+document.querySelectorAll('input[data-sig]').forEach(function(f){f.setAttribute('value',f.value);});
+var b=new Blob(['<!doctype html>\n'+document.documentElement.outerHTML],{type:'text/html;charset=utf-8'}),a=document.createElement('a');
+a.href=URL.createObjectURL(b);a.download=REF+'-signe.html';document.body.appendChild(a);a.click();a.remove();};})();</script>
+</body></html>
