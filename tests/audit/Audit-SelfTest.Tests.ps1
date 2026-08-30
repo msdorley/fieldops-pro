@@ -44,8 +44,15 @@ BeforeAll {
     # Directories a healthy deployment has. TOOLS and PLAYBOOKS are featured,
     # not optional: their absence costs a capability and is warned about, so a
     # fresh-release fixture must include them.
+    # ASSETS\fonts is NOT decoration. The report template names Spectral, Inter
+    # and JetBrains Mono; none is installed on a stock Windows machine and none
+    # can be fetched at runtime. Without this directory the renderer falls back
+    # to Cambria/Segoe UI/Consolas -- the document stops looking like itself and,
+    # worse, stops looking the SAME from one technician's stick to another. A
+    # deployment missing it is not healthy, so the fixture that stands for a
+    # healthy deployment must contain it.
     foreach ($d in @('SCRIPTS\Core','SCRIPTS\Compliance','SCRIPTS\Templates',
-                     'CONFIG\lang','DOCS','TOOLS','PLAYBOOKS')) {
+                     'CONFIG\lang','DOCS','TOOLS','PLAYBOOKS','ASSETS\fonts')) {
         New-Item -ItemType Directory -Path (Join-Path $script:Fresh $d) -Force | Out-Null
     }
 
@@ -63,6 +70,13 @@ BeforeAll {
         'SCRIPTS\Templates\anssi-diagnostic.html'
         'CONFIG\lang\fr.json'
         'CONFIG\lang\en.json'
+        # One face of each family. If the font assets stop shipping, this list
+        # fails here rather than in a customer's hands three weeks later, when
+        # the only symptom is a report that looks subtly wrong and nobody can
+        # say why.
+        'ASSETS\fonts\spectral-400-normal.woff2'
+        'ASSETS\fonts\inter-400-normal.woff2'
+        'ASSETS\fonts\jetbrains-mono-400-normal.woff2'
         'LICENSE'
         'NOTICE'
     )

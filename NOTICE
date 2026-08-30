@@ -41,3 +41,25 @@ Use of the Anthropic API is governed by Anthropic's own terms, not by this
 licence. FieldOps Pro transmits diagnostic findings to that service when the
 capability is enabled; operators are responsible for determining whether that
 is appropriate for their data.
+
+
+BUNDLED FONTS
+------------------------------------------------------------------------------
+
+The ANSSI diagnostic report embeds three typefaces so that the document renders
+identically on every machine, offline. They are redistributed under the SIL
+Open Font License 1.1, which permits bundling; the full licence text for each
+accompanies the font files.
+
+  Spectral         Copyright 2017 Production Type
+                   ASSETS/fonts/LICENSES/spectral-OFL.txt
+  Inter            Copyright 2016 The Inter Project Authors
+                   ASSETS/fonts/LICENSES/inter-OFL.txt
+  JetBrains Mono   Copyright 2020 The JetBrains Mono Project Authors
+                   ASSETS/fonts/LICENSES/jetbrains-mono-OFL.txt
+
+The bundled files are subsets: only the glyphs the report can produce (Latin,
+Latin-1 Supplement and typographic punctuation) are retained, which is why they
+are a fraction of the size of the originals. Subsetting is a Modified Version
+under OFL 1.1; the Reserved Font Names are unchanged and the fonts are not sold
+separately. Sources: the @fontsource distributions of the upstream projects.

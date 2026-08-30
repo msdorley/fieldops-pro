@@ -4,7 +4,36 @@
     "GeneratedAt": "2026-05-13T23:45:00+02:00",
     "GeneratedAtHuman": "13 mai 2026, 23:45 (heure de Paris)",
     "Technician": "Technicien de demonstration",
-    "CustomerContact": "A completer"
+    "CustomerContact": "",
+    "Sources": [
+      {
+        "Engine": "SecurityScan",
+        "File": "SecurityScan_SAMPLE-WS01_20260402_0914.json",
+        "Sha256": "0d02b974156dce7f318ee3b46346cc93f00a03021e3436e4c822b0b1618aa680",
+        "ObservedAt": "2026-04-02T09:14:00+02:00",
+        "ObservedAtHuman": "02/04/2026 09:14",
+        "AgeDays": 41
+      },
+      {
+        "Engine": "PCHealth",
+        "File": "PCHealth_SAMPLE-WS01_20260513_2337.json",
+        "Sha256": "d87ce278af31f04daa244e875c0047f1ebaf0da3b241928453bc046b5bac2c16",
+        "ObservedAt": "2026-05-13T23:37:00+02:00",
+        "ObservedAtHuman": "13/05/2026 23:37",
+        "AgeDays": 0
+      },
+      {
+        "Engine": "NetRepair",
+        "File": "NetRepair_SAMPLE-WS01_20260508_1708.json",
+        "Sha256": "03950e1b2886fb1a6371c4c1235495462e4e56f64b7e1c5158a0b262e0e07927",
+        "ObservedAt": "2026-05-08T17:08:00+02:00",
+        "ObservedAtHuman": "08/05/2026 17:08",
+        "AgeDays": 5
+      }
+    ],
+    "VerdictDigest": "4191ed923ecc439a77f1390365781d58c85148a92e4271ac478b2ab29e9088ea",
+    "Client": "Direction des systemes d information - client de demonstration",
+    "Classification": ""
   },
   "Machine": {
     "Hostname": "SAMPLE-WS01",
@@ -13,7 +42,12 @@
     "Os": "Windows 11 Professionnel (build 26200, 25H2)",
     "Directory": "Workplace Joined"
   },
-  "Summary": { "CountCV": 8, "CountPV": 18, "CountHP": 16, "Total": 42 },
+  "Summary": {
+    "CountCV": 8,
+    "CountPV": 18,
+    "CountHP": 16,
+    "Total": 42
+  },
   "TopFindings": [
     {
       "Title": "Trois mises a jour Windows en echec",
@@ -35,108 +69,1066 @@
     }
   ],
   "Modules": [
-    { "Number": "I",    "Title": "Sensibiliser et former",                "RuleCount": 3, "Counts": { "Cv": 0, "Pv": 0, "Hp": 3 } },
-    { "Number": "II",   "Title": "Connaitre le systeme d'information",     "RuleCount": 4, "Counts": { "Cv": 0, "Pv": 3, "Hp": 1 } },
-    { "Number": "III",  "Title": "Authentifier et controler les acces",    "RuleCount": 6, "Counts": { "Cv": 0, "Pv": 6, "Hp": 0 } },
-    { "Number": "IV",   "Title": "Securiser les postes",                   "RuleCount": 5, "Counts": { "Cv": 3, "Pv": 1, "Hp": 1 } },
-    { "Number": "V",    "Title": "Securiser le reseau",                    "RuleCount": 8, "Counts": { "Cv": 1, "Pv": 3, "Hp": 4 } },
-    { "Number": "VI",   "Title": "Securiser l'administration",             "RuleCount": 3, "Counts": { "Cv": 0, "Pv": 1, "Hp": 2 } },
-    { "Number": "VII",  "Title": "Gerer le nomadisme",                     "RuleCount": 4, "Counts": { "Cv": 1, "Pv": 2, "Hp": 1 } },
-    { "Number": "VIII", "Title": "Maintenir le SI a jour",                 "RuleCount": 2, "Counts": { "Cv": 2, "Pv": 0, "Hp": 0 } },
-    { "Number": "IX",   "Title": "Superviser, auditer, reagir",            "RuleCount": 5, "Counts": { "Cv": 1, "Pv": 1, "Hp": 3 } },
-    { "Number": "X",    "Title": "Pour aller plus loin",                   "RuleCount": 2, "Counts": { "Cv": 0, "Pv": 1, "Hp": 1 } }
+    {
+      "Number": "I",
+      "Title": {
+        "fr": "Sensibiliser et former",
+        "en": "Raise awareness and train"
+      },
+      "RuleCount": 3,
+      "Counts": {
+        "Cv": 0,
+        "Pv": 0,
+        "Hp": 3
+      }
+    },
+    {
+      "Number": "II",
+      "Title": {
+        "fr": "Connaître le système d'information",
+        "en": "Know the information system"
+      },
+      "RuleCount": 4,
+      "Counts": {
+        "Cv": 0,
+        "Pv": 3,
+        "Hp": 1
+      }
+    },
+    {
+      "Number": "III",
+      "Title": {
+        "fr": "Authentifier et contrôler les accès",
+        "en": "Authenticate and control access"
+      },
+      "RuleCount": 6,
+      "Counts": {
+        "Cv": 0,
+        "Pv": 6,
+        "Hp": 0
+      }
+    },
+    {
+      "Number": "IV",
+      "Title": {
+        "fr": "Sécuriser les postes",
+        "en": "Secure workstations"
+      },
+      "RuleCount": 5,
+      "Counts": {
+        "Cv": 3,
+        "Pv": 1,
+        "Hp": 1
+      }
+    },
+    {
+      "Number": "V",
+      "Title": {
+        "fr": "Sécuriser le réseau",
+        "en": "Secure the network"
+      },
+      "RuleCount": 8,
+      "Counts": {
+        "Cv": 1,
+        "Pv": 3,
+        "Hp": 4
+      }
+    },
+    {
+      "Number": "VI",
+      "Title": {
+        "fr": "Sécuriser l'administration",
+        "en": "Secure administration"
+      },
+      "RuleCount": 3,
+      "Counts": {
+        "Cv": 0,
+        "Pv": 1,
+        "Hp": 2
+      }
+    },
+    {
+      "Number": "VII",
+      "Title": {
+        "fr": "Gérer le nomadisme",
+        "en": "Manage mobility"
+      },
+      "RuleCount": 4,
+      "Counts": {
+        "Cv": 1,
+        "Pv": 2,
+        "Hp": 1
+      }
+    },
+    {
+      "Number": "VIII",
+      "Title": {
+        "fr": "Maintenir le système d'information à jour",
+        "en": "Keep the IS up to date"
+      },
+      "RuleCount": 2,
+      "Counts": {
+        "Cv": 2,
+        "Pv": 0,
+        "Hp": 0
+      }
+    },
+    {
+      "Number": "IX",
+      "Title": {
+        "fr": "Superviser, auditer, réagir",
+        "en": "Supervise, audit, react"
+      },
+      "RuleCount": 5,
+      "Counts": {
+        "Cv": 1,
+        "Pv": 1,
+        "Hp": 3
+      }
+    },
+    {
+      "Number": "X",
+      "Title": {
+        "fr": "Pour aller plus loin",
+        "en": "Going further"
+      },
+      "RuleCount": 2,
+      "Counts": {
+        "Cv": 0,
+        "Pv": 1,
+        "Hp": 1
+      }
+    }
   ],
   "ModuleDetails": [
     {
-      "Number": "I", "Title": "Sensibiliser et former",
+      "Number": "I",
+      "Title": {
+        "fr": "Sensibiliser et former",
+        "en": "Raise awareness and train"
+      },
       "Rules": [
-        { "Id": "R1", "Name": "Former les equipes operationnelles a la securite des SI", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Formation des equipes operationnelles - releve organisationnel, non observable techniquement.", "Detail": "", "Evidence": "" },
-        { "Id": "R2", "Name": "Sensibiliser les utilisateurs aux bonnes pratiques", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Sensibilisation des utilisateurs - releve organisationnel.", "Detail": "", "Evidence": "" },
-        { "Id": "R3", "Name": "Maitriser les risques de l'infogerance", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Maitrise des risques de l'infogerance - releve contractuel.", "Detail": "", "Evidence": "" }
+        {
+          "Id": "R1",
+          "Name": {
+            "fr": "Former les équipes opérationnelles à la sécurité des systèmes d'information",
+            "en": "Train operational teams in information system security"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Formation des équipes opérationnelles — démarche organisationnelle, non observable techniquement sur le poste.",
+            "en": "Operational team training - organisational measure, not technically observable on the workstation."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R2",
+          "Name": {
+            "fr": "Sensibiliser les utilisateurs aux bonnes pratiques élémentaires de sécurité informatique",
+            "en": "Raise user awareness of basic IT security practices"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Sensibilisation des utilisateurs — démarche organisationnelle.",
+            "en": "User awareness - organisational measure."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R3",
+          "Name": {
+            "fr": "Maîtriser les risques de l'infogérance",
+            "en": "Master outsourcing risks"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Maîtrise des risques de l'infogérance — disposition contractuelle.",
+            "en": "Outsourcing risk management - contractual measure."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        }
       ]
     },
     {
-      "Number": "II", "Title": "Connaitre le systeme d'information",
+      "Number": "II",
+      "Title": {
+        "fr": "Connaître le système d'information",
+        "en": "Know the information system"
+      },
       "Rules": [
-        { "Id": "R4", "Name": "Identifier informations et serveurs sensibles", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Cartographie reseau locale observee (adaptateurs, IP, passerelle). Inventaire SI global et classification des donnees hors perimetre du poste.", "Detail": "", "Evidence": "NetRepair - Configuration reseau, sections 3-4" },
-        { "Id": "R5", "Name": "Inventaire exhaustif des comptes privilegies", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Enumeration des administrateurs locaux non disponible sur ce poste (acces refuse). Verification manuelle requise.", "Detail": "", "Evidence": "SecurityScan Identity / Local Administrators - Cannot query" },
-        { "Id": "R6", "Name": "Procedures arrivee/depart/changement de fonction", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Procedures arrivee/depart/changement - releve RH et gouvernance.", "Detail": "", "Evidence": "" },
-        { "Id": "R7", "Name": "Connexion reseau aux seuls equipements maitrises", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Poste Workplace Joined - rattachement a un annuaire confirme. Controle d'admission reseau (802.1X) non observable depuis le poste.", "Detail": "", "Evidence": "SecurityScan Identity / Directory Join Status" }
+        {
+          "Id": "R4",
+          "Name": {
+            "fr": "Identifier les informations et serveurs les plus sensibles et maintenir un schéma du réseau",
+            "en": "Identify the most sensitive information and servers and maintain a network diagram"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 1,
+          "Meta": {
+            "fr": "Cartographie réseau locale observée (adaptateurs, adresses IP, passerelle). L'inventaire global du système d'information et la classification des données restent hors du périmètre du poste.",
+            "en": "Local network mapping observed (adapters, IP addresses, gateway). Global IS inventory and data classification remain outside the workstation scope."
+          },
+          "Detail": "",
+          "Evidence": "NetRepair - Network Configuration, sections 3-4",
+          "FindingClass": "partial"
+        },
+        {
+          "Id": "R5",
+          "Name": {
+            "fr": "Disposer d'un inventaire exhaustif des comptes privilégiés et le maintenir à jour",
+            "en": "Maintain an exhaustive inventory of privileged accounts and keep it up to date"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "Énumération des administrateurs locaux non disponible sur ce poste (accès refusé). Vérification manuelle requise.",
+            "en": "Local administrator enumeration not available on this workstation (access denied). Manual verification required."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Identity / Local Administrators - Cannot query",
+          "FindingClass": "blind"
+        },
+        {
+          "Id": "R6",
+          "Name": {
+            "fr": "Organiser les procédures d'arrivée, de départ et de changement de fonction des utilisateurs",
+            "en": "Organise procedures for arrival, departure, and change of role of users"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Procédures d'arrivée, de départ et de changement de fonction — relèvent des ressources humaines et de la gouvernance.",
+            "en": "Arrival, departure, and role change procedures - HR and governance domain."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R7",
+          "Name": {
+            "fr": "Autoriser la connexion au réseau de l'entité aux seuls équipements maîtrisés",
+            "en": "Authorise network connection only to mastered equipment"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 2,
+          "Meta": {
+            "fr": "Poste rattaché à un annuaire — rattachement confirmé. Le contrôle d'admission réseau (802.1X) n'est pas observable depuis le poste.",
+            "en": "Workstation joined to a directory - join confirmed. Network admission control (802.1X) is not observable from the workstation."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Identity / Directory Join Status",
+          "FindingClass": "gap"
+        }
       ]
     },
     {
-      "Number": "III", "Title": "Authentifier et controler les acces",
+      "Number": "III",
+      "Title": {
+        "fr": "Authentifier et contrôler les accès",
+        "en": "Authenticate and control access"
+      },
       "Rules": [
-        { "Id": "R8", "Name": "Comptes nominatifs, distinguer usage et administration", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Compte invite desactive (observe). Enumeration des comptes administrateurs non disponible (acces refuse).", "Detail": "", "Evidence": "SecurityScan Identity / Guest Account, Local Administrators" },
-        { "Id": "R9", "Name": "Attribuer les bons droits sur les ressources sensibles", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Inventaire des partages SMB capture en instantane. Adequation des droits d'acces non evaluable sans contexte metier.", "Detail": "", "Evidence": "ComplianceDiff - instantane SmbShares" },
-        { "Id": "R10", "Name": "Definir et verifier une politique de mots de passe", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Politique de mots de passe locale non extraite par les sondes actuelles (extension G1 prevue).", "Detail": "", "Evidence": "" },
-        { "Id": "R11", "Name": "Proteger les mots de passe stockes sur les postes", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Credential Manager : aucun identifiant stocke (observe). Protection LSA (PPL) active. Couverture partielle des vecteurs de stockage.", "Detail": "", "Evidence": "SecurityScan Identity / Stored Credentials, LSA Protection" },
-        { "Id": "R12", "Name": "Changer les elements d'authentification par defaut", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Auto-logon non detecte dans le registre. Authentifications par defaut d'autres composants non testees.", "Detail": "", "Evidence": "SecurityScan Identity" },
-        { "Id": "R13", "Name": "Privilegier l'authentification forte", "Status": "pv", "StatusLabel": "Partiel", "Meta": "TPM 2.0 present et operationnel - capacite d'authentification forte disponible. Configuration effective de Windows Hello non observee.", "Detail": "", "Evidence": "SecurityScan Firmware / TPM" }
+        {
+          "Id": "R8",
+          "Name": {
+            "fr": "Identifier nommément chaque personne accédant au système et distinguer les rôles utilisateur et administrateur",
+            "en": "Identify each person accessing the system by name and distinguish user and administrator roles"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "Compte invité désactivé (observé). Énumération des comptes administrateurs non disponible (accès refusé).",
+            "en": "Guest account disabled (observed). Administrator account enumeration not available (access denied)."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Identity / Guest Account, Local Administrators",
+          "FindingClass": "blind"
+        },
+        {
+          "Id": "R9",
+          "Name": {
+            "fr": "Attribuer les bons droits sur les ressources sensibles du système d'information",
+            "en": "Assign correct rights to sensitive resources of the information system"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 2,
+          "Meta": {
+            "fr": "Inventaire des partages SMB capturé en instantané. L'adéquation des droits d'accès n'est pas évaluable sans contexte métier.",
+            "en": "SMB share inventory captured as a snapshot. Access rights adequacy is not assessable without business context."
+          },
+          "Detail": "",
+          "Evidence": "ComplianceDiff - instantane SmbShares",
+          "FindingClass": "gap"
+        },
+        {
+          "Id": "R10",
+          "Name": {
+            "fr": "Définir et vérifier des règles de choix et de dimensionnement des mots de passe",
+            "en": "Define and verify password selection and sizing rules"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "La politique locale de mots de passe n'est pas extraite par les sondes actuelles (extension G1 prévue).",
+            "en": "Local password policy is not extracted by current probes (G1 extension planned)."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "blind"
+        },
+        {
+          "Id": "R11",
+          "Name": {
+            "fr": "Protéger les mots de passe stockés sur les systèmes",
+            "en": "Protect passwords stored on systems"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 1,
+          "Meta": {
+            "fr": "Credential Manager : aucun identifiant stocké. Protection LSA (PPL) active. La couverture des vecteurs de stockage demeure partielle.",
+            "en": "Credential Manager: no stored credential. LSA (PPL) protection active. Coverage of storage vectors remains partial."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Identity / Stored Credentials, LSA Protection",
+          "FindingClass": "partial"
+        },
+        {
+          "Id": "R12",
+          "Name": {
+            "fr": "Changer les éléments d'authentification par défaut sur les équipements et services",
+            "en": "Change default authentication elements on equipment and services"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 2,
+          "Meta": {
+            "fr": "Aucun auto-logon détecté dans le registre. Les authentifications par défaut d'autres composants n'ont pas été testées.",
+            "en": "No auto-logon detected in the registry. Default authentications of other components have not been tested."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Identity",
+          "FindingClass": "gap"
+        },
+        {
+          "Id": "R13",
+          "Name": {
+            "fr": "Privilégier lorsque c'est possible une authentification forte",
+            "en": "Favour strong authentication where possible"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 2,
+          "Meta": {
+            "fr": "TPM 2.0 présent et opérationnel — capacité d'authentification forte disponible. La configuration effective de Windows Hello n'est pas observée.",
+            "en": "TPM 2.0 present and operational - strong authentication capability available. Effective Windows Hello configuration is not observed."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Firmware / TPM",
+          "FindingClass": "gap"
+        }
       ]
     },
     {
-      "Number": "IV", "Title": "Securiser les postes",
+      "Number": "IV",
+      "Title": {
+        "fr": "Sécuriser les postes",
+        "en": "Secure workstations"
+      },
       "Rules": [
-        { "Id": "R14", "Name": "Mettre en place un niveau de securite minimal sur le parc", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Conforme au niveau Standard : pare-feu local actif sur les 3 profils, Microsoft Defender en protection temps reel, BitLocker actif sur le volume systeme. Detection autorun non encore couverte (extension G2).", "Detail": "", "Evidence": "SecurityScan NetSec + Defender + Encryption" },
-        { "Id": "R15", "Name": "Se proteger des menaces des supports amovibles", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Politique de restriction USB / AppLocker non extraite par les sondes actuelles (extension G3 prevue).", "Detail": "", "Evidence": "" },
-        { "Id": "R16", "Name": "Utiliser un outil de gestion centralisee du parc", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Poste rattache a un annuaire (Workplace Joined) - gestion centralisee confirmee, vraisemblablement via Microsoft Intune.", "Detail": "", "Evidence": "SecurityScan Identity / Directory Join Status" },
-        { "Id": "R17", "Name": "Activer et configurer le pare-feu local", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Les 3 profils du pare-feu Windows (Domaine, Prive, Public) sont actifs. Configuration de niveau Renforce (blocage des ports d'administration) non evaluee.", "Detail": "", "Evidence": "SecurityScan NetSec + PCHealth Security + NetRepair Firewall" },
-        { "Id": "R18", "Name": "Chiffrer les donnees sensibles transmises par Internet", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Chiffrement des donnees en transit - depend de l'usage applicatif et messagerie, hors perimetre du poste.", "Detail": "", "Evidence": "" }
+        {
+          "Id": "R14",
+          "Name": {
+            "fr": "Mettre en place un niveau de sécurité minimal sur l'ensemble du parc informatique",
+            "en": "Establish a minimum security level across the entire IT estate"
+          },
+          "Status": "cv",
+          "StatusLabel": {
+            "fr": "Vérifié",
+            "en": "Verified"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Conforme au niveau Standard : pare-feu local actif sur les profils, Microsoft Defender en protection temps réel, BitLocker actif sur le volume système. La détection des éléments d'auto-démarrage (autorun) n'est pas encore couverte (extension G2).",
+            "en": "Compliant at Standard level: local firewall active on all profiles, Microsoft Defender in real-time protection, BitLocker active on the system volume. Autorun element detection is not yet covered (G2 extension)."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan NetSec + Defender + Encryption",
+          "FindingClass": "ok"
+        },
+        {
+          "Id": "R15",
+          "Name": {
+            "fr": "Se protéger des menaces relatives à l'utilisation de supports amovibles",
+            "en": "Protect against threats related to removable media"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "La politique de restriction des supports USB / AppLocker n'est pas extraite par les sondes actuelles (extension G3 prévue).",
+            "en": "USB restriction policy / AppLocker is not extracted by current probes (G3 extension planned)."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "blind"
+        },
+        {
+          "Id": "R16",
+          "Name": {
+            "fr": "Utiliser un outil de gestion centralisée afin d'homogénéiser les politiques de sécurité",
+            "en": "Use a centralised management tool to homogenise security policies"
+          },
+          "Status": "cv",
+          "StatusLabel": {
+            "fr": "Vérifié",
+            "en": "Verified"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Poste rattaché à un annuaire — gestion centralisée du parc confirmée, vraisemblablement via Microsoft Intune.",
+            "en": "Workstation joined to a directory - centralised estate management confirmed, presumably via Microsoft Intune."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Identity / Directory Join Status",
+          "FindingClass": "ok"
+        },
+        {
+          "Id": "R17",
+          "Name": {
+            "fr": "Activer et configurer le pare-feu local des postes de travail",
+            "en": "Activate and configure the local firewall on workstations"
+          },
+          "Status": "cv",
+          "StatusLabel": {
+            "fr": "Vérifié",
+            "en": "Verified"
+          },
+          "Severity": 2,
+          "Meta": {
+            "fr": "Les 3 profils du pare-feu Windows (Domaine, Privé, Public) sont actifs. La configuration de niveau Renforcé (blocage des ports d'administration) n'est pas évaluée.",
+            "en": "All 3 Windows Firewall profiles (Domain, Private, Public) are active. Reinforced-level configuration (administration port blocking) is not evaluated."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan NetSec + PCHealth Security + NetRepair Firewall",
+          "FindingClass": "gap"
+        },
+        {
+          "Id": "R18",
+          "Name": {
+            "fr": "Chiffrer les données sensibles transmises par voie Internet",
+            "en": "Encrypt sensitive data transmitted over the Internet"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Chiffrement des données en transit — dépend des usages applicatifs et de la messagerie, hors du périmètre du poste.",
+            "en": "In-transit data encryption - depends on application and messaging usage, outside the workstation scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        }
       ]
     },
     {
-      "Number": "V", "Title": "Securiser le reseau",
+      "Number": "V",
+      "Title": {
+        "fr": "Sécuriser le réseau",
+        "en": "Secure the network"
+      },
       "Rules": [
-        { "Id": "R19", "Name": "Segmenter le reseau et cloisonner les acces", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Sous-reseau local et adaptateurs virtuels (VMware, Hyper-V) observes. Architecture de segmentation reseau hors perimetre du poste.", "Detail": "", "Evidence": "NetRepair - Configuration IP" },
-        { "Id": "R20", "Name": "Securiser les reseaux Wi-Fi", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Connexion Wi-Fi active chiffree en WPA2-Personal. Protocole de chiffrement conforme aux recommandations actuelles.", "Detail": "", "Evidence": "SecurityScan NetSec / WiFi Security" },
-        { "Id": "R21", "Name": "Utiliser des protocoles reseau securises", "Status": "pv", "StatusLabel": "Partiel", "Meta": "SMBv1 absent du poste. Audit complet des protocoles obsoletes (TLS, LLMNR, NetBIOS) non encore implemente.", "Detail": "", "Evidence": "SecurityScan Surface" },
-        { "Id": "R22", "Name": "Mettre en place une passerelle d'acces securise a Internet", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Acces Internet en direct (aucun proxy configure). Filtrage d'URL et DNS securise non evalues en detail.", "Detail": "", "Evidence": "NetRepair - Proxy & WPAD" },
-        { "Id": "R23", "Name": "Cloisonner les services exposes sur Internet", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Cloisonnement des services exposes - architecture reseau, hors perimetre du poste.", "Detail": "", "Evidence": "" },
-        { "Id": "R24", "Name": "Proteger la messagerie professionnelle", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Securite de la messagerie - configuration cote serveur, hors perimetre du poste.", "Detail": "", "Evidence": "" },
-        { "Id": "R25", "Name": "Securiser les interconnexions avec les partenaires", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Interconnexions partenaires - architecture inter-entites, hors perimetre du poste.", "Detail": "", "Evidence": "" },
-        { "Id": "R26", "Name": "Controler les acces physiques aux locaux et salles serveurs", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Acces physiques - mesure organisationnelle, hors perimetre logiciel.", "Detail": "", "Evidence": "" }
+        {
+          "Id": "R19",
+          "Name": {
+            "fr": "Segmenter le réseau et mettre en place un cloisonnement entre les zones d'exposition variée",
+            "en": "Segment the network and isolate zones of varying exposure"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 1,
+          "Meta": {
+            "fr": "Sous-réseau local et adaptateurs virtuels observés. L'architecture de segmentation réseau est hors du périmètre du poste.",
+            "en": "Local subnet and virtual adapters observed. Network segmentation architecture is outside the workstation scope."
+          },
+          "Detail": "",
+          "Evidence": "NetRepair - Configuration IP",
+          "FindingClass": "partial"
+        },
+        {
+          "Id": "R20",
+          "Name": {
+            "fr": "S'assurer de la sécurité des réseaux d'accès Wi-Fi et de la séparation des usages",
+            "en": "Ensure security of Wi-Fi access networks and separation of usages"
+          },
+          "Status": "cv",
+          "StatusLabel": {
+            "fr": "Vérifié",
+            "en": "Verified"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Connexion Wi-Fi active chiffrée en WPA2-Personal. Protocole de chiffrement conforme aux recommandations actuelles.",
+            "en": "Active Wi-Fi connection encrypted with WPA2-Personal. Encryption protocol compliant with current recommendations."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan NetSec / WiFi Security",
+          "FindingClass": "ok"
+        },
+        {
+          "Id": "R21",
+          "Name": {
+            "fr": "Utiliser des protocoles réseaux sécurisés dès qu'ils existent",
+            "en": "Use secure network protocols wherever they exist"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "SMBv1 : absent du poste. L'audit complet des protocoles obsolètes (TLS, LLMNR, NetBIOS) n'est pas encore implémenté.",
+            "en": "SMBv1: absent from the machine. Complete audit of obsolete protocols (TLS, LLMNR, NetBIOS) not yet implemented."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Surface",
+          "FindingClass": "defect"
+        },
+        {
+          "Id": "R22",
+          "Name": {
+            "fr": "Mettre en place une passerelle d'accès sécurisé à Internet",
+            "en": "Establish a secure Internet access gateway"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 2,
+          "Meta": {
+            "fr": "Configuration d'accès Internet : accès direct, aucun proxy configuré. Le filtrage d'URL et le DNS sécurisé ne sont pas évalués en détail.",
+            "en": "Internet access configuration: direct access, no proxy configured. URL filtering and secure DNS are not evaluated in detail."
+          },
+          "Detail": "",
+          "Evidence": "NetRepair - Proxy & WPAD",
+          "FindingClass": "gap"
+        },
+        {
+          "Id": "R23",
+          "Name": {
+            "fr": "Cloisonner les services visibles depuis Internet du reste du système d'information",
+            "en": "Isolate Internet-facing services from the rest of the information system"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Cloisonnement des services exposés — relève de l'architecture réseau, hors du périmètre du poste.",
+            "en": "Isolation of exposed services - network architecture domain, outside the workstation scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R24",
+          "Name": {
+            "fr": "Protéger sa messagerie professionnelle",
+            "en": "Protect professional email"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Sécurité de la messagerie — configuration côté serveur, hors du périmètre du poste.",
+            "en": "Email security - server-side configuration, outside the workstation scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R25",
+          "Name": {
+            "fr": "Sécuriser les interconnexions réseau dédiées avec les partenaires",
+            "en": "Secure dedicated network interconnections with partners"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Interconnexions avec les partenaires — relèvent de l'architecture inter-entités, hors du périmètre du poste.",
+            "en": "Partner interconnections - inter-entity architecture, outside the workstation scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R26",
+          "Name": {
+            "fr": "Contrôler et protéger l'accès aux salles serveurs et aux locaux techniques",
+            "en": "Control and protect access to server rooms and technical premises"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Accès physiques — mesure organisationnelle, hors du périmètre logiciel.",
+            "en": "Physical access - organisational measure, outside the software scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        }
       ]
     },
     {
-      "Number": "VI", "Title": "Securiser l'administration",
+      "Number": "VI",
+      "Title": {
+        "fr": "Sécuriser l'administration",
+        "en": "Secure administration"
+      },
       "Rules": [
-        { "Id": "R27", "Name": "Interdire l'acces Internet depuis les postes d'administration", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Usage des postes d'administration - architecture et politique d'usage, hors perimetre.", "Detail": "", "Evidence": "" },
-        { "Id": "R28", "Name": "Utiliser un reseau dedie a l'administration", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Reseau dedie a l'administration - architecture reseau, hors perimetre du poste.", "Detail": "", "Evidence": "" },
-        { "Id": "R29", "Name": "Limiter au strict besoin les droits d'administration", "Status": "pv", "StatusLabel": "Partiel", "Meta": "UAC actif au niveau eleve (demande de consentement). Enumeration des comptes administrateurs non disponible (acces refuse).", "Detail": "", "Evidence": "SecurityScan PrivEsc / UAC + Identity" }
+        {
+          "Id": "R27",
+          "Name": {
+            "fr": "Interdire l'accès à Internet depuis les postes ou serveurs utilisés pour l'administration du système d'information",
+            "en": "Forbid Internet access from workstations or servers used for IS administration"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Usage des postes d'administration — relève de l'architecture et de la politique d'usage, hors périmètre.",
+            "en": "Administration workstation usage - architecture and usage policy, outside scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R28",
+          "Name": {
+            "fr": "Utiliser un réseau dédié et cloisonné pour l'administration du système d'information",
+            "en": "Use a dedicated and isolated network for IS administration"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Réseau dédié à l'administration — relève de l'architecture réseau, hors du périmètre du poste.",
+            "en": "Administration-dedicated network - network architecture, outside the workstation scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R29",
+          "Name": {
+            "fr": "Limiter au strict besoin opérationnel les droits d'administration sur les postes de travail",
+            "en": "Limit administration rights on workstations to strict operational need"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "UAC actif (politique : demande de consentement). Énumération des comptes administrateurs non disponible (accès refusé).",
+            "en": "UAC active (policy: prompt for consent). Administrator account enumeration not available (access denied)."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan PrivEsc / UAC + Identity",
+          "FindingClass": "blind"
+        }
       ]
     },
     {
-      "Number": "VII", "Title": "Gerer le nomadisme",
+      "Number": "VII",
+      "Title": {
+        "fr": "Gérer le nomadisme",
+        "en": "Manage mobility"
+      },
       "Rules": [
-        { "Id": "R30", "Name": "Prendre des mesures de securisation physique des terminaux nomades", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Materiel identifie (Acer Nitro ANV15-51, portable). Mesures de securisation physique non observables techniquement.", "Detail": "", "Evidence": "PCHealth - Identite systeme" },
-        { "Id": "R31", "Name": "Chiffrer les donnees sensibles sur le materiel perdable", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Volume systeme chiffre par BitLocker (chiffrement AES). Sur un poste portable, le volume systeme est le vecteur principal de perte de donnees.", "Detail": "", "Evidence": "SecurityScan Encryption / BitLocker + PCHealth Storage" },
-        { "Id": "R32", "Name": "Securiser la connexion reseau des postes nomades", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Client VPN GlobalProtect installe mais inactif au moment du diagnostic. Qualite cryptographique du tunnel non evaluable hors connexion.", "Detail": "", "Evidence": "NetRepair - Statut VPN" },
-        { "Id": "R33", "Name": "Adopter des politiques de securite dediees aux terminaux mobiles", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Politique terminaux mobiles - concerne smartphones et tablettes, hors perimetre d'un poste Windows.", "Detail": "", "Evidence": "" }
+        {
+          "Id": "R30",
+          "Name": {
+            "fr": "Prendre des mesures de sécurisation physique des terminaux nomades",
+            "en": "Take physical security measures for mobile terminals"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 2,
+          "Meta": {
+            "fr": "Matériel identifié (poste portable). Les mesures de sécurisation physique ne sont pas observables techniquement.",
+            "en": "Hardware identified (portable workstation). Physical security measures are not technically observable."
+          },
+          "Detail": "",
+          "Evidence": "PCHealth - System Identity",
+          "FindingClass": "gap"
+        },
+        {
+          "Id": "R31",
+          "Name": {
+            "fr": "Chiffrer les données sensibles, en particulier sur le matériel potentiellement perdable",
+            "en": "Encrypt sensitive data, particularly on potentially losable hardware"
+          },
+          "Status": "cv",
+          "StatusLabel": {
+            "fr": "Vérifié",
+            "en": "Verified"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Volume système chiffré par BitLocker (chiffrement AES). Sur un poste portable, le volume système constitue le vecteur principal de perte de données.",
+            "en": "System volume encrypted by BitLocker (AES encryption). On a portable workstation, the system volume is the primary data-loss vector."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan Encryption / BitLocker + PCHealth Storage",
+          "FindingClass": "ok"
+        },
+        {
+          "Id": "R32",
+          "Name": {
+            "fr": "Sécuriser la connexion réseau des postes utilisés en situation de nomadisme",
+            "en": "Secure the network connection of workstations in mobile situations"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "Client VPN installé mais inactif au moment du diagnostic (GlobalProtect, désactivé). La qualité cryptographique du tunnel n'est pas évaluable hors connexion.",
+            "en": "VPN client installed but inactive at the time of the diagnostic (GlobalProtect, disabled). Cryptographic tunnel quality is not assessable offline."
+          },
+          "Detail": "",
+          "Evidence": "NetRepair - Statut VPN",
+          "FindingClass": "defect"
+        },
+        {
+          "Id": "R33",
+          "Name": {
+            "fr": "Adopter des politiques de sécurité dédiées aux terminaux mobiles",
+            "en": "Adopt security policies dedicated to mobile terminals"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Politique des terminaux mobiles — concerne smartphones et tablettes, hors du périmètre d'un poste Windows.",
+            "en": "Mobile terminal policy - concerns smartphones and tablets, outside the scope of a Windows workstation."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        }
       ]
     },
     {
-      "Number": "VIII", "Title": "Maintenir le SI a jour",
+      "Number": "VIII",
+      "Title": {
+        "fr": "Maintenir le système d'information à jour",
+        "en": "Keep the IS up to date"
+      },
       "Rules": [
-        { "Id": "R34", "Name": "Definir une politique de mise a jour des composants", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Windows Update operationnel - derniere mise a jour appliquee le jour du diagnostic. 3 echecs de mise a jour detectes sur les 30 derniers jours, a relancer.", "Detail": "Echecs : Microsoft.XboxGamingOverlay (05/05), Microsoft.VCLibs.140 (05/05), definitions Defender (03/05).", "Evidence": "PCHealth - Drivers & Windows Update + SecurityScan Patching" },
-        { "Id": "R35", "Name": "Anticiper la fin de maintenance des logiciels et systemes", "Status": "cv", "StatusLabel": "Verifie", "Meta": "Systeme Windows 11 25H2 sous support actif. 5 pilotes obsoletes detectes (Bluetooth LE, Device Information Service - dates de 2006), anterieurs aux versions supportees.", "Detail": "", "Evidence": "PCHealth - Drivers & Windows Update + SecurityScan Patching" }
+        {
+          "Id": "R34",
+          "Name": {
+            "fr": "Définir une politique de mise à jour des composants du système d'information",
+            "en": "Define a policy for updating IS components"
+          },
+          "Status": "cv",
+          "StatusLabel": {
+            "fr": "Vérifié",
+            "en": "Verified"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "Windows Update opérationnel. 3 échec(s) de mise à jour détecté(s) sur les 30 derniers jours, à relancer.",
+            "en": "Windows Update operational. 3 update failure(s) detected in the last 30 days, to be retried."
+          },
+          "Detail": "Echecs : Microsoft.XboxGamingOverlay (05/05), Microsoft.VCLibs.140 (05/05), definitions Defender (03/05).",
+          "Evidence": "PCHealth - Drivers & Windows Update + SecurityScan Patching",
+          "FindingClass": "defect"
+        },
+        {
+          "Id": "R35",
+          "Name": {
+            "fr": "Anticiper la fin de la maintenance des logiciels et systèmes et limiter les adhérences logicielles",
+            "en": "Anticipate end of maintenance of software and systems and limit software adhesions"
+          },
+          "Status": "cv",
+          "StatusLabel": {
+            "fr": "Vérifié",
+            "en": "Verified"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "Système sous support actif. 5 pilote(s) obsolète(s) détecté(s), antérieur(s) aux versions supportées — remplacement recommandé.",
+            "en": "System under active support. 5 obsolete driver(s) detected, predating supported versions - replacement recommended."
+          },
+          "Detail": "",
+          "Evidence": "PCHealth - Drivers & Windows Update + SecurityScan Patching",
+          "FindingClass": "defect"
+        }
       ]
     },
     {
-      "Number": "IX", "Title": "Superviser, auditer, reagir",
+      "Number": "IX",
+      "Title": {
+        "fr": "Superviser, auditer, réagir",
+        "en": "Supervise, audit, react"
+      },
       "Rules": [
-        { "Id": "R36", "Name": "Activer et configurer les journaux des composants", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Journalisation PowerShell (Script Block Logging) active. Politique d'audit des connexions au niveau minimal - renforcement recommande pour la tracabilite des evenements de securite.", "Detail": "", "Evidence": "SecurityScan WinSec / Logon Audit Policy + PSSecurity" },
-        { "Id": "R37", "Name": "Definir et appliquer une politique de sauvegarde", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Politique de sauvegarde - infrastructure et procedures, hors perimetre du poste.", "Detail": "", "Evidence": "" },
-        { "Id": "R38", "Name": "Proceder a des controles et audits de securite reguliers", "Status": "cv", "StatusLabel": "Verifie", "Meta": "L'execution de FieldOps Pro constitue elle-meme un controle d'audit technique regulier, repondant directement a cette mesure.", "Detail": "", "Evidence": "FieldOps Pro - execution courante" },
-        { "Id": "R39", "Name": "Designer un referent securite des systemes d'information", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Designation d'un referent SSI - mesure organisationnelle.", "Detail": "", "Evidence": "" },
-        { "Id": "R40", "Name": "Definir une procedure de gestion des incidents", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Procedure de gestion des incidents - mesure organisationnelle.", "Detail": "", "Evidence": "" }
+        {
+          "Id": "R36",
+          "Name": {
+            "fr": "Activer et configurer les journaux des composants les plus importants",
+            "en": "Activate and configure logs of the most important components"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 3,
+          "Meta": {
+            "fr": "journalisation PowerShell (Script Block Logging) active, politique d'audit des connexions au niveau minimal — renforcement recommandé pour la traçabilité des évènements de sécurité.",
+            "en": "PowerShell logging (Script Block Logging) active, connection audit policy at minimal level - reinforcement recommended for security event traceability."
+          },
+          "Detail": "",
+          "Evidence": "SecurityScan WinSec / Logon Audit Policy + PSSecurity",
+          "FindingClass": "defect"
+        },
+        {
+          "Id": "R37",
+          "Name": {
+            "fr": "Définir et appliquer une politique de sauvegarde des composants critiques",
+            "en": "Define and apply a backup policy for critical components"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Politique de sauvegarde — relève de l'infrastructure et des procédures, hors du périmètre du poste.",
+            "en": "Backup policy - infrastructure and procedures domain, outside the workstation scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R38",
+          "Name": {
+            "fr": "Procéder à des contrôles et audits de sécurité réguliers puis appliquer les actions correctives associées",
+            "en": "Carry out regular security controls and audits and apply associated corrective actions"
+          },
+          "Status": "cv",
+          "StatusLabel": {
+            "fr": "Vérifié",
+            "en": "Verified"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "L'exécution de FieldOps Pro constitue elle-même un contrôle d'audit technique régulier, répondant directement à cette mesure.",
+            "en": "Execution of FieldOps Pro itself constitutes a regular technical audit control, directly responding to this measure."
+          },
+          "Detail": "",
+          "Evidence": "FieldOps Pro - execution courante",
+          "FindingClass": "ok"
+        },
+        {
+          "Id": "R39",
+          "Name": {
+            "fr": "Désigner un point de contact en sécurité des systèmes d'information",
+            "en": "Designate an information system security contact"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Désignation d'un référent SSI — mesure organisationnelle.",
+            "en": "SSI reference designation - organisational measure."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R40",
+          "Name": {
+            "fr": "Définir une procédure de gestion des incidents de sécurité",
+            "en": "Define a security incident management procedure"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Procédure de gestion des incidents — mesure organisationnelle.",
+            "en": "Incident management procedure - organisational measure."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        }
       ]
     },
     {
-      "Number": "X", "Title": "Pour aller plus loin",
+      "Number": "X",
+      "Title": {
+        "fr": "Pour aller plus loin",
+        "en": "Going further"
+      },
       "Rules": [
-        { "Id": "R41", "Name": "Mener une analyse de risque formelle", "Status": "hp", "StatusLabel": "Hors perimetre", "Meta": "Analyse de risque formelle (methode EBIOS RM) - demarche methodologique, hors perimetre technique.", "Detail": "", "Evidence": "" },
-        { "Id": "R42", "Name": "Privilegier les produits et services qualifies par l'ANSSI", "Status": "pv", "StatusLabel": "Partiel", "Meta": "Inventaire logiciel capture en instantane. Croisement automatique avec le catalogue ANSSI des produits qualifies non encore implemente (extension G7).", "Detail": "", "Evidence": "ComplianceDiff - instantane Software" }
+        {
+          "Id": "R41",
+          "Name": {
+            "fr": "Mener une analyse de risques formelle",
+            "en": "Conduct a formal risk analysis"
+          },
+          "Status": "hp",
+          "StatusLabel": {
+            "fr": "Hors périmètre",
+            "en": "Out of scope"
+          },
+          "Severity": 0,
+          "Meta": {
+            "fr": "Analyse de risques formelle (méthode EBIOS RM) — démarche méthodologique, hors du périmètre technique.",
+            "en": "Formal risk analysis (EBIOS RM methodology) - methodological approach, outside the technical scope."
+          },
+          "Detail": "",
+          "Evidence": "",
+          "FindingClass": "hp"
+        },
+        {
+          "Id": "R42",
+          "Name": {
+            "fr": "Privilégier l'usage de produits et de services qualifiés par l'ANSSI",
+            "en": "Favour the use of ANSSI-qualified products and services"
+          },
+          "Status": "pv",
+          "StatusLabel": {
+            "fr": "Partiel",
+            "en": "Partial"
+          },
+          "Severity": 1,
+          "Meta": {
+            "fr": "Inventaire logiciel capturé en instantané. Le croisement automatique avec le catalogue ANSSI des produits qualifiés n'est pas encore implémenté (extension G7).",
+            "en": "Software inventory captured as a snapshot. Automatic cross-referencing with the ANSSI catalogue of qualified products is not yet implemented (G7 extension)."
+          },
+          "Detail": "",
+          "Evidence": "ComplianceDiff - instantane Software",
+          "FindingClass": "partial"
+        }
       ]
     }
   ]

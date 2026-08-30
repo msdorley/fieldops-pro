@@ -53,24 +53,10 @@ param(
 # Curated French security / compliance wordlist (accent-folded, lowercase).
 # A candidate string is flagged when it contains any of these as a whole word.
 # ---------------------------------------------------------------------------
-$script:FrenchWords = @(
-    'acces','affiliation','agrement','annexe','apporte','approbation','architecture'
-    'attestable','attestation','attestees','audit','audite','autorite','automatiquement'
-    'aucune','cartographie','certification','certifications','complementaire','conclusion'
-    'conformite','constat','constitue','contextuelle','contractuelle','controle'
-    'couverture','date','delivrer','diagnostic','document','donnees','elements'
-    'employe','ensemble','etat','evaluation','exploitation','fabricant','formation'
-    'generation','gouvernance','habilitee','hors','hygiene','informatique','instant'
-    'invalident','invaliderait','isole','juridique','lecture','limitee','machines'
-    'manuelle','materiel','mesures','methode','modele','modifications','module'
-    'modules','necessitent','niveau','nom','numero','observation','observee','observes'
-    'officielles','organisationnelle','organisationnelles','outil','partenariat'
-    'partiellement','perimetre','poste','postes','posterieures','procedures','qualifications'
-    'rapport','reference','referentiel','regle','regles','releve','relevent','reseau'
-    'restantes','resultat','resultats','securite','separe','serie','seule','signature'
-    'spectre','structure','supplementaires','synthese','systeme','technique','terme'
-    'utilisateur','utilisateurs','verifie','verifier','vue'
-)
+# The list lives in FrenchWordlist.ps1 so that the 7.1 guard -- which scans a
+# rendered English report for French that reached a reader -- uses the same
+# terms as this scan. Two copies would drift, and the drift would be silent.
+. (Join-Path $PSScriptRoot 'FrenchWordlist.ps1')
 
 # ---------------------------------------------------------------------------
 # Whitelist: strings that are legitimately identical across locales.

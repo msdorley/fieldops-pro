@@ -49,14 +49,14 @@ $script:CheckCount = 0
 $script:Stopwatch  = [System.Diagnostics.Stopwatch]::StartNew()
 $script:IsAdmin    = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-function Convert-StatusToLogLevel { param([string]$S); switch ($S) { 'Pass' {'OK'} 'Warning' {'WARN'} 'Fail' {'ERROR'} default {'INFO'} } }
+function Convert-StatusToLogLevel { param([string]$S); switch ($S) { 'Pass' {'OK'} 'Warning' {'WARN'} 'Fail' {'ERROR'} 'Undetermined' {'WARN'} default {'INFO'} } }
 
 function Add-Check {
     param([string]$Category,[string]$Check,[string]$Status,[string]$Value,[string]$Detail)
     $script:CheckCount++
     $null = $script:Results.Add([PSCustomObject]@{Number=$script:CheckCount;Category=$Category;Check=$Check;Status=$Status;Value=$Value;Detail=$Detail})
-    $icon = switch ($Status) {'Pass'{'[PASS]'}'Warning'{'[WARN]'}'Fail'{'[FAIL]'}default{'[INFO]'}}
-    Write-Host "  $icon $Check : $Value" -ForegroundColor $(switch ($Status) {'Pass'{'Green'}'Warning'{'Yellow'}'Fail'{'Red'}default{'Cyan'}})
+    $icon = switch ($Status) {'Pass'{'[PASS]'}'Warning'{'[WARN]'}'Fail'{'[FAIL]'}'Undetermined'{'[ -- ]'}default{'[INFO]'}}
+    Write-Host "  $icon $Check : $Value" -ForegroundColor $(switch ($Status) {'Pass'{'Green'}'Warning'{'Yellow'}'Fail'{'Red'}'Undetermined'{'DarkYellow'}default{'Cyan'}})
     Write-Log -Message "$icon $Check = $Value | $Detail" -Level (Convert-StatusToLogLevel $Status)
 }
 
@@ -106,7 +106,7 @@ try {
             -Action 'Enable Secure Boot in BIOS/UEFI firmware settings.' `
             -FixCommands @(@{Desc='Check current Secure Boot state';Cmd='Confirm-SecureBootUEFI'}) -FixMinutes 10 -CIS 'CIS 1.1.1'
     }
-} catch { Add-Check -Category 'Firmware' -Check 'Secure Boot' -Status 'Info' -Value 'Cannot query (non-UEFI or not admin)' -Detail $_.Exception.Message }
+} catch { Add-Check -Category 'Firmware' -Check 'Secure Boot' -Status 'Undetermined' -Value 'Cannot query (non-UEFI or not admin)' -Detail $_.Exception.Message }
 
 # TPM
 try {
@@ -123,7 +123,7 @@ try {
         Add-Finding -Severity 'Critical' -Title 'No TPM detected' -Detail 'BitLocker and Credential Guard require TPM.' `
             -Action 'Enable TPM in BIOS.' -FixCommands @(@{Desc='Check TPM status';Cmd='Get-Tpm | Format-List *'}) -FixMinutes 10 -CIS 'CIS 1.1.2'
     }
-} catch { Add-Check -Category 'Firmware' -Check 'TPM' -Status 'Info' -Value 'Cannot query' -Detail $_.Exception.Message }
+} catch { Add-Check -Category 'Firmware' -Check 'TPM' -Status 'Undetermined' -Value 'Cannot query' -Detail $_.Exception.Message }
 
 # Virtualization-Based Security (VBS)
 try {
@@ -156,7 +156,7 @@ try {
                 @{Desc='Check Credential Guard configuration';Cmd="Get-CimInstance -ClassName Win32_DeviceGuard -Namespace 'root\Microsoft\Windows\DeviceGuard' | Select-Object SecurityServicesConfigured, SecurityServicesRunning | Format-List"}
             ) -FixMinutes 15 -CIS 'CIS 18.8.5.2'
     }
-} catch { Add-Check -Category 'Firmware' -Check 'VBS/DeviceGuard' -Status 'Info' -Value 'Cannot query' -Detail $_.Exception.Message }
+} catch { Add-Check -Category 'Firmware' -Check 'VBS/DeviceGuard' -Status 'Undetermined' -Value 'Cannot query' -Detail $_.Exception.Message }
 
 # Kernel DMA Protection
 try {
@@ -251,7 +251,7 @@ try {
             -FixCommands @(@{Desc='List all exclusions';Cmd='Get-MpPreference | Select-Object ExclusionPath, ExclusionProcess, ExclusionExtension | Format-List'})
     }
 } catch {
-    Add-Check -Category 'Defender' -Check 'Windows Defender' -Status 'Fail' -Value 'Cannot query' -Detail $_.Exception.Message
+    Add-Check -Category 'Defender' -Check 'Windows Defender' -Status 'Undetermined' -Value 'Cannot query' -Detail $_.Exception.Message
 }
 
 Save-SectionScore -Section 'Defender' -Category 'Defender'
@@ -313,7 +313,7 @@ try {
                 @{Desc='View all ASR rule status';Cmd='Get-MpPreference | Select-Object AttackSurfaceReductionRules_Ids, AttackSurfaceReductionRules_Actions | Format-List'}
             ) -FixMinutes 3 -CIS 'CIS 18.9.47.5'
     }
-} catch { Add-Check -Category 'ASR' -Check 'ASR Rules' -Status 'Info' -Value 'Cannot query (Defender not available?)' -Detail $_.Exception.Message }
+} catch { Add-Check -Category 'ASR' -Check 'ASR Rules' -Status 'Undetermined' -Value 'Cannot query (Defender not available?)' -Detail $_.Exception.Message }
 
 Save-SectionScore -Section 'ASR' -Category 'ASR'
 
@@ -336,7 +336,7 @@ try {
             -Detail "Members: $adminNames" -Action 'Review and remove unnecessary admin accounts.' `
             -FixCommands @(@{Desc='List admin group members';Cmd='Get-LocalGroupMember -Group "Administrators" | Format-Table Name, ObjectClass, PrincipalSource -AutoSize'}) -CIS 'CIS 2.3.1'
     }
-} catch { Add-Check -Category 'Identity' -Check 'Local Administrators' -Status 'Info' -Value 'Cannot query' -Detail $_.Exception.Message }
+} catch { Add-Check -Category 'Identity' -Check 'Local Administrators' -Status 'Undetermined' -Value 'Cannot query' -Detail $_.Exception.Message }
 
 # Guest account
 try {
@@ -643,7 +643,7 @@ try {
             }
         } catch {}
     }
-} catch { Add-Check -Category 'Encryption' -Check 'BitLocker' -Status 'Info' -Value 'Cannot query' -Detail $_.Exception.Message }
+} catch { Add-Check -Category 'Encryption' -Check 'BitLocker' -Status 'Undetermined' -Value 'Cannot query' -Detail $_.Exception.Message }
 
 Save-SectionScore -Section 'Encryption' -Category 'Encryption'
 
@@ -917,6 +917,7 @@ $passCount = @($scoredChecks | Where-Object {$_.Status -eq 'Pass'}).Count
 $warnCount = @($scoredChecks | Where-Object {$_.Status -eq 'Warning'}).Count
 $failCount = @($scoredChecks | Where-Object {$_.Status -eq 'Fail'}).Count
 $infoCount = @($script:Results | Where-Object {$_.Status -eq 'Info'}).Count
+$undetCount = @($script:Results | Where-Object {$_.Status -eq 'Undetermined'}).Count
 $totalScored = $scoredChecks.Count
 
 $scorePct = if ($totalScored -gt 0){[math]::Round((($passCount+($warnCount*0.5))/$totalScored)*100,0)}else{0}
@@ -933,7 +934,8 @@ Write-Host '============================================================' -Foreg
 Write-Host "  SECURITY POSTURE ASSESSMENT COMPLETE" -ForegroundColor Magenta
 Write-Host "  Grade: $grade ($scorePct%) | Risk: $riskLevel" -ForegroundColor $(if($scorePct -ge 80){'Green'}elseif($scorePct -ge 60){'Yellow'}else{'Red'})
 Write-Host "  $($script:CheckCount) checks in $ElapsedSec sec" -ForegroundColor Gray
-Write-Host "  Pass: $passCount | Warn: $warnCount | Fail: $failCount | Info: $infoCount" -ForegroundColor Gray
+Write-Host "  $($script:CheckCount) checks: $passCount confirmed, $undetCount could not be determined, $($warnCount + $failCount) need attention, $infoCount informational" -ForegroundColor Gray
+Write-Host "  Pass: $passCount | Warn: $warnCount | Fail: $failCount | Undetermined: $undetCount | Info: $infoCount" -ForegroundColor Gray
 Write-Host "  Critical findings: $critCount" -ForegroundColor $(if($critCount -eq 0){'Green'}else{'Red'})
 Write-Host '============================================================' -ForegroundColor Magenta
 
@@ -1032,8 +1034,8 @@ if ($script:Findings.Count -gt 0) {
 
 # Check rows
 $crHtml = foreach($r in $script:Results){
-    $sc=switch($r.Status){'Pass'{'status-pass'}'Warning'{'status-warn'}'Fail'{'status-fail'}default{'status-info'}}
-    $si=switch($r.Status){'Pass'{'&#10003;'}'Warning'{'&#9888;'}'Fail'{'&#10007;'}default{'&#8505;'}}
+    $sc=switch($r.Status){'Pass'{'status-pass'}'Warning'{'status-warn'}'Fail'{'status-fail'}'Undetermined'{'status-undet'}default{'status-info'}}
+    $si=switch($r.Status){'Pass'{'&#10003;'}'Warning'{'&#9888;'}'Fail'{'&#10007;'}'Undetermined'{'&#8212;'}default{'&#8505;'}}
     "<tr><td>$($r.Number)</td><td>$($r.Category)</td><td>$($r.Check)</td><td class='$sc'>$si $($r.Status)</td><td>$($r.Value)</td><td class='detail-cell'>$($r.Detail)</td></tr>"
 }
 
@@ -1052,10 +1054,10 @@ $HtmlContent = @"
 .finding-card{border-radius:10px;padding:12px 16px;margin-bottom:10px;border-left:5px solid}.finding-critical{background:#1a0808;border-color:#f44336}.finding-warning{background:#1a1408;border-color:#ff9800}.finding-info{background:#080c18;border-color:#64b5f6}.finding-title{font-weight:700;margin-bottom:3px;font-size:0.92em}.finding-detail{font-size:0.82em;color:#8888a8}.finding-action{font-size:0.8em;color:#a0a0b8;margin-top:4px}
 .cis-tag{background:#1a2858;color:#64b5f6;padding:1px 6px;border-radius:4px;font-size:0.72em;font-weight:600;margin-left:6px}
 .fix-block{margin-top:8px;border:1px solid #2a1848;border-radius:8px;overflow:hidden}.fix-header{background:#140c28;padding:8px 12px;cursor:pointer;font-size:0.82em;font-weight:600;color:#ce93d8;display:flex;align-items:center;gap:6px;user-select:none}.fix-header:hover{background:#1a1038}.fix-arrow{font-size:0.65em;transition:transform 0.2s;display:inline-block}.fix-arrow.open{transform:rotate(90deg)}.fix-body{padding:10px 12px;background:#0a0618}.fix-item{margin-bottom:10px}.fix-desc{font-size:0.78em;color:#9080b4;font-weight:600;margin-bottom:3px}.fix-cmd-wrap{position:relative}.fix-cmd{background:#060410;border:1px solid #1a1040;border-radius:6px;padding:8px 10px;font-family:'Cascadia Code','Consolas',monospace;font-size:0.75em;color:#a8d0a8;white-space:pre-wrap;word-break:break-all;margin:0}.copy-btn{position:absolute;top:4px;right:4px;background:#2a1848;color:#ce93d8;border:1px solid #3a2868;border-radius:4px;padding:2px 8px;font-size:0.68em;cursor:pointer}.copy-btn:hover{background:#3a2868}
-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:0.78em}th{background:#100818;color:#ce93d8;padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid #2a1848;position:sticky;top:0}td{padding:7px 10px;border-bottom:1px solid #151528;vertical-align:top}tr:hover{background:#0e0820}.detail-cell{max-width:300px;word-break:break-all;color:#6868a0;font-size:0.88em}.status-pass{color:#4caf50;font-weight:600}.status-warn{color:#ff9800;font-weight:600}.status-fail{color:#f44336;font-weight:600}.status-info{color:#64b5f6;font-weight:600}
+table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:0.78em}th{background:#100818;color:#ce93d8;padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid #2a1848;position:sticky;top:0}td{padding:7px 10px;border-bottom:1px solid #151528;vertical-align:top}tr:hover{background:#0e0820}.detail-cell{max-width:300px;word-break:break-all;color:#6868a0;font-size:0.88em}.status-pass{color:#4caf50;font-weight:600}.status-warn{color:#ff9800;font-weight:600}.status-fail{color:#f44336;font-weight:600}.status-info{color:#64b5f6;font-weight:600}.status-undet{color:#9a8f7a;font-weight:600}
 details{background:#0c0820;border:1px solid #1a1840;border-radius:10px;margin-bottom:16px;overflow:hidden}summary{cursor:pointer;padding:12px 18px;font-weight:600;color:#9080b4;font-size:0.92em;user-select:none;list-style:none;display:flex;align-items:center;gap:6px}summary:hover{background:#101030}summary::-webkit-details-marker{display:none}summary::before{content:'\\25B6';font-size:0.65em;transition:transform 0.2s;display:inline-block;color:#6050a0}details[open] summary::before{transform:rotate(90deg)}details .sect-body{padding:14px 18px;overflow-x:auto}
 .ftr{text-align:center;padding:18px;color:#2a2a4a;font-size:0.75em;border-top:1px solid #151528;margin-top:24px}
-@media print{body{background:#fff!important;color:#222!important;padding:8px}.hdr,.grade,.exec,details,.finding-card{background:#f8f8fc!important;border-color:#ddd!important;color:#222!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.fix-cmd{background:#f0f0f0!important;color:#1a3a1a!important}.copy-btn{display:none!important}th{background:#f0e8f8!important;color:#4a2868!important}td{border-color:#ddd!important;color:#333!important}.status-pass{color:#1b7a1b!important}.status-warn{color:#b36b00!important}.status-fail{color:#c62828!important}.status-info{color:#1565c0!important}}
+@media print{body{background:#fff!important;color:#222!important;padding:8px}.hdr,.grade,.exec,details,.finding-card{background:#f8f8fc!important;border-color:#ddd!important;color:#222!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.fix-cmd{background:#f0f0f0!important;color:#1a3a1a!important}.copy-btn{display:none!important}th{background:#f0e8f8!important;color:#4a2868!important}td{border-color:#ddd!important;color:#333!important}.status-pass{color:#1b7a1b!important}.status-warn{color:#b36b00!important}.status-fail{color:#c62828!important}.status-info{color:#1565c0!important}.status-undet{color:#6b6355!important}}
 </style></head><body><div class="rc">
 <div class="hdr"><div class="hdr-title">FieldOps Pro -- Enterprise Security Posture Report</div><div class="hdr-sub">15-section deep security analysis with CIS benchmark mapping and interactive hardening</div><div class="hdr-bar"><div class="hdr-item"><span class="hdr-lbl">Host</span> <span class="hdr-val">$Hostname</span></div><div class="hdr-item"><span class="hdr-lbl">Date</span> <span class="hdr-val">$DateHuman</span></div><div class="hdr-item"><span class="hdr-lbl">Checks</span> <span class="hdr-val">$($script:CheckCount)</span></div><div class="hdr-item"><span class="hdr-lbl">Duration</span> <span class="hdr-val">${ElapsedSec}s</span></div><div class="hdr-item"><span class="hdr-lbl">Engine</span> <span class="hdr-val">SecurityScan v1.0</span></div><div class="hdr-item"><span class="hdr-lbl">Elevation</span> <span class="hdr-val">$(if($script:IsAdmin){'Administrator'}else{'Standard user'})</span></div></div></div>
 <div class="grade"><div class="grade-circle" style="background:${gradeColor}18;border-color:$gradeColor;color:$gradeColor">$grade</div><div class="grade-det"><div class="grade-score">Security Score: $scorePct% <span class="risk-badge" style="background:${riskColor}22;color:$riskColor;border:1px solid $riskColor">$riskLevel RISK</span></div><div class="grade-track"><div class="grade-fill" style="width:${scorePct}%;background:linear-gradient(90deg,$gradeColor,${gradeColor}66)"></div></div><div class="grade-stats"><span class="st-p">$passCount Pass</span><span class="st-w">$warnCount Warn</span><span class="st-f">$failCount Fail</span><span class="st-i">$infoCount Info</span><span style="color:#f44336;font-weight:700">$critCount Critical</span></div></div></div>

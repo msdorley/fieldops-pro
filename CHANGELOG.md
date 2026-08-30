@@ -14,8 +14,39 @@ only lists additions is a marketing document.
 
 ## [0.6.1] - unreleased
 
-Truth. Nothing new is added; things the product claimed and did not do are
-either made true or withdrawn. Stream 7.0 of the Phase 7 design.
+Truth, and then the report. Stream 7.0 makes true or withdraws the things the
+product claimed and did not do. Stream 7.1 rebuilds the deliverable those claims
+are about.
+
+### Added
+
+- **The diagnostic is a paginated A4 document.** It declared 22 pages and printed
+  37, because the height estimator carried "88 characters per line" over from a
+  prototype whose columns were not that wide -- the real column holds 62. Every
+  check on the pagination was arithmetic over that estimate, so they agreed with
+  each other and all of them were wrong; counting sheets in the produced PDF
+  settled it in one command. The A4 prototype is now the template itself, and the
+  engine paginates against a model derived from the CSS boxes. Declared pages and
+  physical sheets agree, and folios are checked against the contents
+- **Two fingerprints, because a reader has two questions.** The *findings digest*
+  covers the verdicts alone -- canonicalised, sorted by rule number, independent
+  of language and layout -- so the same machine in the same state yields the same
+  digest in French and in English. The *document hash* covers the file as
+  delivered, computed with the signature fields empty so that signing does not
+  invalidate it. Two runs three days apart produced an identical findings digest
+  and different document hashes, which is the property that makes it worth printing
+- **A provenance page.** Each source's observation date and its gap to the issue
+  date, flagged past 30 days. A report issued today from a May collection
+  describes the machine as it was in May, and now says so
+- **Twelve signature fields**, the only writable elements in the document. Filling
+  them changes neither the findings nor their digest, and the page states that
+- **Embedded fonts.** 11 subsetted faces, 167 KB, all OFL 1.1 with attribution and
+  Modified Version disclosure in `NOTICE`. A compliance report whose pagination
+  depends on the reader's font inventory cannot honestly declare its page count
+- **Classification** on the cover and on every folio, and branding as
+  configuration in `CONFIG/brand.json`
+- **PDF identity**: document metadata and a bookmark outline, appended as an
+  incremental update so the rendered bytes are not rewritten
 
 ### Fixed
 

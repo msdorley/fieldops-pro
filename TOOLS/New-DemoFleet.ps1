@@ -200,23 +200,28 @@ function Set-DemoEvidence {
     # fleet still shows what real evidence text looks like.
     if ($NewStatus -eq $OriginalStatus) { return }
 
-    $text = if ($Language -eq 'en') {
-        switch ($NewStatus) {
-            'cv' { 'Control observed in place on this demonstration machine.' }
-            'pv' { 'Evidence incomplete on this demonstration machine: the probe could not confirm the control, or the hardware required to demonstrate it is absent.' }
-            default { '' }
-        }
+    $en = switch ($NewStatus) {
+        'cv' { 'Control observed in place on this demonstration machine.' }
+        'pv' { 'Evidence incomplete on this demonstration machine: the probe could not confirm the control, or the hardware required to demonstrate it is absent.' }
+        default { '' }
     }
-    else {
-        switch ($NewStatus) {
-            'cv' { 'Controle observe en place sur cette machine de demonstration.' }
-            'pv' { 'Preuve incomplete sur cette machine de demonstration : le releve n''a pas pu confirmer le controle, ou le materiel necessaire est absent.' }
-            default { '' }
-        }
+    $fr = switch ($NewStatus) {
+        'cv' { 'Controle observe en place sur cette machine de demonstration.' }
+        'pv' { 'Preuve incomplete sur cette machine de demonstration : le releve n''a pas pu confirmer le controle, ou le materiel necessaire est absent.' }
+        default { '' }
     }
+    $text = $fr
+    if ($Language -eq 'en') { $text = $en }
 
     $names = @($Rule.PSObject.Properties.Name)
-    if ($names -contains 'Meta')     { $Rule.Meta     = $text }
+    # Meta is per-language since 7.1. Writing a single string here would put
+    # French into an English demo render -- the same defect the 7.1 guard
+    # exists to catch, reintroduced through the demo path. Older skeletons
+    # still carry a plain string, so both shapes are handled.
+    if ($names -contains 'Meta') {
+        if ($Rule.Meta -is [string]) { $Rule.Meta = $text }
+        else { $Rule.Meta = [PSCustomObject]@{ fr = $fr; en = $en } }
+    }
     if ($names -contains 'Detail')   { $Rule.Detail   = '' }
     if ($names -contains 'Evidence') { $Rule.Evidence = '' }
 }

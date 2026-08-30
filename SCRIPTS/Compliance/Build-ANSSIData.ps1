@@ -2,13 +2,17 @@
 # Copyright 2026 Ousman Dorley. See LICENSE at the repository root.
 <#
 .SYNOPSIS
-    FieldOps Pro - ANSSI Hygiene Data Collector v0.4
+    FieldOps Pro - ANSSI Hygiene Data Collector
 .DESCRIPTION
     Reads the JSON output of the FieldOps Pro engines (SecurityScan, PCHealth,
     NetRepair, ComplianceDiff) and produces report-data.json mapping observed
     facts to the 42 ANSSI Hygiene rules.
 
-    v0.4 changes:
+    The product version is CONFIG\version.json and is displayed by the
+    launcher alone. This header carried "v0.4" while that file said 0.6.1,
+    which is the defect audit A8 exists to catch.
+
+    This revision:
       - Schema abstraction: PCHealth uses Item/Detail, SecurityScan and
         NetRepair use Check/Value. Get-CheckName / Get-CheckValue normalise.
       - Machine identity: parsed from PCHealth Identity 'System Identified'
@@ -26,7 +30,9 @@
 .PARAMETER LogsDir         Directory with engine JSON. Default <ProjectRoot>\LOGS
 .PARAMETER OutputFile      report-data.json path. Default <ProjectRoot>\REPORTS\report-data.json
 .PARAMETER Technician      Technician name. Default from CONFIG\technician.json then env.
-.PARAMETER CustomerContact Customer contact placeholder. Default 'A completer'.
+.PARAMETER CustomerContact Recipient name. Empty by default: the tool does not
+                          know it, and a placeholder written into a value is
+                          printed and signed as though it were data.
 
 .NOTES
     Author  : FieldOps Pro
@@ -41,7 +47,13 @@ param(
     [string]$LogsDir,
     [string]$OutputFile,
     [string]$Technician,
-    [string]$CustomerContact = 'A completer'
+    [string]$CustomerContact = '',
+    # L'organisation qui commande l'audit. Vide par defaut : l'outil ne la
+    # connait pas, et un rapport d'audit adresse a personne n'en est pas un.
+    [string]$ClientOrganisation = '',
+    # Marquage de diffusion. Vide = celui du bundle. Un rapport qui enumere les
+    # faiblesses d'un poste nomme doit dire qui peut le lire.
+    [string]$Classification = ''
 )
 
 Set-StrictMode -Version 1.0
@@ -181,10 +193,24 @@ function Test-Status {
     return ((Get-DictValue $Check 'Status') -eq 'Pass')
 }
 
-# A check whose value indicates it could not be read is NOT observed evidence.
+# A check that could not be read is NOT observed evidence.
+#
+# Twenty-two of the 42 rules call this, so what it decides here decides whether
+# those rules report cv or pv. Until 7.2 it decided by pattern-matching the
+# free-text Value that the engines write, which made 22 compliance verdicts
+# depend on another script's error prose staying worded a particular way. A
+# catch block reworded from 'Cannot query' to 'Unable to query' would have
+# flipped them to "verified" -- silently, and in the direction that claims more
+# than was checked.
+#
+# The engines now say so in the Status. The prose match stays underneath it,
+# because reports and snapshots written before 7.2 are on technicians' sticks
+# and carry the old shape; dropping it would change the verdict on data already
+# delivered to a client.
 function Test-Observed {
     param($Check)
     if (-not $Check) { return $false }
+    if ((Get-DictValue $Check 'Status') -eq 'Undetermined') { return $false }
     $val = "$(Get-CheckValue $Check)"
     if (-not $val) { return $false }
     if ($val -match 'Cannot query|cannot read|non disponible|unavailable|^N/?A$|inconnu') { return $false }
@@ -205,31 +231,31 @@ function Format-DetailString {
 # ===========================================================================
 
 # --- Module I (organisational) ---
-function Get-R1 { @{ Status='hp'; Detail='Formation des equipes operationnelles - releve organisationnel, non observable techniquement.'; Evidence='' } }
-function Get-R2 { @{ Status='hp'; Detail='Sensibilisation des utilisateurs - releve organisationnel.'; Evidence='' } }
-function Get-R3 { @{ Status='hp'; Detail='Maitrise des risques de l''infogerance - releve contractuel.'; Evidence='' } }
+function Get-R1 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R1.detail.hp_default' @{} 'Formation des equipes operationnelles - releve organisationnel, non observable techniquement.'); Evidence='' } }
+function Get-R2 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R2.detail.hp_default' @{} 'Sensibilisation des utilisateurs - releve organisationnel.'); Evidence='' } }
+function Get-R3 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R3.detail.hp_default' @{} 'Maitrise des risques de l''infogerance - releve contractuel.'); Evidence='' } }
 
 # --- Module II ---
 function Get-R4 {
     param($Sec, $Net, $Pch)
-    @{ Status='pv'; Detail='Cartographie reseau locale observee (adaptateurs, IP, passerelle). Inventaire SI global et classification des donnees hors perimetre du poste.'; Evidence='NetRepair - Configuration reseau' }
+    @{ Status='pv'; Detail=(T 'report.anssi.rules.R4.detail.pv_local_only' @{} 'Cartographie reseau locale observee (adaptateurs, IP, passerelle). Inventaire SI global et classification des donnees hors perimetre du poste.'); Evidence='NetRepair - Network Configuration' }
 }
 function Get-R5 {
     param($Sec, $Net, $Pch)
     $c = Find-Check -EngineData $Sec -Category 'Identity' -CheckLike 'Local Admin'
     if (Test-Observed $c) {
-        return @{ Status='cv'; Detail="Inventaire des administrateurs locaux : $(Get-CheckValue $c)"; Evidence='SecurityScan Identity / Local Administrators' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R5.detail.cv_observed' @{ adminList=(Get-CheckValue $c) } "Inventaire des administrateurs locaux : $(Get-CheckValue $c)"); Evidence='SecurityScan Identity / Local Administrators' }
     }
-    return @{ Status='pv'; Detail='Enumeration des administrateurs locaux non disponible sur ce poste (acces refuse). Verification manuelle requise.'; Evidence='SecurityScan Identity / Local Administrators' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R5.detail.pv_access_denied' @{} 'Enumeration des administrateurs locaux non disponible sur ce poste (acces refuse). Verification manuelle requise.'); Evidence='SecurityScan Identity / Local Administrators' }
 }
-function Get-R6 { @{ Status='hp'; Detail='Procedures arrivee/depart/changement - releve RH et gouvernance.'; Evidence='' } }
+function Get-R6 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R6.detail.hp_default' @{} 'Procedures arrivee/depart/changement - releve RH et gouvernance.'); Evidence='' } }
 function Get-R7 {
     param($Sec)
     $c = Find-Check -EngineData $Sec -Category 'Identity' -CheckLike 'Directory'
     if (Test-Observed $c) {
-        return @{ Status='pv'; Detail='Poste rattache a un annuaire - rattachement confirme. Controle d''admission reseau (802.1X) non observable depuis le poste.'; Evidence='SecurityScan Identity / Directory Join Status' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R7.detail.pv_joined' @{} 'Poste rattache a un annuaire - rattachement confirme. Controle d''admission reseau (802.1X) non observable depuis le poste.'); Evidence='SecurityScan Identity / Directory Join Status' }
     }
-    return @{ Status='pv'; Detail='Statut d''adhesion annuaire non determine.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R7.detail.pv_unknown' @{} 'Statut d''adhesion annuaire non determine.'); Evidence='' }
 }
 
 # --- Module III ---
@@ -242,36 +268,48 @@ function Get-R8 {
     if ($aOK -and $gOK) {
         $a = Get-CheckValue $admins
         $g = Get-CheckValue $guest
-        $gFr = switch -Regex ($g) { '^Disabled' { 'desactive' } '^Enabled' { 'active' } default { $g } }
-        return @{ Status='cv'; Detail="Administrateurs locaux : $a. Compte invite : $gFr."; Evidence='SecurityScan Identity' }
+        $gFr = switch -Regex ($g) {
+            '^Disabled' { T 'report.anssi.accountState.disabled' @{} 'desactive' }
+            '^Enabled'  { T 'report.anssi.accountState.active'   @{} 'active' }
+            default     { $g }
+        }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R8.detail.cv_both_observed' @{ adminList=$a; guestState=$gFr } "Administrateurs locaux : $a. Compte invite : $gFr."); Evidence='SecurityScan Identity' }
     }
     if ($gOK) {
         $g = Get-CheckValue $guest
-        $gFr = switch -Regex ($g) { '^Disabled' { 'desactive' } '^Enabled' { 'active' } default { $g } }
-        return @{ Status='pv'; Detail="Compte invite $gFr (observe). Enumeration des comptes administrateurs non disponible (acces refuse)."; Evidence='SecurityScan Identity' }
+        $gFr = switch -Regex ($g) {
+            '^Disabled' { T 'report.anssi.accountState.disabled' @{} 'desactive' }
+            '^Enabled'  { T 'report.anssi.accountState.active'   @{} 'active' }
+            default     { $g }
+        }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R8.detail.pv_guest_only' @{ guestState=$gFr } "Compte invite $gFr (observe). Enumeration des comptes administrateurs non disponible (acces refuse)."); Evidence='SecurityScan Identity' }
     }
-    return @{ Status='pv'; Detail='Enumeration des comptes locaux indisponible.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R8.detail.pv_default' @{} 'Enumeration des comptes locaux indisponible.'); Evidence='' }
 }
-function Get-R9 { @{ Status='pv'; Detail='Inventaire des partages SMB capture en instantane. Adequation des droits d''acces non evaluable sans contexte metier.'; Evidence='ComplianceDiff - instantane SmbShares' } }
-function Get-R10 { @{ Status='pv'; Detail='Politique de mots de passe locale non extraite par les sondes actuelles (extension G1 prevue).'; Evidence='' } }
+function Get-R9 { @{ Status='pv'; Detail=(T 'report.anssi.rules.R9.detail.pv_default' @{} 'Inventaire des partages SMB capture en instantane. Adequation des droits d''acces non evaluable sans contexte metier.'); Evidence='ComplianceDiff - snapshot SmbShares' } }
+function Get-R10 { @{ Status='pv'; Detail=(T 'report.anssi.rules.R10.detail.pv_default' @{} 'Politique de mots de passe locale non extraite par les sondes actuelles (extension G1 prevue).'); Evidence='' } }
 function Get-R11 {
     param($Sec)
     $cred = Find-Check -EngineData $Sec -Category 'Identity' -CheckLike 'Stored Credential'
     $lsa  = Find-Check -EngineData $Sec -Category 'Identity' -CheckLike 'LSA'
     if (Test-Observed $cred) {
-        $extra = ''
-        if (Test-Observed $lsa) { $extra = ' Protection LSA (PPL) active.' }
-        return @{ Status='pv'; Detail="Credential Manager : $(Get-CheckValue $cred).$extra Couverture partielle des vecteurs de stockage."; Evidence='SecurityScan Identity / Stored Credentials, LSA Protection' }
+        # The bundle splits this into two whole sentences rather than a base plus
+        # an inline suffix, so the key is chosen here instead of concatenated.
+        $ci = "$(Get-CheckValue $cred)"
+        if (Test-Observed $lsa) {
+            return @{ Status='pv'; Detail=(T 'report.anssi.rules.R11.detail.pv_with_lsa' @{ credInfo=$ci } "Credential Manager : $ci. Protection LSA (PPL) active. Couverture partielle des vecteurs de stockage."); Evidence='SecurityScan Identity / Stored Credentials, LSA Protection' }
+        }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R11.detail.pv_without_lsa' @{ credInfo=$ci } "Credential Manager : $ci. Couverture partielle des vecteurs de stockage."); Evidence='SecurityScan Identity / Stored Credentials, LSA Protection' }
     }
-    return @{ Status='pv'; Detail='Credential Manager non inspecte.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R11.detail.pv_no_inspect' @{} 'Credential Manager non inspecte.'); Evidence='' }
 }
 function Get-R12 {
     param($Sec)
     $c = Find-Check -EngineData $Sec -Category 'Identity' -CheckLike 'Auto'
     if (Test-Observed $c) {
-        return @{ Status='pv'; Detail="Auto-logon : $(Get-CheckValue $c). Authentifications par defaut d'autres composants non testees."; Evidence='SecurityScan Identity / Auto-Logon' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R12.detail.pv_observed' @{ autoLogonValue=(Get-CheckValue $c) } "Auto-logon : $(Get-CheckValue $c). Authentifications par defaut d'autres composants non testees."); Evidence='SecurityScan Identity / Auto-Logon' }
     }
-    return @{ Status='pv'; Detail='Auto-logon non detecte dans le registre. Authentifications par defaut d''autres composants non testees.'; Evidence='SecurityScan Identity' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R12.detail.pv_default' @{} 'Auto-logon non detecte dans le registre. Authentifications par defaut d''autres composants non testees.'); Evidence='SecurityScan Identity' }
 }
 function Get-R13 {
     param($Sec)
@@ -280,12 +318,12 @@ function Get-R13 {
     $hOK = Test-Observed $hello
     $tOK = Test-Observed $tpm
     if ($hOK -and $tOK) {
-        return @{ Status='cv'; Detail="Authentification forte configuree : Windows Hello ($(Get-CheckValue $hello)), TPM operationnel."; Evidence='SecurityScan WinSec + Firmware' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R13.detail.cv_full' @{ helloValue=(Get-CheckValue $hello) } "Authentification forte configuree : Windows Hello ($(Get-CheckValue $hello)), TPM operationnel."); Evidence='SecurityScan WinSec + Firmware' }
     }
     if ($tOK) {
-        return @{ Status='pv'; Detail='TPM 2.0 present et operationnel - capacite d''authentification forte disponible. Configuration effective de Windows Hello non observee.'; Evidence='SecurityScan Firmware / TPM' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R13.detail.pv_tpm_ok' @{} 'TPM 2.0 present et operationnel - capacite d''authentification forte disponible. Configuration effective de Windows Hello non observee.'); Evidence='SecurityScan Firmware / TPM' }
     }
-    return @{ Status='pv'; Detail='Authentification forte non determinee.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R13.detail.pv_default' @{} 'Authentification forte non determinee.'); Evidence='' }
 }
 
 # --- Module IV ---
@@ -298,22 +336,28 @@ function Get-R14 {
     $defOK = Test-Status $defRt
     $blOK  = @($bitlk | Where-Object { Test-Status $_ }).Count -ge 1
     if ($fwOK -and $defOK -and $blOK) {
-        return @{ Status='cv'; Detail='Conforme au niveau Standard : pare-feu local actif sur les profils, Microsoft Defender en protection temps reel, BitLocker actif sur le volume systeme. Detection autorun non encore couverte (extension G2).'; Evidence='SecurityScan NetSec + Defender + Encryption' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R14.detail.cv_default' @{} 'Conforme au niveau Standard : pare-feu local actif sur les profils, Microsoft Defender en protection temps reel, BitLocker actif sur le volume systeme. Detection autorun non encore couverte (extension G2).'); Evidence='SecurityScan NetSec + Defender + Encryption' }
     }
     $bits = @()
-    if ($fwOK)  { $bits += 'pare-feu actif' }    else { $bits += 'pare-feu non confirme' }
-    if ($defOK) { $bits += 'Defender actif' }    else { $bits += 'Defender non confirme' }
-    if ($blOK)  { $bits += 'BitLocker actif' }   else { $bits += 'BitLocker non confirme' }
-    return @{ Status='pv'; Detail=("Socle de securite partiel : " + ($bits -join ', ') + '. Niveau Standard non integralement atteint.'); Evidence='SecurityScan NetSec + Defender + Encryption' }
+    # Composed prose: each fragment is a phrases key, and the assembled string is
+    # substituted into detail.pv_partial. This is why the phrases sub-keys exist.
+    if ($fwOK)  { $bits += (T 'report.anssi.rules.R14.phrases.fwOk'  @{} 'pare-feu actif') }
+    else        { $bits += (T 'report.anssi.rules.R14.phrases.fwNotConfirmed'  @{} 'pare-feu non confirme') }
+    if ($defOK) { $bits += (T 'report.anssi.rules.R14.phrases.defOk' @{} 'Defender actif') }
+    else        { $bits += (T 'report.anssi.rules.R14.phrases.defNotConfirmed' @{} 'Defender non confirme') }
+    if ($blOK)  { $bits += (T 'report.anssi.rules.R14.phrases.blOk'  @{} 'BitLocker actif') }
+    else        { $bits += (T 'report.anssi.rules.R14.phrases.blNotConfirmed'  @{} 'BitLocker non confirme') }
+    $joined = ($bits -join ', ')
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R14.detail.pv_partial' @{ bits=$joined } ("Socle de securite partiel : " + $joined + '. Niveau Standard non integralement atteint.')); Evidence='SecurityScan NetSec + Defender + Encryption' }
 }
-function Get-R15 { @{ Status='pv'; Detail='Politique de restriction USB / AppLocker non extraite par les sondes actuelles (extension G3 prevue).'; Evidence='' } }
+function Get-R15 { @{ Status='pv'; Detail=(T 'report.anssi.rules.R15.detail.pv_default' @{} 'Politique de restriction USB / AppLocker non extraite par les sondes actuelles (extension G3 prevue).'); Evidence='' } }
 function Get-R16 {
     param($Sec)
     $c = Find-Check -EngineData $Sec -Category 'Identity' -CheckLike 'Directory'
     if (Test-Observed $c) {
-        return @{ Status='cv'; Detail='Poste rattache a un annuaire - gestion centralisee du parc confirmee, vraisemblablement via Microsoft Intune.'; Evidence='SecurityScan Identity / Directory Join Status' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R16.detail.cv_default' @{} 'Poste rattache a un annuaire - gestion centralisee du parc confirmee, vraisemblablement via Microsoft Intune.'); Evidence='SecurityScan Identity / Directory Join Status' }
     }
-    return @{ Status='pv'; Detail='Etat d''adhesion annuaire non determine.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R16.detail.pv_unknown' @{} 'Etat d''adhesion annuaire non determine.'); Evidence='' }
 }
 function Get-R17 {
     param($Sec, $Pch, $Net)
@@ -322,16 +366,16 @@ function Get-R17 {
     if ($fwAll.Count -eq 0) { $fwAll = @(Find-AllChecks -EngineData $Net -Category 'Firewall') }
     $passing = @($fwAll | Where-Object { Test-Status $_ }).Count
     $total   = $fwAll.Count
-    if ($total -eq 0) { return @{ Status='pv'; Detail='Etat du pare-feu local non extrait.'; Evidence='' } }
+    if ($total -eq 0) { return @{ Status='pv'; Detail=(T 'report.anssi.rules.R17.detail.pv_no_data' @{} 'Etat du pare-feu local non extrait.'); Evidence='' } }
     if ($passing -eq $total) {
-        return @{ Status='cv'; Detail="Les $total profils du pare-feu Windows (Domaine, Prive, Public) sont actifs. Configuration de niveau Renforce (blocage des ports d'administration) non evaluee."; Evidence='SecurityScan NetSec + PCHealth Security + NetRepair Firewall' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R17.detail.cv_all_active' @{ count=$total } "Les $total profils du pare-feu Windows (Domaine, Prive, Public) sont actifs. Configuration de niveau Renforce (blocage des ports d'administration) non evaluee."); Evidence='SecurityScan NetSec + PCHealth Security + NetRepair Firewall' }
     }
-    return @{ Status='pv'; Detail="$passing/$total profil(s) de pare-feu actif(s). Le pare-feu doit etre actif sur tous les profils."; Evidence='SecurityScan NetSec' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R17.detail.pv_partial' @{ passing=$passing; total=$total } "$passing/$total profil(s) de pare-feu actif(s). Le pare-feu doit etre actif sur tous les profils."); Evidence='SecurityScan NetSec' }
 }
-function Get-R18 { @{ Status='hp'; Detail='Chiffrement des donnees en transit - depend de l''usage applicatif et messagerie, hors perimetre du poste.'; Evidence='' } }
+function Get-R18 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R18.detail.hp_default' @{} 'Chiffrement des donnees en transit - depend de l''usage applicatif et messagerie, hors perimetre du poste.'); Evidence='' } }
 
 # --- Module V ---
-function Get-R19 { @{ Status='pv'; Detail='Sous-reseau local et adaptateurs virtuels observes. Architecture de segmentation reseau hors perimetre du poste.'; Evidence='NetRepair - Configuration IP' } }
+function Get-R19 { @{ Status='pv'; Detail=(T 'report.anssi.rules.R19.detail.pv_default' @{} 'Sous-reseau local et adaptateurs virtuels observes. Architecture de segmentation reseau hors perimetre du poste.'); Evidence='NetRepair - IP Configuration' } }
 function Get-R20 {
     param($Sec, $Net)
     $wif = Find-Check -EngineData $Sec -Category 'NetSec' -CheckLike 'WiFi'
@@ -339,42 +383,42 @@ function Get-R20 {
     if (Test-Observed $wif) {
         $val = "$(Get-CheckValue $wif)"
         if ($val -match 'WPA3') {
-            return @{ Status='cv'; Detail='Connexion Wi-Fi chiffree en WPA3 - protocole conforme aux recommandations actuelles.'; Evidence='SecurityScan NetSec / WiFi Security' }
+            return @{ Status='cv'; Detail=(T 'report.anssi.rules.R20.detail.cv_wpa3' @{} 'Connexion Wi-Fi chiffree en WPA3 - protocole conforme aux recommandations actuelles.'); Evidence='SecurityScan NetSec / WiFi Security' }
         }
         if ($val -match 'WPA2') {
-            return @{ Status='cv'; Detail='Connexion Wi-Fi active chiffree en WPA2-Personal. Protocole de chiffrement conforme aux recommandations actuelles.'; Evidence='SecurityScan NetSec / WiFi Security' }
+            return @{ Status='cv'; Detail=(T 'report.anssi.rules.R20.detail.cv_wpa2' @{} 'Connexion Wi-Fi active chiffree en WPA2-Personal. Protocole de chiffrement conforme aux recommandations actuelles.'); Evidence='SecurityScan NetSec / WiFi Security' }
         }
         if ($val -match 'WEP|Open|ouvert') {
-            return @{ Status='pv'; Detail="Reseau Wi-Fi en chiffrement faible ou absent ($val). Migration vers WPA2/WPA3 recommandee."; Evidence='SecurityScan NetSec / WiFi Security' }
+            return @{ Status='pv'; Detail=(T 'report.anssi.rules.R20.detail.pv_weak' @{ algorithm=$val } "Reseau Wi-Fi en chiffrement faible ou absent ($val). Migration vers WPA2/WPA3 recommandee."); Evidence='SecurityScan NetSec / WiFi Security' }
         }
-        return @{ Status='pv'; Detail="Wi-Fi observe : $val. Niveau de chiffrement a confirmer."; Evidence='SecurityScan NetSec / WiFi Security' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R20.detail.pv_other' @{ value=$val } "Wi-Fi observe : $val. Niveau de chiffrement a confirmer."); Evidence='SecurityScan NetSec / WiFi Security' }
     }
-    return @{ Status='pv'; Detail='Pas de connexion Wi-Fi observee au moment du diagnostic.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R20.detail.pv_no_wifi' @{} 'Pas de connexion Wi-Fi observee au moment du diagnostic.'); Evidence='' }
 }
 function Get-R21 {
     param($Sec)
     $smbv1 = Find-Check -EngineData $Sec -Category 'Surface' -CheckLike 'SMBv1'
     if (Test-Observed $smbv1) {
-        return @{ Status='pv'; Detail="SMBv1 : $(Get-CheckValue $smbv1). Audit complet des protocoles obsoletes (TLS, LLMNR, NetBIOS) non encore implemente."; Evidence='SecurityScan Surface' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R21.detail.pv_smbv1_observed' @{ smbStatus=(Get-CheckValue $smbv1) } "SMBv1 : $(Get-CheckValue $smbv1). Audit complet des protocoles obsoletes (TLS, LLMNR, NetBIOS) non encore implemente."); Evidence='SecurityScan Surface' }
     }
-    return @{ Status='pv'; Detail='SMBv1 absent du poste. Audit complet des protocoles obsoletes non encore implemente.'; Evidence='SecurityScan Surface' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R21.detail.pv_default' @{} 'SMBv1 absent du poste. Audit complet des protocoles obsoletes non encore implemente.'); Evidence='SecurityScan Surface' }
 }
 function Get-R22 {
     param($Net, $Sec)
     $px = Find-Check -EngineData $Net -Category 'Proxy'
     if (Test-Observed $px) {
-        return @{ Status='pv'; Detail="Configuration d'acces Internet : $(Get-CheckValue $px). Filtrage d'URL et DNS securise non evalues en detail."; Evidence='NetRepair - Proxy & WPAD' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R22.detail.pv_default' @{ proxyConfig=(Get-CheckValue $px) } "Configuration d'acces Internet : $(Get-CheckValue $px). Filtrage d'URL et DNS securise non evalues en detail."); Evidence='NetRepair - Proxy & WPAD' }
     }
-    return @{ Status='pv'; Detail='Passerelle d''acces Internet non analysee.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R22.detail.pv_no_analysis' @{} 'Passerelle d''acces Internet non analysee.'); Evidence='' }
 }
-function Get-R23 { @{ Status='hp'; Detail='Cloisonnement des services exposes - architecture reseau, hors perimetre du poste.'; Evidence='' } }
-function Get-R24 { @{ Status='hp'; Detail='Securite de la messagerie - configuration cote serveur, hors perimetre du poste.'; Evidence='' } }
-function Get-R25 { @{ Status='hp'; Detail='Interconnexions partenaires - architecture inter-entites, hors perimetre du poste.'; Evidence='' } }
-function Get-R26 { @{ Status='hp'; Detail='Acces physiques - mesure organisationnelle, hors perimetre logiciel.'; Evidence='' } }
+function Get-R23 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R23.detail.hp_default' @{} 'Cloisonnement des services exposes - architecture reseau, hors perimetre du poste.'); Evidence='' } }
+function Get-R24 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R24.detail.hp_default' @{} 'Securite de la messagerie - configuration cote serveur, hors perimetre du poste.'); Evidence='' } }
+function Get-R25 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R25.detail.hp_default' @{} 'Interconnexions partenaires - architecture inter-entites, hors perimetre du poste.'); Evidence='' } }
+function Get-R26 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R26.detail.hp_default' @{} 'Acces physiques - mesure organisationnelle, hors perimetre logiciel.'); Evidence='' } }
 
 # --- Module VI ---
-function Get-R27 { @{ Status='hp'; Detail='Usage des postes d''administration - architecture et politique d''usage, hors perimetre.'; Evidence='' } }
-function Get-R28 { @{ Status='hp'; Detail='Reseau dedie a l''administration - architecture reseau, hors perimetre du poste.'; Evidence='' } }
+function Get-R27 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R27.detail.hp_default' @{} 'Usage des postes d''administration - architecture et politique d''usage, hors perimetre.'); Evidence='' } }
+function Get-R28 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R28.detail.hp_default' @{} 'Reseau dedie a l''administration - architecture reseau, hors perimetre du poste.'); Evidence='' } }
 function Get-R29 {
     param($Sec)
     $uac    = Find-Check -EngineData $Sec -Category 'PrivEsc' -CheckLike 'UAC'
@@ -385,14 +429,14 @@ function Get-R29 {
         $u = Get-CheckValue $uac
         $uClean = $u -replace '\s*\([^)]*\)\s*$',''
         $a = Get-CheckValue $admins
-        return @{ Status='cv'; Detail="Controle d'elevation : UAC $uClean. Administrateurs locaux : $a."; Evidence='SecurityScan PrivEsc / UAC + Identity' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R29.detail.cv_full' @{ uacPolicy=$uClean; adminList=$a } "Controle d'elevation : UAC $uClean. Administrateurs locaux : $a."); Evidence='SecurityScan PrivEsc / UAC + Identity' }
     }
     if ($uOK) {
         $u = Get-CheckValue $uac
         $uClean = $u -replace '\s*\([^)]*\)\s*$',''
-        return @{ Status='pv'; Detail="UAC actif (politique : $uClean). Enumeration des comptes administrateurs non disponible (acces refuse)."; Evidence='SecurityScan PrivEsc / UAC + Identity' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R29.detail.pv_uac_only' @{ uacPolicy=$uClean } "UAC actif (politique : $uClean). Enumeration des comptes administrateurs non disponible (acces refuse)."); Evidence='SecurityScan PrivEsc / UAC + Identity' }
     }
-    return @{ Status='pv'; Detail='Etat UAC et nombre d''administrateurs non extraits.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R29.detail.pv_no_data' @{} 'Etat UAC et nombre d''administrateurs non extraits.'); Evidence='' }
 }
 
 # --- Module VII ---
@@ -400,24 +444,24 @@ function Get-R30 {
     param($Pch)
     $sysId = Find-Check -EngineData $Pch -Category 'Identity' -CheckLike 'System Identified'
     if (Test-Observed $sysId) {
-        return @{ Status='pv'; Detail='Materiel identifie (poste portable). Mesures de securisation physique non observables techniquement.'; Evidence='PCHealth - Identite systeme' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R30.detail.pv_default' @{} 'Materiel identifie (poste portable). Mesures de securisation physique non observables techniquement.'); Evidence='PCHealth - System Identity' }
     }
-    return @{ Status='pv'; Detail='Identification materielle indisponible.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R30.detail.pv_no_hardware_id' @{} 'Identification materielle indisponible.'); Evidence='' }
 }
 function Get-R31 {
     param($Sec, $Pch)
     $bls = @(Find-AllChecks -EngineData $Sec -Category 'Encryption' -CheckLike 'BitLocker')
     if ($bls.Count -eq 0) { $bls = @(Find-AllChecks -EngineData $Pch -Category 'Storage' -CheckLike 'BitLocker') }
     $total = $bls.Count
-    if ($total -eq 0) { return @{ Status='pv'; Detail='Statut BitLocker indisponible.'; Evidence='' } }
+    if ($total -eq 0) { return @{ Status='pv'; Detail=(T 'report.anssi.rules.R31.detail.pv_no_data' @{} 'Statut BitLocker indisponible.'); Evidence='' } }
     $on = @($bls | Where-Object { Test-Status $_ }).Count
     if ($on -eq $total -and $on -gt 0) {
         if ($total -eq 1) {
-            return @{ Status='cv'; Detail='Volume systeme chiffre par BitLocker (chiffrement AES). Sur un poste portable, le volume systeme est le vecteur principal de perte de donnees.'; Evidence='SecurityScan Encryption / BitLocker + PCHealth Storage' }
+            return @{ Status='cv'; Detail=(T 'report.anssi.rules.R31.detail.cv_single_volume' @{} 'Volume systeme chiffre par BitLocker (chiffrement AES). Sur un poste portable, le volume systeme est le vecteur principal de perte de donnees.'); Evidence='SecurityScan Encryption / BitLocker + PCHealth Storage' }
         }
-        return @{ Status='cv'; Detail="Les $total volumes detectes sont chiffres par BitLocker (chiffrement AES)."; Evidence='SecurityScan Encryption / BitLocker + PCHealth Storage' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R31.detail.cv_all_volumes' @{ total=$total } "Les $total volumes detectes sont chiffres par BitLocker (chiffrement AES)."); Evidence='SecurityScan Encryption / BitLocker + PCHealth Storage' }
     }
-    return @{ Status='pv'; Detail="$on/$total volume(s) chiffres. Les volumes non chiffres devraient l'etre pour limiter le risque en cas de perte."; Evidence='SecurityScan Encryption / BitLocker' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R31.detail.pv_partial' @{ on=$on; total=$total } "$on/$total volume(s) chiffres. Les volumes non chiffres devraient l'etre pour limiter le risque en cas de perte."); Evidence='SecurityScan Encryption / BitLocker' }
 }
 function Get-R32 {
     param($Net)
@@ -425,13 +469,13 @@ function Get-R32 {
     if (Test-Observed $vpn) {
         $val = "$(Get-CheckValue $vpn)"
         if ($val -match '\b(?<!dis)(?<!not\s)(connected|connecte|actif)\b') {
-            return @{ Status='cv'; Detail="Tunnel VPN actif ($val). Connexion nomade chiffree."; Evidence='NetRepair - Statut VPN' }
+            return @{ Status='cv'; Detail=(T 'report.anssi.rules.R32.detail.cv_connected' @{ vpnInfo=$val } "Tunnel VPN actif ($val). Connexion nomade chiffree."); Evidence='NetRepair - VPN Status' }
         }
-        return @{ Status='pv'; Detail="Client VPN installe mais inactif au moment du diagnostic ($val). Qualite cryptographique du tunnel non evaluable hors connexion."; Evidence='NetRepair - Statut VPN' }
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R32.detail.pv_inactive' @{ vpnInfo=$val } "Client VPN installe mais inactif au moment du diagnostic ($val). Qualite cryptographique du tunnel non evaluable hors connexion."); Evidence='NetRepair - VPN Status' }
     }
-    return @{ Status='pv'; Detail='Aucune solution VPN detectee.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R32.detail.pv_no_vpn' @{} 'Aucune solution VPN detectee.'); Evidence='' }
 }
-function Get-R33 { @{ Status='hp'; Detail='Politique terminaux mobiles - concerne smartphones et tablettes, hors perimetre d''un poste Windows.'; Evidence='' } }
+function Get-R33 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R33.detail.hp_default' @{} 'Politique terminaux mobiles - concerne smartphones et tablettes, hors perimetre d''un poste Windows.'); Evidence='' } }
 
 # --- Module VIII ---
 function Get-R34 {
@@ -439,21 +483,21 @@ function Get-R34 {
     $wu = @(Find-AllChecks -EngineData $Pch -Category 'Updates')
     $fails = @($wu | Where-Object { $s = Get-DictValue $_ 'Status'; $s -eq 'Warning' -or $s -eq 'Critical' }).Count
     if ($fails -gt 0) {
-        return @{ Status='cv'; Detail="Windows Update operationnel. $fails echec(s) de mise a jour detecte(s) sur les 30 derniers jours, a relancer."; Evidence='PCHealth - Drivers & Windows Update + SecurityScan Patching' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R34.detail.cv_with_failures' @{ count=$fails } "Windows Update operationnel. $fails echec(s) de mise a jour detecte(s) sur les 30 derniers jours, a relancer."); Evidence='PCHealth - Drivers & Windows Update + SecurityScan Patching' }
     }
     if ($wu.Count -gt 0) {
-        return @{ Status='cv'; Detail='Windows Update operationnel - aucun echec recent detecte.'; Evidence='PCHealth - Drivers & Windows Update' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R34.detail.cv_clean' @{} 'Windows Update operationnel - aucun echec recent detecte.'); Evidence='PCHealth - Drivers & Windows Update' }
     }
-    return @{ Status='pv'; Detail='Politique de mise a jour non observee dans les sondes.'; Evidence='' }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R34.detail.pv_no_data' @{} 'Politique de mise a jour non observee dans les sondes.'); Evidence='' }
 }
 function Get-R35 {
     param($Pch, $Sec)
     $drv = @(Find-AllChecks -EngineData $Pch -Category 'Drivers')
     $old = @($drv | Where-Object { (Get-DictValue $_ 'Status') -eq 'Warning' }).Count
     if ($old -gt 0) {
-        return @{ Status='cv'; Detail="Systeme sous support actif. $old pilote(s) obsolete(s) detecte(s), anterieurs aux versions supportees - remplacement recommande."; Evidence='PCHealth - Drivers & Windows Update + SecurityScan Patching' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R35.detail.cv_obsolete_drivers' @{ count=$old } "Systeme sous support actif. $old pilote(s) obsolete(s) detecte(s), anterieurs aux versions supportees - remplacement recommande."); Evidence='PCHealth - Drivers & Windows Update + SecurityScan Patching' }
     }
-    return @{ Status='cv'; Detail='Systeme et composants sous support actif - aucun composant obsolete detecte.'; Evidence='SecurityScan Patching + PCHealth Drivers' }
+    return @{ Status='cv'; Detail=(T 'report.anssi.rules.R35.detail.cv_clean' @{} 'Systeme et composants sous support actif - aucun composant obsolete detecte.'); Evidence='SecurityScan Patching + PCHealth Drivers' }
 }
 
 # --- Module IX ---
@@ -465,25 +509,29 @@ function Get-R36 {
     $sblOK  = Test-Observed $sbl
     $auditWeak = ($audVal -match 'Minimal|minimal') -or ((Get-DictValue $aud 'Status') -eq 'Fail')
     if ($sblOK -and -not $auditWeak -and $audVal) {
-        return @{ Status='cv'; Detail="Journalisation active : audit des connexions ($audVal), Script Block Logging PowerShell actif."; Evidence='SecurityScan WinSec + PSSecurity' }
+        return @{ Status='cv'; Detail=(T 'report.anssi.rules.R36.detail.cv_full' @{ auditMode=$audVal } "Journalisation active : audit des connexions ($audVal), Script Block Logging PowerShell actif."); Evidence='SecurityScan WinSec + PSSecurity' }
     }
     $bits = @()
-    if ($sblOK) { $bits += 'Journalisation PowerShell (Script Block Logging) active' }
-    if ($auditWeak) { $bits += 'politique d''audit des connexions au niveau minimal - renforcement recommande pour la tracabilite des evenements de securite' }
-    elseif ($audVal) { $bits += "audit des connexions : $audVal" }
-    if ($bits.Count -gt 0) {
-        return @{ Status='pv'; Detail=(($bits -join '. ') + '.'); Evidence='SecurityScan WinSec / Logon Audit Policy + PSSecurity' }
+    if ($sblOK) { $bits += (T 'report.anssi.rules.R36.phrases.pwshActive' @{} 'Journalisation PowerShell (Script Block Logging) active') }
+    if ($auditWeak) {
+        $bits += (T 'report.anssi.rules.R36.phrases.auditWeak' @{} 'politique d''audit des connexions au niveau minimal - renforcement recommande pour la tracabilite des evenements de securite')
+    } elseif ($audVal) {
+        $bits += (T 'report.anssi.rules.R36.phrases.auditObservedTemplate' @{ value=$audVal } "audit des connexions : $audVal")
     }
-    return @{ Status='pv'; Detail='Configuration des journaux non extraite.'; Evidence='' }
+    if ($bits.Count -gt 0) {
+        $joined = (($bits -join '. ') + '.')
+        return @{ Status='pv'; Detail=(T 'report.anssi.rules.R36.detail.pv_partial' @{ bits=$joined } $joined); Evidence='SecurityScan WinSec / Logon Audit Policy + PSSecurity' }
+    }
+    return @{ Status='pv'; Detail=(T 'report.anssi.rules.R36.detail.pv_no_data' @{} 'Configuration des journaux non extraite.'); Evidence='' }
 }
-function Get-R37 { @{ Status='hp'; Detail='Politique de sauvegarde - infrastructure et procedures, hors perimetre du poste.'; Evidence='' } }
-function Get-R38 { @{ Status='cv'; Detail='L''execution de FieldOps Pro constitue elle-meme un controle d''audit technique regulier, repondant directement a cette mesure.'; Evidence='FieldOps Pro - execution courante' } }
-function Get-R39 { @{ Status='hp'; Detail='Designation d''un referent SSI - mesure organisationnelle.'; Evidence='' } }
-function Get-R40 { @{ Status='hp'; Detail='Procedure de gestion des incidents - mesure organisationnelle.'; Evidence='' } }
+function Get-R37 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R37.detail.hp_default' @{} 'Politique de sauvegarde - infrastructure et procedures, hors perimetre du poste.'); Evidence='' } }
+function Get-R38 { @{ Status='cv'; Detail=(T 'report.anssi.rules.R38.detail.cv_default' @{} 'L''execution de FieldOps Pro constitue elle-meme un controle d''audit technique regulier, repondant directement a cette mesure.'); Evidence='FieldOps Pro - current run' } }
+function Get-R39 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R39.detail.hp_default' @{} 'Designation d''un referent SSI - mesure organisationnelle.'); Evidence='' } }
+function Get-R40 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R40.detail.hp_default' @{} 'Procedure de gestion des incidents - mesure organisationnelle.'); Evidence='' } }
 
 # --- Module X ---
-function Get-R41 { @{ Status='hp'; Detail='Analyse de risque formelle (methode EBIOS RM) - demarche methodologique, hors perimetre technique.'; Evidence='' } }
-function Get-R42 { @{ Status='pv'; Detail='Inventaire logiciel capture en instantane. Croisement automatique avec le catalogue ANSSI des produits qualifies non encore implemente (extension G7).'; Evidence='ComplianceDiff - instantane Software' } }
+function Get-R41 { @{ Status='hp'; Detail=(T 'report.anssi.rules.R41.detail.hp_default' @{} 'Analyse de risque formelle (methode EBIOS RM) - demarche methodologique, hors perimetre technique.'); Evidence='' } }
+function Get-R42 { @{ Status='pv'; Detail=(T 'report.anssi.rules.R42.detail.pv_default' @{} 'Inventaire logiciel capture en instantane. Croisement automatique avec le catalogue ANSSI des produits qualifies non encore implemente (extension G7).'); Evidence='ComplianceDiff - snapshot Software' } }
 
 # ===========================================================================
 # METADATA
@@ -642,6 +690,143 @@ $evaluators = @{
     'R41'={Get-R41}; 'R42'={Get-R42}
 }
 
+# ---------------------------------------------------------------------------
+# Severity
+# ---------------------------------------------------------------------------
+# Severity is DERIVED here rather than in the renderer, and written into
+# report-data.json as a real field, so that every consumer reads the same
+# number instead of re-inferring it from prose. Inferring downstream would
+# silently collapse the ranking in an English render, where French patterns
+# match nothing and no error is raised.
+#
+# Accents are folded before matching so a single ASCII pattern serves both
+# languages and this file stays ASCII-only (audit A1).
+function ConvertTo-FoldedAscii {
+    param([string]$Text)
+    if (-not $Text) { return '' }
+    # Typographic apostrophes are normalised to ASCII so that a single pattern
+    # matches whichever form the bundle happens to carry.
+    $normalized = $Text.Replace([string][char]0x2019, "'").Replace([string][char]0x02BC, "'")
+    $decomposed = $normalized.Normalize([System.Text.NormalizationForm]::FormD)
+    $sb = New-Object System.Text.StringBuilder
+    foreach ($ch in $decomposed.ToCharArray()) {
+        $cat = [System.Globalization.CharUnicodeInfo]::GetUnicodeCategory($ch)
+        if ($cat -ne [System.Globalization.UnicodeCategory]::NonSpacingMark) {
+            [void]$sb.Append($ch)
+        }
+    }
+    return $sb.ToString().ToLowerInvariant()
+}
+
+# 3 prioritaire, 2 a traiter, 1 observation, 0 not a finding.
+# A rule the toolkit could not evaluate ranks level with one where it looked
+# and found a defect, because for an auditor an unknown is a worse position
+# than a known. That is the whole argument for pv, applied to ordering.
+# The finding class says WHY a rule is not a clean pass. It selects the measure
+# as well as the severity, so the badge a reader sees and the action they are
+# told to take are derived from one decision and cannot contradict each other.
+#
+#   blind   the toolkit could not look
+#   defect  it looked and found something
+#   gap     an aspect was not evaluated
+#   partial pv with no stated reason
+#   hp / ok not a finding
+function Get-RuleFindingClass {
+    param([string]$Status, [string]$Text)
+    if ($Status -eq 'hp') { return 'hp' }
+    $t = ConvertTo-FoldedAscii $Text
+    # French states a limit two ways: adjectivally ("non evalue") and as a
+    # negated verb ("n'est pas evaluable"). Matching only the first ranked
+    # eight rules as mere observations once the evaluators began drawing their
+    # prose from the bundle, because natural French prefers the second.
+    $neg   = 'n''est pas |n''etait pas |ne sont pas |n''a pas ete |n''ont pas ete |ne peut pas |ne peuvent pas |is not |are not |was not |could not be |cannot be '
+    $blind = 'acces refuse|access denied|non disponible|not available|unavailable|cannot query|non extrait|not extracted|refuse par'
+    $fail  = 'echec|failed|obsolete|outdated|non conforme|non-compliant|minimal|faible|weak|inactif|inactive'
+    $gap   = 'non observ|not observ|non evalu|not evaluat|non confirm|not confirm|non test|not test|a confirmer|to be confirmed|non implement|not implement'
+    $blindNeg = 'extrait|disponible|accessible|remonte|retrieved|available|accessible'
+    $gapNeg   = 'observ|evalu|confirm|test|implement|renseign|assessed|verified'
+    if ($t -match $blind) { return 'blind' }
+    if ($t -match "($neg)($blindNeg)") { return 'blind' }
+    if ($t -match $fail)  { return 'defect' }
+    if ($t -match $gap)   { return 'gap' }
+    if ($t -match "($neg)($gapNeg)") { return 'gap' }
+    if ($Status -eq 'pv') { return 'partial' }
+    return 'ok'
+}
+
+# Severity exists only as an ordering of the classes above.
+function Get-RuleSeverity {
+    param([string]$FindingClass)
+    switch ($FindingClass) {
+        'blind'   { return 3 }
+        'defect'  { return 3 }
+        'gap'     { return 2 }
+        'partial' { return 1 }
+        default   { return 0 }
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Second evaluation pass: English
+# ---------------------------------------------------------------------------
+# The evaluators resolve their prose through the locale bundle at the moment
+# they run, and $RuleMeta / $ModuleMeta resolve theirs at script load. A single
+# pass therefore freezes the whole report to one language: an English render
+# carried French findings, French rule names and French module titles while
+# every locale test passed, because those tests only ever examined template
+# chrome, which the renderer resolves separately.
+#
+# The evaluators are pure functions over already-parsed JSON, and the suite
+# proves it: 'P3 - evaluators are deterministic'. Running them a second time
+# under a different locale is safe by a property already under test, rather
+# than by a mechanism introduced here and assumed to hold.
+$enNames  = @{}
+$enTitles = @{}
+$enMeta   = @{}
+$enLabels = @{}
+# Initialised here, not inside the block below: StrictMode 1.0 treats a
+# reference to a never-assigned variable as an error, so a failed English pass
+# would take the whole collection down rather than degrading.
+$enRuleNotePrefix = 'Rule {num} -'
+$langDir  = Join-Path (Split-Path $PSScriptRoot -Parent) 'CONFIG\lang'
+if ((Get-Command Initialize-Locale -ErrorAction SilentlyContinue) -and (Test-Path $langDir)) {
+    try {
+        Initialize-Locale -Lang 'en' -LangDir $langDir -ErrorAction SilentlyContinue
+        foreach ($mm in $ModuleMeta) {
+            $enTitles[$mm.Number] = (T "report.anssi.modules.$($mm.Number).title" @{} $mm.Title)
+        }
+        foreach ($m in $RuleMeta) {
+            $rid = $m.Id
+            $enNames[$rid] = (T "report.anssi.rules.$rid.name" @{} $m.Name)
+            $rr = $null
+            try { $rr = & $evaluators[$rid] } catch { $rr = $null }
+            $sten = 'pv'
+            if ($rr) {
+                $enMeta[$rid] = Get-DictValue $rr 'Detail' ''
+                $sten = Get-DictValue $rr 'Status' 'pv'
+            } else {
+                $enMeta[$rid] = ''
+            }
+            $enLabels[$rid] = switch ($sten) {
+                'cv'    { T 'report.anssi.status.cv' @{} 'Verified' }
+                'pv'    { T 'report.anssi.status.pv' @{} 'Partial' }
+                'hp'    { T 'report.anssi.status.hp' @{} 'Out of scope' }
+                default { T 'report.anssi.status.pv' @{} 'Partial' }
+            }
+        }
+        $enRuleNotePrefix = (T 'report.anssi.ruleNote.prefix' @{} 'Rule {num} -')
+        Write-OK "English pass: $($enMeta.Count) rules resolved"
+    } catch {
+        Write-Warn "English evaluation pass failed: $($_.Exception.Message)"
+    } finally {
+        # Restore French. Everything downstream -- the severity model above all
+        # -- reads the French text, so that a French and an English report of
+        # the same machine rank their findings identically. Two reports of one
+        # machine disagreeing about what matters most would be indefensible.
+        try { Initialize-Locale -Lang 'fr' -LangDir $langDir -ErrorAction SilentlyContinue } catch { }
+    }
+}
+
 $ruleResults = [ordered]@{}
 foreach ($m in $RuleMeta) {
     $rid = $m.Id
@@ -658,9 +843,24 @@ foreach ($m in $RuleMeta) {
         'hp'    { T 'report.anssi.status.hp' @{} 'Hors perimetre' }
         default { T 'report.anssi.status.pv' @{} 'Partiel' }
     }
+    $meta = Get-DictValue $r 'Detail' ''
+    $fclass = Get-RuleFindingClass $st $meta
+    # Fall back to the French value rather than emitting an empty string: a
+    # missing translation should read as untranslated, not as a blank finding.
+    $nameEn = $m.Name
+    $metaEn = $meta
+    $lblEn  = $label
+    if ($enNames.ContainsKey($rid)  -and $enNames[$rid])  { $nameEn = $enNames[$rid] }
+    if ($enMeta.ContainsKey($rid)   -and $enMeta[$rid])   { $metaEn = $enMeta[$rid] }
+    if ($enLabels.ContainsKey($rid) -and $enLabels[$rid]) { $lblEn  = $enLabels[$rid] }
     $ruleResults[$rid] = [PSCustomObject]@{
-        Id=$rid; Module=$m.Mod; Name=$m.Name; Status=$st; StatusLabel=$label
-        Meta=(Get-DictValue $r 'Detail' ''); Detail=''; Evidence=(Get-DictValue $r 'Evidence' '')
+        Id=$rid; Module=$m.Mod
+        Name=([PSCustomObject]@{ fr=$m.Name; en=$nameEn })
+        Status=$st
+        StatusLabel=([PSCustomObject]@{ fr=$label; en=$lblEn })
+        FindingClass=$fclass; Severity=(Get-RuleSeverity $fclass)
+        Meta=([PSCustomObject]@{ fr=$meta; en=$metaEn })
+        Detail=''; Evidence=(Get-DictValue $r 'Evidence' '')
     }
 }
 
@@ -674,7 +874,9 @@ $modules = @()
 foreach ($m in $ModuleMeta) {
     $mr = @($ruleResults.Values | Where-Object { $_.Module -eq $m.Number })
     $modules += [PSCustomObject]@{
-        Number=$m.Number; Title=$m.Title; RuleCount=$mr.Count
+        Number=$m.Number
+        Title=([PSCustomObject]@{ fr=$m.Title; en=$(if ($enTitles.ContainsKey($m.Number) -and $enTitles[$m.Number]) { $enTitles[$m.Number] } else { $m.Title }) })
+        RuleCount=$mr.Count
         Counts=@{
             Cv=@($mr | Where-Object { $_.Status -eq 'cv' }).Count
             Pv=@($mr | Where-Object { $_.Status -eq 'pv' }).Count
@@ -689,25 +891,41 @@ foreach ($m in $ModuleMeta) {
     $mr = @($ruleResults.Values | Where-Object { $_.Module -eq $m.Number } | Sort-Object { [int]($_.Id.Substring(1)) })
     $rules = @()
     foreach ($rr in $mr) {
-        $rr.Meta = Format-DetailString $rr.Meta
+        $rr.Meta = [PSCustomObject]@{
+            fr = (Format-DetailString $rr.Meta.fr)
+            en = (Format-DetailString $rr.Meta.en)
+        }
         $rules += [PSCustomObject]@{
             Id=$rr.Id; Name=$rr.Name; Status=$rr.Status; StatusLabel=$rr.StatusLabel
-    
+            FindingClass=$rr.FindingClass; Severity=$rr.Severity
             Meta=$rr.Meta; Detail=$rr.Detail; Evidence=$rr.Evidence
         }
     }
-    $moduleDetails += [PSCustomObject]@{ Number=$m.Number; Title=$m.Title; Rules=$rules }
+    $titleEn = $m.Title
+    if ($enTitles.ContainsKey($m.Number) -and $enTitles[$m.Number]) { $titleEn = $enTitles[$m.Number] }
+    $moduleDetails += [PSCustomObject]@{
+        Number = $m.Number
+        Title  = ([PSCustomObject]@{ fr=$m.Title; en=$titleEn })
+        Rules  = $rules
+    }
 }
 
 # --- Top findings: non-HP rules whose detail names a concrete problem ---
 $topFindings = @()
 $problemPattern = '\d+\s*(echec|pilote|volume)|obsolet|minimal|non chiffr|chiffrement faible|\d+/\d+\s*(profil|volume)'
-$candidates = @($ruleResults.Values | Where-Object { $_.Status -ne 'hp' -and $_.Meta -match $problemPattern })
+# Match against the French text specifically. Meta is now per-language, and
+# letting PowerShell stringify the whole object would match "@{fr=...; en=...}"
+# and select findings on the strength of the wrapper rather than the prose.
+$candidates = @($ruleResults.Values | Where-Object { $_.Status -ne 'hp' -and $_.Meta.fr -match $problemPattern })
 foreach ($r in $candidates) {
     if ($topFindings.Count -ge 3) { break }
+    $n = $r.Id.Substring(1)
     $topFindings += [PSCustomObject]@{
         Title    = $r.Name
-        RuleNote = "Regle $($r.Id.Substring(1)) - $($r.Meta)"
+        RuleNote = ([PSCustomObject]@{
+            fr = ((T 'report.anssi.ruleNote.prefix' @{ num = $n } "Regle $n -") + ' ' + $r.Meta.fr)
+            en = ($enRuleNotePrefix.Replace('{num}', $n) + ' ' + $r.Meta.en)
+        })
         RuleId   = $r.Id
         Status   = $r.Status
     }
@@ -716,8 +934,14 @@ if ($topFindings.Count -lt 3) {
     $already = @($topFindings | ForEach-Object { $_.RuleId })
     $extra = @($ruleResults.Values | Where-Object { $_.Status -eq 'pv' -and $already -notcontains $_.Id } | Select-Object -First (3 - $topFindings.Count))
     foreach ($r in $extra) {
+        $n = $r.Id.Substring(1)
         $topFindings += [PSCustomObject]@{
-            Title=$r.Name; RuleNote="Regle $($r.Id.Substring(1)) - $($r.Meta)"; RuleId=$r.Id; Status=$r.Status
+            Title=$r.Name
+            RuleNote=([PSCustomObject]@{
+                fr = ((T 'report.anssi.ruleNote.prefix' @{ num = $n } "Regle $n -") + ' ' + $r.Meta.fr)
+                en = ($enRuleNotePrefix.Replace('{num}', $n) + ' ' + $r.Meta.en)
+            })
+            RuleId=$r.Id; Status=$r.Status
         }
     }
 }
@@ -732,11 +956,66 @@ while ($topFindings.Count -lt 3) {
     }
 }
 
+# --- Provenance -----------------------------------------------------------
+# La date d'emission n'est pas la date d'observation. Les sondes ecrivent leur
+# JSON quand elles tournent ; ce collecteur peut s'executer des semaines plus
+# tard et produisait alors un rapport ou tout paraissait observe aujourd'hui.
+# Chaque source porte desormais sa propre date, son age et son empreinte.
+$sourceList = @()
+foreach ($s in @(
+    @{ Engine = 'SecurityScan'; Path = $ssPath }
+    @{ Engine = 'PCHealth';     Path = $pcPath }
+    @{ Engine = 'NetRepair';    Path = $nrPath }
+)) {
+    if (-not $s.Path -or -not (Test-Path -LiteralPath $s.Path)) { continue }
+    try {
+        $fi  = Get-Item -LiteralPath $s.Path
+        $sha = (Get-FileHash -LiteralPath $s.Path -Algorithm SHA256).Hash.ToLowerInvariant()
+        $age = [int][math]::Floor(($now - $fi.LastWriteTime).TotalDays)
+        if ($age -lt 0) { $age = 0 }
+        $sourceList += [PSCustomObject]@{
+            Engine          = $s.Engine
+            File            = $fi.Name
+            Sha256          = $sha
+            ObservedAt      = $fi.LastWriteTime.ToString('o')
+            ObservedAtHuman = $fi.LastWriteTime.ToString('dd/MM/yyyy HH:mm')
+            AgeDays         = $age
+        }
+    } catch {
+        Write-Warn "Provenance for $($s.Engine) could not be read: $($_.Exception.Message)"
+    }
+}
+
+# --- Empreinte des constats ------------------------------------------------
+# Un condense canonique des VERDICTS, pas du document. Il ne contient aucune
+# prose : identifiant, etat, classe, severite, source. Il est donc identique
+# pour un rapport francais et son equivalent anglais du meme poste, et change
+# des qu'un verdict change. C'est ce qu'un auditeur veut comparer d'un rapport
+# a l'autre -- l'empreinte du fichier, elle, bouge a la moindre retouche de
+# mise en page.
+$canonRules = @()
+foreach ($md in $moduleDetails) { foreach ($r in @($md.Rules)) { $canonRules += $r } }
+$canonRules = @($canonRules | Sort-Object { [int]($_.Id -replace '\D','') })
+$canonSb = New-Object System.Text.StringBuilder
+foreach ($r in $canonRules) {
+    $names = @($r.PSObject.Properties.Name)
+    $fc = ''; if ($names -contains 'FindingClass') { $fc = "$($r.FindingClass)" }
+    $sv = '0'; if ($names -contains 'Severity')     { $sv = "$($r.Severity)" }
+    $ev = ''; if ($names -contains 'Evidence')      { $ev = "$($r.Evidence)" }
+    [void]$canonSb.Append("$($r.Id)|$($r.Status)|$fc|$sv|$ev").Append("`n")
+}
+$sha256   = [System.Security.Cryptography.SHA256]::Create()
+$canonBytes = [System.Text.Encoding]::UTF8.GetBytes($canonSb.ToString())
+$verdictDigest = ([BitConverter]::ToString($sha256.ComputeHash($canonBytes)) -replace '-','').ToLowerInvariant()
+$sha256.Dispose()
+
 # --- Final shape ---
 $reportData = [PSCustomObject]@{
     Report = [PSCustomObject]@{
         Id=$reportId; GeneratedAt=$now.ToString('o'); GeneratedAtHuman=$reportDateHuman
         Technician=$Technician; CustomerContact=$CustomerContact
+        Sources=$sourceList; VerdictDigest=$verdictDigest
+        Client=$ClientOrganisation; Classification=$Classification
     }
     Machine = [PSCustomObject]@{
         Hostname=$hostname; MakeModel=$machineMake; Serial=$machineSerial
