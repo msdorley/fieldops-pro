@@ -61,14 +61,14 @@ $script:Findings = [System.Collections.ArrayList]::new()
 $script:CheckCount = 0
 $script:Stopwatch  = [System.Diagnostics.Stopwatch]::StartNew()
 
-function Convert-StatusToLogLevel { param([string]$S); switch ($S) { 'Pass' {'OK'} 'Warning' {'WARN'} 'Fail' {'ERROR'} default {'INFO'} } }
+function Convert-StatusToLogLevel { param([string]$S); switch ($S) { 'Pass' {'OK'} 'Warning' {'WARN'} 'Fail' {'ERROR'} 'Undetermined' {'WARN'} default {'INFO'} } }
 
 function Add-Check {
     param([string]$Category,[string]$Check,[string]$Status,[string]$Value,[string]$Detail)
     $script:CheckCount++
     $null = $script:Results.Add([PSCustomObject]@{ Number=$script:CheckCount; Category=$Category; Check=$Check; Status=$Status; Value=$Value; Detail=$Detail })
-    $icon = switch ($Status) { 'Pass' {'[PASS]'} 'Warning' {'[WARN]'} 'Fail' {'[FAIL]'} default {'[INFO]'} }
-    Write-Host "  $icon $Check : $Value" -ForegroundColor $(switch ($Status) { 'Pass' {'Green'} 'Warning' {'Yellow'} 'Fail' {'Red'} default {'Cyan'} })
+    $icon = switch ($Status) { 'Pass' {'[PASS]'} 'Warning' {'[WARN]'} 'Fail' {'[FAIL]'} 'Undetermined' {'[ -- ]'} default {'[INFO]'} }
+    Write-Host "  $icon $Check : $Value" -ForegroundColor $(switch ($Status) { 'Pass' {'Green'} 'Warning' {'Yellow'} 'Fail' {'Red'} 'Undetermined' {'DarkYellow'} default {'Cyan'} })
     Write-Log -Message "$icon $Check = $Value | $Detail" -Level (Convert-StatusToLogLevel $Status)
 }
 
@@ -286,6 +286,10 @@ try {
 Write-Host ''
 Write-Host '[Section 5/12] Connectivity Chain' -ForegroundColor White
 $script:ConnChain = [System.Collections.ArrayList]::new()
+# Assigned on both paths below, because the read after the chain is
+# unconditional and this file runs under Set-StrictMode -Version Latest.
+$script:GatewaySilent = $false
+$script:GatewayAddr   = ''
 
 $defaultGW = $null
 try { $gwr = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction Stop | Select-Object -First 1; $defaultGW = $gwr.NextHop } catch {}
@@ -293,21 +297,21 @@ try { $gwr = Get-NetRoute -DestinationPrefix '0.0.0.0/0' -ErrorAction Stop | Sel
 if ($defaultGW) {
     $gwR = Measure-Latency -Target $defaultGW
     $gwOk = ($gwR.LossPct -lt 100)
-    $st = if ($gwOk -and $gwR.AvgMs -lt $Config.LatencyWarnMs) {'Pass'} elseif ($gwOk) {'Warning'} else {'Fail'}
+    # 100% loss to the gateway means it did not answer ICMP. Gateways commonly
+    # filter ICMP by policy, and a VPN tunnel routes around the LAN gateway
+    # entirely -- so this is an unanswered question, not an established fault.
+    $st = if ($gwOk -and $gwR.AvgMs -lt $Config.LatencyWarnMs) {'Pass'} elseif ($gwOk) {'Warning'} else {'Undetermined'}
     Add-Check -Category 'Connectivity' -Check "Gateway ($defaultGW)" -Status $st `
         -Value "$(if ($gwOk){"$($gwR.AvgMs)ms"}else{'Unreachable'}) | Loss: $($gwR.LossPct)%" `
         -Detail "Min: $($gwR.MinMs)ms Max: $($gwR.MaxMs)ms"
     $null = $script:ConnChain.Add([PSCustomObject]@{Target="Gateway ($defaultGW)";AvgMs=$gwR.AvgMs;LossPct=$gwR.LossPct;Ok=$gwOk})
-    if (-not $gwOk) {
-        Add-Finding -Severity 'Critical' -Title 'Gateway unreachable' -Detail "$defaultGW not responding" `
-            -Action 'Check connection.' -FixCommands @(
-                @{Desc='Restart network adapters';Cmd="Get-NetAdapter | Where-Object {`$_.Status -eq 'Up' -and `$_.Virtual -eq `$false} | ForEach-Object { Restart-NetAdapter -Name `$_.Name -Confirm:`$false; Write-Host `"Restarted `$(`$_.Name)`" }"}
-                @{Desc='Flush ARP + renew DHCP';Cmd='netsh interface ip delete arpcache; ipconfig /release; Start-Sleep 3; ipconfig /renew'}
-                @{Desc='Full stack reset (reboot needed)';Cmd='netsh winsock reset; netsh int ip reset; Write-Host "REBOOT REQUIRED"'}
-            ) -FixMinutes 5
-    }
+    # The finding is raised after the connectivity chain completes, not here,
+    # because whether this matters depends on whether anything upstream works.
+    $script:GatewaySilent = (-not $gwOk)
+    $script:GatewayAddr   = $defaultGW
 } else {
     Add-Check -Category 'Connectivity' -Check 'Default Gateway' -Status 'Fail' -Value 'None configured' -Detail 'No 0.0.0.0/0 route'
+    $script:GatewaySilent = $false   # nothing to probe; 'no route' is itself the finding
     $null = $script:ConnChain.Add([PSCustomObject]@{Target='Gateway';AvgMs=-1;LossPct=100;Ok=$false})
 }
 
@@ -329,6 +333,34 @@ try {
 Add-Check -Category 'Connectivity' -Check 'Internet (HTTP)' -Status $(if ($internetOk){'Pass'}else{'Fail'}) `
     -Value $(if ($internetOk){'Connected'}else{'Failed'}) -Detail $iDetail
 $null = $script:ConnChain.Add([PSCustomObject]@{Target='Internet';AvgMs=0;LossPct=$(if($internetOk){0}else{100});Ok=$internetOk})
+
+# The gateway verdict, now that the rest of the chain has been measured.
+#
+# Previously an unanswered ICMP probe raised a Critical on its own and offered
+# 'netsh winsock reset; netsh int ip reset' with a reboot. On 30/08 that fired
+# on a machine with a healthy Proton VPN tunnel: DNS answered in 27ms, HTTP
+# connected, six ports open, DHCP lease healthy with 9.9h left. A technician
+# following the tool would have reset the stack on a working client machine.
+#
+# Destructive remedies now require corroboration from upstream.
+if ($script:GatewaySilent) {
+    if (-not $internetOk -and -not $dnsOk) {
+        Add-Finding -Severity 'Critical' -Title 'Gateway unreachable' `
+            -Detail "$($script:GatewayAddr) not responding, and neither DNS nor HTTP reached anything upstream." `
+            -Action 'Check the physical connection, then the adapter, then the stack.' -FixCommands @(
+                @{Desc='Restart network adapters';Cmd="Get-NetAdapter | Where-Object {`$_.Status -eq 'Up' -and `$_.Virtual -eq `$false} | ForEach-Object { Restart-NetAdapter -Name `$_.Name -Confirm:`$false; Write-Host `"Restarted `$(`$_.Name)`" }"}
+                @{Desc='Flush ARP + renew DHCP';Cmd='netsh interface ip delete arpcache; ipconfig /release; Start-Sleep 3; ipconfig /renew'}
+                @{Desc='Full stack reset (reboot needed)';Cmd='netsh winsock reset; netsh int ip reset; Write-Host "REBOOT REQUIRED"'}
+            ) -FixMinutes 5
+    } else {
+        Add-Finding -Severity 'Info' -Title 'Gateway does not answer ICMP' `
+            -Detail "$($script:GatewayAddr) did not reply, but upstream connectivity is confirmed. Gateways often filter ICMP, and an active VPN tunnel bypasses the LAN gateway. Nothing here needs fixing." `
+            -Action 'No action. Investigate only if a user reports a fault.' -FixCommands @(
+                @{Desc='Show the active route';Cmd='Get-NetRoute -DestinationPrefix 0.0.0.0/0 | Sort-Object RouteMetric | Format-Table -AutoSize'}
+                @{Desc='Show VPN adapters';Cmd='Get-NetAdapter | Where-Object {$_.InterfaceDescription -match "VPN|TAP|Tunnel|WireGuard"} | Format-Table Name, Status, InterfaceDescription -AutoSize'}
+            ) -FixMinutes 1
+    }
+}
 
 if (-not $internetOk) {
     Add-Finding -Severity 'Critical' -Title 'No internet (HTTP)' -Detail $iDetail `
@@ -612,9 +644,12 @@ foreach ($pf in $perfTargets) {
     try {
         $perf = Measure-Latency -Target $pf.Target
         $jitter = if ($perf.MaxMs -gt 0 -and $perf.MinMs -ge 0){$perf.MaxMs-$perf.MinMs}else{0}
-        $latSt = if ($perf.AvgMs -lt 0){'Fail'} elseif ($perf.AvgMs -ge $Config.LatencyFailMs){'Fail'} elseif ($perf.AvgMs -ge $Config.LatencyWarnMs){'Warning'} else{'Pass'}
+        # AvgMs of -1 is Measure-Latency's sentinel for "no reply came back",
+        # which is the absence of a measurement, not a slow one. Scoring it Fail
+        # reported an unanswered probe as a network fault.
+        $latSt = if ($perf.AvgMs -lt 0){'Undetermined'} elseif ($perf.AvgMs -ge $Config.LatencyFailMs){'Fail'} elseif ($perf.AvgMs -ge $Config.LatencyWarnMs){'Warning'} else{'Pass'}
         $losSt = if ($perf.LossPct -ge $Config.LossFailPct){'Fail'} elseif ($perf.LossPct -ge $Config.LossWarnPct){'Warning'} else{'Pass'}
-        $st = if ($latSt -eq 'Fail' -or $losSt -eq 'Fail'){'Fail'} elseif ($latSt -eq 'Warning' -or $losSt -eq 'Warning'){'Warning'} else{'Pass'}
+        $st = if ($latSt -eq 'Undetermined'){'Undetermined'} elseif ($latSt -eq 'Fail' -or $losSt -eq 'Fail'){'Fail'} elseif ($latSt -eq 'Warning' -or $losSt -eq 'Warning'){'Warning'} else{'Pass'}
         Add-Check -Category 'Performance' -Check "Latency - $($pf.Name)" -Status $st `
             -Value "Avg: $($perf.AvgMs)ms | Loss: $($perf.LossPct)% | Jitter: ${jitter}ms" -Detail "Min: $($perf.MinMs)ms Max: $($perf.MaxMs)ms"
         $null = $script:PerfData.Add([PSCustomObject]@{Name=$pf.Name;Target=$pf.Target;AvgMs=$perf.AvgMs;MinMs=$perf.MinMs;MaxMs=$perf.MaxMs;LossPct=$perf.LossPct;Jitter=$jitter})
@@ -639,7 +674,7 @@ if ($mtuOk) {
     Add-Check -Category 'Performance' -Check 'MTU Path Discovery' -Status $st -Value "Effective MTU: $effectiveMtu bytes" `
         -Detail "Largest unfragmented payload: $($effectiveMtu - 28) bytes to $($Config.MtuTestTarget)"
 } else {
-    Add-Check -Category 'Performance' -Check 'MTU Path Discovery' -Status 'Warning' -Value 'Could not determine' `
+    Add-Check -Category 'Performance' -Check 'MTU Path Discovery' -Status 'Undetermined' -Value 'Could not determine' `
         -Detail 'All test sizes failed. Possible ICMP blocking or MTU issue.'
 }
 
@@ -855,8 +890,8 @@ foreach ($tc in $script:TopConnections) {
 
 # --- Check Rows ---
 $crHtml = foreach($r in $script:Results){
-    $sc3=switch($r.Status){'Pass'{'status-pass'}'Warning'{'status-warn'}'Fail'{'status-fail'}default{'status-info'}}
-    $si3=switch($r.Status){'Pass'{'&#10003;'}'Warning'{'&#9888;'}'Fail'{'&#10007;'}default{'&#8505;'}}
+    $sc3=switch($r.Status){'Pass'{'status-pass'}'Warning'{'status-warn'}'Fail'{'status-fail'}'Undetermined'{'status-undet'}default{'status-info'}}
+    $si3=switch($r.Status){'Pass'{'&#10003;'}'Warning'{'&#9888;'}'Fail'{'&#10007;'}'Undetermined'{'&#8212;'}default{'&#8505;'}}
     "<tr><td>$($r.Number)</td><td>$($r.Category)</td><td>$($r.Check)</td><td class='$sc3'>$si3 $($r.Status)</td><td>$($r.Value)</td><td class='detail-cell'>$($r.Detail)</td></tr>"
 }
 
@@ -878,7 +913,7 @@ $HtmlContent = @"
 .fw-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}.fw-badge{background:#0e0e28;border:1px solid;border-radius:8px;padding:8px 12px;font-size:0.82em;font-weight:600;min-width:130px}.fw-detail{font-size:0.7em;color:#5a7090;font-weight:400;margin-top:2px}
 .finding-card{border-radius:10px;padding:12px 16px;margin-bottom:10px;border-left:5px solid}.finding-critical{background:#18080c;border-color:#f44336}.finding-warning{background:#18140a;border-color:#ff9800}.finding-info{background:#081018;border-color:#64b5f6}.finding-title{font-weight:700;margin-bottom:3px;font-size:0.92em}.finding-detail{font-size:0.82em;color:#8898aa}.finding-action{font-size:0.8em;color:#a0b0c0;margin-top:4px}
 .fix-block{margin-top:8px;border:1px solid #1e2848;border-radius:8px;overflow:hidden}.fix-header{background:#0c1430;padding:8px 12px;cursor:pointer;font-size:0.82em;font-weight:600;color:#64b5f6;display:flex;align-items:center;gap:6px;user-select:none}.fix-header:hover{background:#101838}.fix-arrow{font-size:0.65em;transition:transform 0.2s;display:inline-block}.fix-arrow.open{transform:rotate(90deg)}.fix-body{padding:10px 12px;background:#080c20}.fix-item{margin-bottom:10px}.fix-desc{font-size:0.78em;color:#90a4c4;font-weight:600;margin-bottom:3px}.fix-cmd-wrap{position:relative}.fix-cmd{background:#060a18;border:1px solid #1a2040;border-radius:6px;padding:8px 10px;font-family:'Cascadia Code','Consolas',monospace;font-size:0.75em;color:#a8d0a8;white-space:pre-wrap;word-break:break-all;margin:0}.copy-btn{position:absolute;top:4px;right:4px;background:#1e2858;color:#82b1ff;border:1px solid #2a3a6e;border-radius:4px;padding:2px 8px;font-size:0.68em;cursor:pointer}.copy-btn:hover{background:#2a3a6e}
-table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:0.78em}th{background:#101030;color:#7eb8ff;padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid #252560;position:sticky;top:0}td{padding:7px 10px;border-bottom:1px solid #151538;vertical-align:top}tr:hover{background:#0e0e2a}.detail-cell{max-width:300px;word-break:break-all;color:#6878a0;font-size:0.88em}.status-pass{color:#4caf50;font-weight:600}.status-warn{color:#ff9800;font-weight:600}.status-fail{color:#f44336;font-weight:600}.status-info{color:#64b5f6;font-weight:600}
+table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:0.78em}th{background:#101030;color:#7eb8ff;padding:8px 10px;text-align:left;font-weight:600;border-bottom:2px solid #252560;position:sticky;top:0}td{padding:7px 10px;border-bottom:1px solid #151538;vertical-align:top}tr:hover{background:#0e0e2a}.detail-cell{max-width:300px;word-break:break-all;color:#6878a0;font-size:0.88em}.status-pass{color:#4caf50;font-weight:600}.status-warn{color:#ff9800;font-weight:600}.status-fail{color:#f44336;font-weight:600}.status-info{color:#64b5f6;font-weight:600}.status-undet{color:#9a8f7a;font-weight:600}
 details{background:#0c0c24;border:1px solid #1a1a44;border-radius:10px;margin-bottom:16px;overflow:hidden}summary{cursor:pointer;padding:12px 18px;font-weight:600;color:#90a4c4;font-size:0.92em;user-select:none;list-style:none;display:flex;align-items:center;gap:6px}summary:hover{background:#101038}summary::-webkit-details-marker{display:none}summary::before{content:'\\25B6';font-size:0.65em;transition:transform 0.2s;display:inline-block;color:#5070a0}details[open] summary::before{transform:rotate(90deg)}details .sect-body{padding:14px 18px;overflow-x:auto}
 .ftr{text-align:center;padding:18px;color:#2a3a5a;font-size:0.75em;border-top:1px solid #151538;margin-top:24px}
 @media print{body{background:#fff!important;color:#222!important;padding:8px}.hdr,.grade,.exec,details,.finding-card,.gauge-card,.port-chip,.fw-badge{background:#f8f8fc!important;border-color:#ddd!important;color:#222!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.fix-cmd{background:#f0f0f0!important;color:#1a3a1a!important}.fix-header{background:#eef!important;color:#1a3a6a!important}.copy-btn{display:none!important}th{background:#eef!important;color:#1a3a6a!important}td{border-color:#ddd!important;color:#333!important}.status-pass{color:#1b7a1b!important}.status-warn{color:#b36b00!important}.status-fail{color:#c62828!important}.status-info{color:#1565c0!important}}

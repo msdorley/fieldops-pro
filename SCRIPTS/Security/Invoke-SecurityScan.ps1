@@ -236,7 +236,12 @@ try {
     Add-Check -Category 'Defender' -Check 'Controlled Folder Access' -Status $(if($cfaMode -eq 1){'Pass'}elseif($cfaMode -eq 2){'Warning'}else{'Info'}) `
         -Value $(switch($cfaMode){1{'Enabled'}2{'Audit'}default{'Disabled'}}) -Detail 'Ransomware protection for user folders'
 
-    # Exclusions audit
+    # Exclusions audit -- in its own try, because it is the last thing in this
+    # block and the most likely to throw. When it did, the outer catch reported
+    # 'Windows Defender: Cannot query' after seven Defender sub-checks had
+    # already passed, telling the reader that Defender's state was unknown when
+    # only its exclusion list was. Observed on real hardware, 30/08.
+    try {
     $exPaths = @($mpPref.ExclusionPath)
     $exProcs = @($mpPref.ExclusionProcess)
     $exExts  = @($mpPref.ExclusionExtension)
@@ -249,6 +254,9 @@ try {
             -Detail 'Large exclusion lists increase attack surface.' `
             -Action 'Review and remove unnecessary exclusions.' `
             -FixCommands @(@{Desc='List all exclusions';Cmd='Get-MpPreference | Select-Object ExclusionPath, ExclusionProcess, ExclusionExtension | Format-List'})
+    }
+    } catch {
+        Add-Check -Category 'Defender' -Check 'Exclusions' -Status 'Undetermined' -Value 'Cannot query' -Detail $_.Exception.Message
     }
 } catch {
     Add-Check -Category 'Defender' -Check 'Windows Defender' -Status 'Undetermined' -Value 'Cannot query' -Detail $_.Exception.Message

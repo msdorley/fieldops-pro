@@ -1490,7 +1490,11 @@ if (-not $measures) { Write-Warn 'No measures in the locale bundle: findings wil
 # mecanisme deja prevu pour cela, jamais d'un litteral tape dans un modele.
 $productVersion = ''
 try {
-    Import-Module (Join-Path $ProjectRoot 'SCRIPTS\Core\Utils.psm1') -Force -ErrorAction Stop
+    # -DisableNameChecking: Utils exports Render-RichTextValue, and 'Render' is
+    # not an approved verb. Without this, PowerShell prints a wall of warning
+    # text mid-run in a tool a technician is watching, where it reads as an
+    # error. Every other call site in the tree already passes this.
+    Import-Module (Join-Path $ProjectRoot 'SCRIPTS\Core\Utils.psm1') -Force -DisableNameChecking -ErrorAction Stop
     $v = Get-FieldOpsVersion -From $PSScriptRoot
     if ($v) { $productVersion = 'v' + $v }
 } catch {

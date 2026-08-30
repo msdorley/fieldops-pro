@@ -67,6 +67,7 @@ function Status {
         'WARN'     { '[WARNING] ' }
         'FAIL'     { '[CRITICAL]' }
         'INFO'     { '[INFO]    ' }
+        'UNDET'    { '[ --  ]   ' }
         default    { '          ' }
     }
     $bc = switch ($Badge) {
@@ -74,6 +75,7 @@ function Status {
         'WARN' { 'Yellow' }
         'FAIL' { 'Red' }
         'INFO' { 'Cyan' }
+        'UNDET' { 'DarkYellow' }
         default { 'DarkGray' }
     }
     c "  $badgeStr " $bc
@@ -461,8 +463,17 @@ function Invoke-PCHealth {
     } catch {}
 
     # Local admin accounts
+    # Get-LocalGroupMember throws on machines whose Administrators group holds a
+    # SID it cannot resolve -- routine on Entra/Workplace-joined hardware. The
+    # previous form swallowed that with -EA SilentlyContinue, took .Count of
+    # $null, compared 0 -gt 5, and recorded the failed probe as 'Pass, 0
+    # accounts'. Zero local administrators is impossible on a working Windows
+    # machine; the number was the absence of an answer, printed as one.
+    #
+    # Observed 30/08 on a Workplace-joined machine, where SecurityScan reported
+    # 'Cannot query' for the same group in the same minute.
     try {
-        $admins = (Get-LocalGroupMember -Group 'Administrators' -EA SilentlyContinue).Name
+        $admins = @(Get-LocalGroupMember -Group 'Administrators' -ErrorAction Stop)
         $adminCount = $admins.Count
         $adminBadge = if ($adminCount -gt 5) { 'WARN' } else { 'PASS' }
         Status 'Local Admins' "$adminCount accounts" $(if ($adminCount -gt 5) { 'Yellow' } else { 'Green' }) $adminBadge
@@ -471,7 +482,10 @@ function Invoke-PCHealth {
         } else {
             Add-Check 'Security' 'Local Admins' 'Pass' "$adminCount accounts"
         }
-    } catch {}
+    } catch {
+        Status 'Local Admins' 'Cannot query' 'DarkYellow' 'UNDET'
+        Add-Check 'Security' 'Local Admins' 'Undetermined' 'Cannot query' 'Re-run with local administrator rights, or read the group from the directory'
+    }
 
     nl; sep; nl
 
