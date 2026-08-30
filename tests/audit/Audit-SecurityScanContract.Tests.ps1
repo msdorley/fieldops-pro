@@ -60,35 +60,43 @@ BeforeAll {
     # VALUE and a check that could not RUN are different statements.
     $script:AllowedStatuses = @('Pass', 'Warning', 'Fail', 'Info', 'Undetermined', 'ConstrainedLanguage')
 
-    # Every literal -Status on an Add-Check call, including the inline
-    # if/else forms the script uses.
-    function Get-EmittedStatuses {
-        param([string]$Source)
-        $found = New-Object System.Collections.ArrayList
-        foreach ($m in [regex]::Matches($Source, "-Status\s+(?:'([A-Za-z]+)'|\`$\(if\([^)]*\)\{'([A-Za-z]+)'\}else\{'([A-Za-z]+)'\}\))")) {
-            foreach ($g in 1..3) {
-                if ($m.Groups[$g].Success) { $null = $found.Add($m.Groups[$g].Value) }
-            }
+    # Both collections are built here, into plain arrays, rather than returned
+    # from helper functions.
+    #
+    # The first version used `, $collection` to stop PowerShell unrolling the
+    # return value. That wraps: the caller received a one-element array holding
+    # the collection, so Should -Contain compared the wrapper against a string
+    # and -join stringified it to 'System.Collections.ArrayList'. Worse, the
+    # three assertions over the other helper PASSED anyway, because $_.Status on
+    # a collection triggers member enumeration and happened to give the right
+    # answer -- green ticks over a broken helper.
+    #
+    # Assignment into $script: from BeforeAll has no return-value semantics to
+    # get wrong, which matters because this file cannot be run here.
+
+    # Every literal -Status on an Add-Check call, including the inline if/else
+    # forms the script uses.
+    $script:EmittedStatuses = @()
+    foreach ($m in [regex]::Matches($script:ScanSrc, "-Status\s+(?:'([A-Za-z]+)'|\`$\(if\([^)]*\)\{'([A-Za-z]+)'\}else\{'([A-Za-z]+)'\}\))")) {
+        foreach ($g in 1..3) {
+            if ($m.Groups[$g].Success) { $script:EmittedStatuses += $m.Groups[$g].Value }
         }
-        , $found
     }
 
     # Add-Check calls whose Value says the probe could not answer, with the
     # status each one carries. One rule covers both the Info sites and the
     # Defender site that used Fail.
-    function Get-UndeterminedSites {
-        param([string]$Source)
-        $sites = New-Object System.Collections.ArrayList
-        $lineNo = 0
-        foreach ($line in ($Source -split "`r?`n")) {
-            $lineNo++
-            if ($line -notmatch 'Add-Check') { continue }
-            if ($line -notmatch "-Value\s+'([^']*[Cc]annot query[^']*)'") { continue }
+    $script:UndeterminedSites = @()
+    $lineNo = 0
+    foreach ($line in ($script:ScanSrc -split "`r?`n")) {
+        $lineNo++
+        if ($line -notlike '*Add-Check*') { continue }
+        if ($line -match "-Value\s+'([^']*[Cc]annot query[^']*)'") {
             $value  = $Matches[1]
-            $status = if ($line -match "-Status\s+'([A-Za-z]+)'") { $Matches[1] } else { '(computed)' }
-            $null = $sites.Add([PSCustomObject]@{ Line = $lineNo; Status = $status; Value = $value })
+            $status = '(computed)'
+            if ($line -match "-Status\s+'([A-Za-z]+)'") { $status = $Matches[1] }
+            $script:UndeterminedSites += [PSCustomObject]@{ Line = $lineNo; Status = $status; Value = $value }
         }
-        , $sites
     }
 }
 
@@ -99,28 +107,24 @@ Describe 'SecurityScan emits a closed status vocabulary' -Tag 'Slow' {
     }
 
     It 'emits only declared statuses' {
-        $emitted = @(Get-EmittedStatuses -Source $script:ScanSrc | Sort-Object -Unique)
-        $emitted.Count | Should -BeGreaterThan 0
-        $undeclared = @($emitted | Where-Object { $_ -notin $script:AllowedStatuses })
-        $undeclared -join ', ' | Should -BeNullOrEmpty -Because 'a typo must not be able to invent a fourth state'
+        $script:EmittedStatuses.Count | Should -BeGreaterThan 0
+        $undeclared = @($script:EmittedStatuses | Where-Object { $_ -notin $script:AllowedStatuses } | Sort-Object -Unique)
+        ($undeclared -join ', ') | Should -BeNullOrEmpty -Because 'a typo must not be able to invent a fourth state'
     }
 
     It 'actually uses the undetermined status somewhere' {
-        $emitted = @(Get-EmittedStatuses -Source $script:ScanSrc)
-        $emitted | Should -Contain 'Undetermined' -Because 'the engine detects checks it cannot answer; it must say so structurally'
+        $script:EmittedStatuses | Should -Contain 'Undetermined' -Because 'the engine detects checks it cannot answer; it must say so structurally'
     }
 }
 
 Describe 'A probe that could not run is never reported as a failure' -Tag 'Slow' {
 
     It 'finds the checks that report an unanswerable probe' {
-        $sites = @(Get-UndeterminedSites -Source $script:ScanSrc)
-        $sites.Count | Should -BeGreaterThan 0 -Because 'the engine does encounter probes it cannot answer'
+        $script:UndeterminedSites.Count | Should -BeGreaterThan 0 -Because 'the engine does encounter probes it cannot answer'
     }
 
     It 'gives every one of them the undetermined status' {
-        $sites = @(Get-UndeterminedSites -Source $script:ScanSrc)
-        $wrong = @($sites | Where-Object { $_.Status -ne 'Undetermined' })
+        $wrong  = @($script:UndeterminedSites | Where-Object { $_.Status -ne 'Undetermined' })
         $detail = ($wrong | ForEach-Object { "line $($_.Line): Status '$($_.Status)' for '$($_.Value)'" }) -join '; '
         $detail | Should -BeNullOrEmpty -Because 'could-not-look and failed are different findings'
     }
@@ -128,8 +132,7 @@ Describe 'A probe that could not run is never reported as a failure' -Tag 'Slow'
     It 'reports no unanswerable probe as Fail' {
         # The specific defect: the Defender catch block recorded a security
         # failure for a machine whose Defender simply could not be queried.
-        $sites = @(Get-UndeterminedSites -Source $script:ScanSrc)
-        @($sites | Where-Object { $_.Status -eq 'Fail' }).Count |
+        @($script:UndeterminedSites | Where-Object { $_.Status -eq 'Fail' }).Count |
             Should -Be 0 -Because 'a machine that cannot be examined does not thereby fail'
     }
 }
