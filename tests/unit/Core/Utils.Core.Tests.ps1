@@ -29,7 +29,27 @@ BeforeAll {
         throw "Utils.psm1 not found at: $utilsPath"
     }
 
+    # Unload first, so exactly one module named Utils exists when Mock resolves.
+    #
+    # PowerShell keys loaded modules by path STRING, not by file identity, so two
+    # imports of this same file spelled differently -- 'SCRIPTS\Core\Utils.psm1'
+    # against '..\Core\Utils.psm1', or a Utils on PSModulePath -- load as two
+    # modules with one name. Mock -ModuleName then cannot choose between them and
+    # throws "Multiple script or manifest modules named 'Utils' are currently
+    # loaded", failing BOTH Test-WinPE contexts for a reason that has nothing to
+    # do with WinPE.
+    #
+    # Seen once in a full-suite run on 30/08 and never in isolation, so the
+    # second copy depends on what else that session had loaded. -Force alone does
+    # not help: it re-imports this path and leaves the other one in place.
+    Remove-Module Utils -Force -ErrorAction SilentlyContinue
     Import-Module $utilsPath -Force -DisableNameChecking
+
+    $loaded = @(Get-Module Utils)
+    if ($loaded.Count -ne 1) {
+        throw ("Expected exactly one Utils module, found {0}: {1}" -f
+               $loaded.Count, (($loaded | ForEach-Object { $_.Path }) -join ' | '))
+    }
 }
 
 AfterAll {
