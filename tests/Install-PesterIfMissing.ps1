@@ -160,11 +160,39 @@ if ($null -ne $installedModules) {
 
     if ($null -ne $best) {
         Write-OK "Found installed Pester $($best.Version) at: $($best.ModuleBase)"
-        # -Force unconditionally: see the note at Step 3. Reaching this line at
-        # all means the session module (if any) was unsatisfactory.
-        Import-Module -Name $best.ModuleBase -RequiredVersion $best.Version -Force -ErrorAction Stop
-        Write-OK "Pester $($best.Version) imported."
-        return
+
+        # Import by MANIFEST PATH, not by ModuleBase plus -RequiredVersion.
+        #
+        # ModuleBase for a side-by-side install already ends in the version
+        # folder -- C:\Program Files\WindowsPowerShell\Modules\Pester\5.9.0.
+        # Adding -RequiredVersion makes PS 5.1 append the version a SECOND time
+        # and look for ...\Pester\5.9.0\5.9.0\Pester.psd1, which does not exist.
+        # It then reports "no valid module file was found in any module
+        # directory", which reads like a missing or corrupt install rather than
+        # a malformed path, and sends you looking in the wrong place.
+        #
+        # This branch had never executed successfully anywhere. No machine in
+        # this project had a Pester >= 5.7.1 installed, so every local run fell
+        # through to the offline bundle at Step 3 and this code was dead. The
+        # first CI run took it -- hosted Windows runners ship Pester 5.9.0 --
+        # and failed in fifteen seconds without running a single test.
+        #
+        # The version gate stays: -RequiredVersion was doing real work, and
+        # dropping it silently would let a stale side-by-side copy load. The
+        # check moves to the imported module, exactly as Step 3 does it.
+        $manifest = Join-Path $best.ModuleBase "$MODULE_NAME.psd1"
+        if (-not (Test-Path -LiteralPath $manifest)) {
+            Write-Warn "Installed Pester $($best.Version) has no manifest at $manifest. Falling through to the offline bundle."
+        } else {
+            # -Force unconditionally: see the note at Step 3. Reaching this line
+            # at all means the session module (if any) was unsatisfactory.
+            $imported = Import-Module -Name $manifest -Force -PassThru -ErrorAction Stop
+            if (Test-PesterVersionSatisfied -Candidate $imported.Version) {
+                Write-OK "Pester $($imported.Version) imported from: $($imported.Path)"
+                return
+            }
+            Write-Warn "Installed module at $manifest reports version $($imported.Version), which does not satisfy $REQUIRED_VERSION. Falling through to the offline bundle."
+        }
     }
 }
 
