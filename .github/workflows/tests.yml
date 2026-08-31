@@ -1,0 +1,94 @@
+# ============================================================================
+# FieldOps Pro -- continuous validation
+# ----------------------------------------------------------------------------
+# Runs the full Pester suite on every pull request and every push to main.
+#
+# WHY THIS EXISTS
+#
+# Until this file, the only gate was a local pre-commit hook, and that hook
+# tests the WORKING TREE rather than the commit being made. Four commits could
+# go green in a row on one unchanged state. Two pull requests reached main with
+# "Checks 0" -- merged on an assertion that the suite passed, not on evidence.
+#
+# This workflow moves the evidence off the author's machine. It does not
+# reimplement the runner: tests/Run-AllTests.ps1 owns discovery, ordering,
+# bootstrap and exit codes, and is the same entry point the hooks use. A test
+# that passes here and fails locally is a real disagreement worth chasing,
+# which only holds while both sides run the identical script.
+#
+# WHY Windows PowerShell 5.1 AND NOT pwsh
+#
+# The product targets PS 5.1 exclusively -- it runs from a USB stick against
+# whatever a client machine has, and that is Windows PowerShell. Running the
+# suite under PowerShell 7 would test a runtime no customer uses and would
+# quietly accept syntax 5.1 rejects. On windows-latest, `shell: powershell` is
+# 5.1 and `shell: pwsh` is 7.x. The version assertion below makes the choice
+# fail loudly if GitHub ever changes what that word means.
+# ============================================================================
+
+name: tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Superseded runs on the same ref are pointless once a newer commit exists.
+# main is excluded from cancellation: every commit that lands on main should
+# keep its own verdict, because that verdict is what a future bisect reads.
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  full-suite:
+    name: Full suite (Windows PowerShell 5.1)
+    runs-on: windows-latest
+
+    # Locally the suite is ~340s, dominated by the property tests (200 random
+    # inputs per evaluator). Hosted runners are slower and noisier; 45 minutes
+    # is loose enough not to flake and tight enough to catch a genuine hang.
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out the commit under test
+        uses: actions/checkout@v4
+
+      - name: Confirm the runtime is the one the product targets
+        shell: powershell
+        run: |
+          $PSVersionTable | Format-List | Out-String | Write-Host
+          if ($PSVersionTable.PSVersion.Major -ne 5) {
+              Write-Host "::error::Expected Windows PowerShell 5.1, got $($PSVersionTable.PSVersion). The product does not support this runtime, so a pass here would mean nothing."
+              exit 1
+          }
+          Write-Host "Windows PowerShell $($PSVersionTable.PSVersion) -- matches the deployment target."
+
+      - name: Run the full suite
+        shell: powershell
+        run: |
+          .\tests\Run-AllTests.ps1 -CI
+          # Run-AllTests exits 0 pass / 1 test failure / 2 bootstrap failure /
+          # 3 no tests discovered. Propagate it verbatim: 2 and 3 are NOT
+          # passes, and a runner that silently treated "no tests found" as
+          # success would be worse than no runner at all.
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "::error::Run-AllTests.ps1 exited $LASTEXITCODE"
+              exit $LASTEXITCODE
+          }
+
+      - name: Upload the JUnit results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pester-junit-${{ github.run_id }}
+          path: tests/TestResults/FieldOps-AllTests.xml
+          # A run that produced no results file produced no evidence. Say so
+          # rather than uploading nothing and looking tidy.
+          if-no-files-found: error
+          retention-days: 30

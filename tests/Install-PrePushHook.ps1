@@ -131,8 +131,17 @@ if ((Test-Path $hookFile) -and (-not $Force)) {
 # repo root so the hook works regardless of where git is invoked from.
 # git sets the working directory to the repo root before running hooks.
 #
-# A pre-push hook receives ref information on stdin; we ignore it and run the
-# full suite once per push regardless of how many refs are being pushed.
+# A pre-push hook receives one line per ref on stdin:
+#     <local ref> <local sha> <remote ref> <remote sha>
+# For a DELETION the local sha is all zeros, because no commits are being sent.
+# The hook used to discard stdin entirely and run the suite unconditionally, so
+# `git push origin --delete <branch>` spent 5.5 minutes testing a tree that was
+# not being pushed anywhere. Nothing was wrong with the result; it was simply
+# an answer to a question nobody asked.
+#
+# The zero check is written as "contains any non-zero character" rather than a
+# comparison against forty zeros, so it keeps working under SHA-256 repos where
+# the null sha is sixty-four characters.
 # ---------------------------------------------------------------------------
 $hookContent = @'
 #!/bin/sh
@@ -143,6 +152,22 @@ $hookContent = @'
 # Runs the FULL suite (all tests incl property + audit) via Run-AllTests.ps1
 # Exit 0 = all tests passed, push proceeds
 # Exit non-zero = test failure, push blocked
+#
+# Deletions and an empty stdin send no commits, so there is nothing to test.
+
+has_commits=0
+while read -r local_ref local_sha remote_ref remote_sha
+do
+    case "$local_sha" in
+        *[!0]*) has_commits=1 ;;
+    esac
+done
+
+if [ "$has_commits" -eq 0 ]; then
+    echo "pre-push: no commits in this push (deletion only) -- skipping the suite."
+    exit 0
+fi
+
 exec powershell.exe -NoProfile -ExecutionPolicy Bypass -File tests/Run-AllTests.ps1
 '@
 
